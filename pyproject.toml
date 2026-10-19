@@ -1,0 +1,8 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["integration: requires isolated PostgreSQL, Redis and S3 services"]
+addopts = "-ra"
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]

@@ -1,0 +1,40 @@
+name: clouddrive-test
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      {
+        POSTGRES_USER: clouddrive,
+        POSTGRES_PASSWORD: clouddrive,
+        POSTGRES_DB: clouddrive_test,
+      }
+    ports: ["127.0.0.1:5436:5432"]
+    tmpfs: ["/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clouddrive"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  redis:
+    image: redis:7-alpine
+    ports: ["127.0.0.1:6383:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  minio:
+    build: { context: ., dockerfile: Dockerfile.minio }
+    image: clouddrive-minio:2025-10-15
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: clouddrive
+      MINIO_ROOT_PASSWORD: clouddrive-local
+      MINIO_API_CORS_ALLOW_ORIGIN: http://localhost:8090,http://127.0.0.1:8090,http://localhost:5173,http://127.0.0.1:5173
+    ports: ["127.0.0.1:9010:9000"]
+    tmpfs: ["/data:uid=10002,gid=10002"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
