@@ -1,0 +1,121 @@
+name: clouddrive-audit-20261024
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: clouddrive
+      POSTGRES_PASSWORD: clouddrive
+      POSTGRES_DB: clouddrive_audit_test
+    ports:
+      - 127.0.0.1:15436:5432
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U clouddrive
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  redis:
+    image: redis:7-alpine
+    ports:
+      - 127.0.0.1:16383:6379
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  minio:
+    image: clouddrive-minio:2025-10-15
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: clouddrive
+      MINIO_ROOT_PASSWORD: clouddrive-local
+      MINIO_API_CORS_ALLOW_ORIGIN: http://localhost:18090,http://127.0.0.1:18090
+    ports:
+      - 127.0.0.1:19010:9000
+    tmpfs:
+      - /data:uid=10002,gid=10002
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:9000/minio/health/live
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  api:
+    image: clouddrive-audit:6f439d9
+    build:
+      context: ../../..
+    environment:
+      CLOUDDRIVE_DATABASE_URL: postgresql+psycopg://clouddrive:clouddrive@postgres:5432/clouddrive_audit_test
+      CLOUDDRIVE_REDIS_URL: redis://redis:6379/0
+      CLOUDDRIVE_S3_ENDPOINT: http://minio:9000
+      CLOUDDRIVE_S3_PUBLIC_ENDPOINT: http://localhost:19010
+      CLOUDDRIVE_S3_ACCESS_KEY: clouddrive
+      CLOUDDRIVE_S3_SECRET_KEY: clouddrive-local
+      CLOUDDRIVE_S3_BUCKET: clouddrive-audit-20261024-test
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    ports:
+      - 127.0.0.1:18090:8090
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://localhost:8090/api/health')
+      interval: 3s
+      timeout: 5s
+      retries: 20
+  worker:
+    image: clouddrive-audit:6f439d9
+    environment:
+      CLOUDDRIVE_DATABASE_URL: postgresql+psycopg://clouddrive:clouddrive@postgres:5432/clouddrive_audit_test
+      CLOUDDRIVE_REDIS_URL: redis://redis:6379/0
+      CLOUDDRIVE_S3_ENDPOINT: http://minio:9000
+      CLOUDDRIVE_S3_PUBLIC_ENDPOINT: http://localhost:19010
+      CLOUDDRIVE_S3_ACCESS_KEY: clouddrive
+      CLOUDDRIVE_S3_SECRET_KEY: clouddrive-local
+      CLOUDDRIVE_S3_BUCKET: clouddrive-audit-20261024-test
+    depends_on:
+      api:
+        condition: service_healthy
+    command:
+      - celery
+      - -A
+      - clouddrive.worker:celery
+      - worker
+      - --loglevel=INFO
+      - --concurrency=2
+  beat:
+    image: clouddrive-audit:6f439d9
+    environment:
+      CLOUDDRIVE_DATABASE_URL: postgresql+psycopg://clouddrive:clouddrive@postgres:5432/clouddrive_audit_test
+      CLOUDDRIVE_REDIS_URL: redis://redis:6379/0
+      CLOUDDRIVE_S3_ENDPOINT: http://minio:9000
+      CLOUDDRIVE_S3_PUBLIC_ENDPOINT: http://localhost:19010
+      CLOUDDRIVE_S3_ACCESS_KEY: clouddrive
+      CLOUDDRIVE_S3_SECRET_KEY: clouddrive-local
+      CLOUDDRIVE_S3_BUCKET: clouddrive-audit-20261024-test
+    depends_on:
+      api:
+        condition: service_healthy
+    command:
+      - celery
+      - -A
+      - clouddrive.worker:celery
+      - beat
+      - --loglevel=INFO
+      - --schedule=/tmp/clouddrive-audit-beat

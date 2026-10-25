@@ -77,9 +77,9 @@ Completion records a durable `FINALIZING` state before completing the multipart 
 
 The transition to `PROCESSING` and creation of an outbox row share one PostgreSQL transaction. The dispatcher publishes before deleting that row. A crash between those steps can publish a duplicate; processing is idempotent. Workers use 90-second claims, renew them during streaming, and condition final writes on the current claim. Periodic reconciliation republishes processing work whose message was lost or whose claim expired. Transient task failures retry with backoff; exhausted retries become visible failures that can be retried from the UI.
 
-Deletion aborts any remaining multipart upload and removes the object before marking the metadata deleted. Retrying a partially completed deletion is safe. A worker already reading that object cannot restore a deleted file.
+Deletion first commits a durable `DELETING` intent, revokes the worker claim, and removes pending processing work. The file immediately disappears from browsing and download authorization. Cleanup then aborts any remaining multipart upload, removes the object, and commits `DELETED`. A retry or the scheduler completes interrupted cleanup after 30 seconds, including a crash after object removal. A stale worker cannot restore a deleted file.
 
-PostgreSQL and object storage do not share a transaction. A failure immediately after creating a multipart upload can leave an unreferenced incomplete upload. Configure incomplete multipart expiration on the storage provider and monitor storage usage. MinIO manages stale multipart uploads through its own server settings. An upload that storage has expired must be deleted and uploaded again.
+PostgreSQL and object storage do not share a transaction. A failure immediately after creating a multipart upload can leave an unreferenced incomplete upload. Configure incomplete multipart expiration on the storage provider and monitor storage usage. MinIO manages stale multipart uploads through its own server settings. An explicit `NoSuchUpload` from storage marks the session `EXPIRED`; transient service errors leave it retryable. Choose **Restart upload** and reselect the original file. Its full SHA-256 must match before the browser replaces the expired session with a new request ID. Saved browser request IDs are scoped to the workspace, and deletion retires the corresponding ID so the same file can be uploaded again.
 
 ## Development
 
@@ -109,7 +109,7 @@ Configuration uses `CLOUDDRIVE_` environment variables; see [.env.example](.env.
 
 ## Tests
 
-The implementation passes **27 unit tests, 21 real-service integration tests, and 5 browser workflows**. The browser workflows also pass against the packaged Docker stack. See [verification notes](docs/verification.md) for the tested failure cases and a repeatable broker-outage check.
+The implementation passes **27 unit tests, 48 real-service integration tests, and 11 browser workflows**. The browser workflows also pass against the packaged Docker stack. See [verification notes](docs/verification.md) for the tested failure cases and a repeatable broker-outage check.
 
 Unit tests run without infrastructure:
 
@@ -128,9 +128,11 @@ npm run test:browser
 docker compose -f compose.test.yaml down
 ```
 
-Activate the virtual environment first. On a machine with Google Chrome installed, `PLAYWRIGHT_CHANNEL=chrome npm run test:browser` uses that browser instead. The browser test runner starts and stops its own API, Celery worker, and scheduler against the isolated services; keep port 8090 available. `PLAYWRIGHT_EXTERNAL_SERVER=1` runs the same browser tests against an already running application.
+Activate the virtual environment first. On a machine with Google Chrome installed, `PLAYWRIGHT_CHANNEL=chrome npm run test:browser` uses that browser instead. The browser test runner starts and stops its own API, Celery worker, and scheduler against the isolated services; keep port 8090 available. `PLAYWRIGHT_EXTERNAL_SERVER=1` runs the same browser tests against an already running application. The expiry browser test uses `scripts/expire-test-upload.py`, which refuses databases/buckets without the test suffixes. Use the dedicated packaged verification configuration and environment overrides in [verification notes](docs/verification.md).
 
-Coverage includes multipart checksums, resumed uploads, duplicate initiation/completion, cross-workspace isolation, corrupt-content rejection, private downloads, deletion, broker publish failure, expired worker claims, and recovery after S3 completion followed by a failed database update. Browser tests exercise real Celery processing, byte-identical downloads, safe text previews, access-key transfer, mobile layout, and pause/resume across reloads. CI builds the application image and uploads test artifacts.
+Coverage includes multipart checksums, resumed uploads, duplicate initiation/completion, cross-workspace isolation, corrupt-content rejection, private downloads, deletion, broker publish failure, expired worker claims, and recovery after S3 completion followed by a failed database update. Browser tests exercise real Celery processing, byte-identical downloads, safe text previews, access-key transfer, mobile layout, and pause/resume across reloads. CI runs the browser suite against both host processes and a separately built packaged Docker stack, then uploads test artifacts. Recovery coverage includes a real SIGKILL after object deletion, forced PostgreSQL row-lock races, expired multipart restart, stale workers, all file operations under another workspace key, and an upgrade from populated baseline metadata. These test counts are not a 20-case recovery benchmark.
+
+Sprint 1 changes and evidence are recorded in [the Sprint 1 report](docs/sprint-1.md). The remaining large-file, recovery-matrix, concurrency, and operations work is tracked in [the completion plan](docs/completion-plan.md).
 
 ## Operating scope
 

@@ -111,7 +111,7 @@ def files(ws: Workspace):
         rows = (
             service.query(
                 conn,
-                "SELECT * FROM files WHERE workspace_id=:workspace AND status != 'DELETED' ORDER BY created_at DESC LIMIT 200",
+                "SELECT * FROM files WHERE workspace_id=:workspace AND status NOT IN ('DELETING','DELETED') ORDER BY created_at DESC LIMIT 200",
                 workspace=ws["id"],
             )
             .mappings()
@@ -124,7 +124,7 @@ def files(ws: Workspace):
             count(*) FILTER (WHERE status='READY') AS ready,
             coalesce(sum(size) FILTER (WHERE status='READY'),0) AS bytes,
             count(*) FILTER (WHERE status IN ('UPLOADING','FINALIZING','PROCESSING')) AS pending
-            FROM files WHERE workspace_id=:workspace AND status != 'DELETED'""",
+            FROM files WHERE workspace_id=:workspace AND status NOT IN ('DELETING','DELETED')""",
                 workspace=ws["id"],
             )
             .mappings()

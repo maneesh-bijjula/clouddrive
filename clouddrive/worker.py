@@ -11,7 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from .config import settings
 from .db import engine, migrate
-from .service import finalize, query
+from .service import finalize, finish_delete, query
 from .storage import s3
 
 logger = logging.getLogger(__name__)
@@ -163,23 +163,34 @@ def dispatch_pending(publish=None):
     return len(rows)
 
 
+def reconcile_files():
+    # Separate budgets prevent failing deletions from starving finalizations.
+    # Each file has its own transaction, so one failure cannot roll back others.
+    for status, recover in (("DELETING", finish_delete), ("FINALIZING", finalize)):
+        with engine().connect() as conn:
+            rows = (
+                query(
+                    conn,
+                    """SELECT id,workspace_id FROM files WHERE status=:status
+                AND updated_at < now()-interval '30 seconds'
+                ORDER BY updated_at,id LIMIT 20""",
+                    status=status,
+                )
+                .mappings()
+                .all()
+            )
+        for row in rows:
+            try:
+                recover(row["workspace_id"], row["id"])
+            except Exception:
+                logger.exception("%s recovery failed for %s", status, row["id"])
+
+
 @celery.task(name="clouddrive.dispatch")
 def dispatch():
+    # Storage reconciliation does not depend on successful outbox publication.
+    reconcile_files()
     count = dispatch_pending()
-    with engine().connect() as conn:
-        rows = (
-            query(
-                conn,
-                "SELECT id,workspace_id FROM files WHERE status='FINALIZING' AND updated_at < now()-interval '30 seconds' LIMIT 20",
-            )
-            .mappings()
-            .all()
-        )
-    for row in rows:
-        try:
-            finalize(row["workspace_id"], row["id"])
-        except Exception:
-            logger.exception("Finalization recovery failed for %s", row["id"])
     return count
 
 

@@ -1,5 +1,50 @@
 # Verification
 
+## Sprint 1
+
+Sprint 1 adds durable deletion, terminal multipart expiry and browser restart, workspace-scoped saved request IDs, and deterministic race/isolation/migration coverage. See [the Sprint 1 report](sprint-1.md). Local execution uses macOS ARM64, Python 3.12.14, Node 26.3.0, Chrome, Docker Engine 29.5.3, PostgreSQL 17, Redis 7, and MinIO. CI uses Ubuntu, Python 3.12, Node 24, and Chromium.
+
+| Local Sprint 1 check                      | Result                                                          |
+| ----------------------------------------- | --------------------------------------------------------------- |
+| Unit tests                                | 27 passed                                                       |
+| Real-service integration tests            | 48 passed                                                       |
+| Combined Python run                       | 75 passed in 5.60 s; one visible TestClient deprecation warning |
+| Packaged browser workflows                | 11 passed in 1.3 min; no retries                                |
+| TypeScript / Vite production build        | Passed                                                          |
+| Black / Prettier / diff whitespace checks | Passed                                                          |
+| Initial migration checksum                | Unchanged                                                       |
+
+Evidence: [Python output](evidence/sprint-1/python.txt), [JUnit](evidence/sprint-1/python.xml), [packaged browser output](evidence/sprint-1/browser.txt), [application build](evidence/sprint-1/docker-build.txt), [desktop](evidence/sprint-1/workspace.png), and [mobile](evidence/sprint-1/mobile.png). These are local functional results on MinIO, not live AWS, large-file, concurrency, or 20-case recovery benchmark results.
+
+The isolated packaged verification stack has its own network, database `clouddrive_verify_test`, bucket `clouddrive-verify-test`, and disposable service data. Ports are 18090 (API), 15436 (PostgreSQL), 16383 (Redis), and 19010 (S3). Check those ports are free before starting. Override the Compose project name with `-p` if another verification project is already in use, and choose different ports/configuration rather than stopping it.
+
+```bash
+# Start infrastructure only; do not start workers during truncating Python tests.
+docker compose -f compose.verify.yaml build minio
+docker compose -f compose.verify.yaml up -d --wait postgres redis minio
+export CLOUDDRIVE_DATABASE_URL=postgresql+psycopg://clouddrive:clouddrive@localhost:15436/clouddrive_verify_test
+export CLOUDDRIVE_REDIS_URL=redis://localhost:16383/0
+export CLOUDDRIVE_S3_ENDPOINT=http://localhost:19010
+export CLOUDDRIVE_S3_PUBLIC_ENDPOINT=http://localhost:19010
+export CLOUDDRIVE_S3_BUCKET=clouddrive-verify-test
+.venv/bin/python -m pytest --integration -q --junitxml=test-results/python.xml
+
+# Build and verify the actual packaged API and real Celery worker/scheduler.
+docker compose -f compose.verify.yaml build api
+docker compose -f compose.verify.yaml up -d --wait api worker beat
+export CLOUDDRIVE_TEST_PYTHON="$PWD/.venv/bin/python"
+PLAYWRIGHT_EXTERNAL_SERVER=1 PLAYWRIGHT_BASE_URL=http://localhost:18090 npm run test:browser
+# Add PLAYWRIGHT_CHANNEL=chrome if using installed Chrome instead of Chromium.
+
+docker compose -f compose.verify.yaml down
+```
+
+The `expire-test-upload.py` browser helper rejects database/bucket names without `_test`/`-test` suffixes and only aborts the specified UPLOADING test session. Integration cleanup and populated migration schemas are also confined to the isolated test database. These suffix checks supplement isolated configuration; they do not make an arbitrary shared test database safe to truncate.
+
+Ordinary host browser tests remain available with `compose.test.yaml` and `npm run test:browser`. Playwright clears only `test-results/browser`; API/worker logs and Python reports remain alongside that subdirectory. CI saves separate host and packaged HTML reports and logs, and runs all browser workflows in both modes.
+
+## Baseline verification
+
 The initial implementation was verified locally on macOS ARM with Python 3.12, Node.js 26, Google Chrome, and Docker. CI uses Python 3.12, Node.js 24, and Chromium on Ubuntu.
 
 | Check                                                     | Result    |

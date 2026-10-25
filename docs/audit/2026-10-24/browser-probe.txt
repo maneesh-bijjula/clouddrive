@@ -1,0 +1,1 @@
+CONFIRMED: interrupt -> delete in UI -> reselect identical file reuses deleted request ID and returns 409.

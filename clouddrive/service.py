@@ -1,5 +1,6 @@
 import hashlib
 import secrets
+from contextlib import contextmanager
 from urllib.parse import quote
 from uuid import uuid4
 
@@ -60,9 +61,45 @@ def get_file(conn, workspace_id, id, lock=False):
         .mappings()
         .first()
     )
-    if not row or row["status"] == "DELETED":
+    if not row or row["status"] in {"DELETING", "DELETED"}:
         raise HTTPException(404, "File not found")
     return row
+
+
+@contextmanager
+def upload_transaction(workspace_id, id):
+    """Commit permanent storage expiry before returning an error to the client.
+
+    Keep the file lock until expiry is committed: a concurrent completion or
+    deletion must not race an expiry update from a stale snapshot. Only an
+    explicit NoSuchUpload is terminal; outages and access errors remain retryable.
+    """
+    expired = False
+    with engine().begin() as conn:
+        file = get_file(conn, workspace_id, id, True)
+        try:
+            yield conn, file
+        except ClientError as exc:
+            if exc.response["Error"]["Code"] != "NoSuchUpload" or file["status"] not in {
+                "UPLOADING",
+                "FINALIZING",
+            }:
+                raise
+            query(
+                conn,
+                "UPDATE files SET status='EXPIRED',error=:error,updated_at=now() WHERE id=:id",
+                id=id,
+                error="Upload expired in storage. Select the original file to restart the upload.",
+            )
+            expired = True
+    if expired:
+        raise HTTPException(
+            409,
+            {
+                "code": "upload_expired",
+                "message": "Upload expired in storage. Select the original file to restart the upload.",
+            },
+        )
 
 
 def describe(conn, file):
@@ -136,8 +173,14 @@ def initiate(workspace_id, data):
             )
         ):
             raise HTTPException(409, "This request ID belongs to a different file")
-        if file["status"] == "DELETED":
-            raise HTTPException(409, "This upload was deleted; use a new request ID")
+        if file["status"] in {"DELETING", "DELETED"}:
+            raise HTTPException(
+                409,
+                {
+                    "code": "upload_deleted",
+                    "message": "This upload was deleted; use a new request ID",
+                },
+            )
         if not file["upload_id"]:
             response = s3().create_multipart_upload(
                 Bucket=settings().s3_bucket,
@@ -156,8 +199,7 @@ def initiate(workspace_id, data):
 
 
 def sign_part(workspace_id, id, number, checksum):
-    with engine().begin() as conn:
-        file = get_file(conn, workspace_id, id, True)
+    with upload_transaction(workspace_id, id) as (conn, file):
         if file["status"] != "UPLOADING":
             raise HTTPException(409, "Upload is no longer accepting parts")
         try:
@@ -176,6 +218,8 @@ def sign_part(workspace_id, id, number, checksum):
         )
         if stored and stored["checksum"] != checksum:
             raise HTTPException(409, "Part contents differ from the original upload")
+        # Also check new parts: signing a URL alone cannot detect expired storage.
+        remote = remote_part(file, number)
         if not stored:
             query(
                 conn,
@@ -186,7 +230,6 @@ def sign_part(workspace_id, id, number, checksum):
             )
         else:
             # A client can lose the acknowledgement after S3 accepts a PUT.
-            remote = remote_part(file, number)
             if remote and remote["Size"] == size and remote.get("ChecksumSHA256") == checksum:
                 query(
                     conn,
@@ -217,8 +260,7 @@ def sign_part(workspace_id, id, number, checksum):
 
 
 def acknowledge(workspace_id, id, number, receipt):
-    with engine().begin() as conn:
-        file = get_file(conn, workspace_id, id, True)
+    with upload_transaction(workspace_id, id) as (conn, file):
         if file["status"] != "UPLOADING":
             raise HTTPException(409, "Upload is no longer accepting parts")
         stored = (
@@ -256,7 +298,7 @@ def finalize(workspace_id, id):
     # recover a completed S3 upload even if the following DB transaction fails.
     with engine().begin() as conn:
         file = get_file(conn, workspace_id, id, True)
-        if file["status"] in {"PROCESSING", "READY", "FAILED"}:
+        if file["status"] in {"PROCESSING", "READY", "FAILED", "EXPIRED"}:
             return describe(conn, file)
         if file["status"] == "UPLOADING":
             count = query(
@@ -267,8 +309,7 @@ def finalize(workspace_id, id):
             if count != part_count(file["size"], file["part_size"]):
                 raise HTTPException(409, "Every part must be uploaded and acknowledged first")
             query(conn, "UPDATE files SET status='FINALIZING',updated_at=now() WHERE id=:id", id=id)
-    with engine().begin() as conn:
-        file = get_file(conn, workspace_id, id, True)
+    with upload_transaction(workspace_id, id) as (conn, file):
         if file["status"] != "FINALIZING":
             return describe(conn, file)
         existing = head(file["object_key"])
@@ -310,6 +351,8 @@ def finalize(workspace_id, id):
 
 
 def delete_file(workspace_id, id):
+    # Commit intent and revoke worker claims BEFORE crossing the storage boundary.
+    # A crash after any storage effect leaves recoverable DELETING metadata.
     with engine().begin() as conn:
         # Repeating DELETE is safe, including a lost response from an earlier call.
         file = (
@@ -326,6 +369,30 @@ def delete_file(workspace_id, id):
             raise HTTPException(404, "File not found")
         if file["status"] == "DELETED":
             return
+        if file["status"] != "DELETING":
+            query(
+                conn,
+                "UPDATE files SET status='DELETING',claim=NULL,lease_until=NULL,error=NULL,updated_at=now() WHERE id=:id",
+                id=id,
+            )
+        query(conn, "DELETE FROM processing_outbox WHERE file_id=:id", id=id)
+    finish_delete(workspace_id, id)
+
+
+def finish_delete(workspace_id, id):
+    with engine().begin() as conn:
+        file = (
+            query(
+                conn,
+                "SELECT * FROM files WHERE id=:id AND workspace_id=:workspace FOR UPDATE",
+                id=id,
+                workspace=workspace_id,
+            )
+            .mappings()
+            .first()
+        )
+        if not file or file["status"] != "DELETING":
+            return
         if file["upload_id"]:
             try:
                 s3().abort_multipart_upload(
@@ -334,7 +401,11 @@ def delete_file(workspace_id, id):
             except ClientError as exc:
                 if not missing(exc):
                     raise
-        s3().delete_object(Bucket=settings().s3_bucket, Key=file["object_key"])
+        try:
+            s3().delete_object(Bucket=settings().s3_bucket, Key=file["object_key"])
+        except ClientError as exc:
+            if not missing(exc):
+                raise
         query(
             conn,
             "UPDATE files SET status='DELETED',claim=NULL,lease_until=NULL,updated_at=now() WHERE id=:id",

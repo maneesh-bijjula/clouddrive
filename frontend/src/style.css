@@ -642,7 +642,8 @@ tbody tr:hover {
   color: #7b9adf;
   background: #f0f4fe;
 }
-.badge.failed {
+.badge.failed,
+.badge.expired {
   color: #d77b7b;
   background: #fdf0f0;
 }

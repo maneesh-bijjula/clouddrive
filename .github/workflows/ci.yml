@@ -33,14 +33,28 @@ jobs:
         run: python -m pytest --integration --junitxml=test-results/python.xml -q
       - run: npx playwright install --with-deps chromium
       - name: Browser tests with actual Celery worker and scheduler
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/host
         run: npm run test:browser
-      - name: Build application image
-        run: docker build -t clouddrive:ci .
+      - name: Build and start packaged application in a separate test project
+        run: |
+          docker compose -f compose.verify.yaml build api
+          docker compose -f compose.verify.yaml up -d --wait
+      - name: Browser regressions against the packaged API and workers
+        env:
+          PLAYWRIGHT_EXTERNAL_SERVER: "1"
+          PLAYWRIGHT_BASE_URL: http://localhost:18090
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/packaged
+          CLOUDDRIVE_DATABASE_URL: postgresql+psycopg://clouddrive:clouddrive@localhost:15436/clouddrive_verify_test
+          CLOUDDRIVE_S3_ENDPOINT: http://localhost:19010
+          CLOUDDRIVE_S3_BUCKET: clouddrive-verify-test
+        run: npm run test:browser -- --output=test-results/packaged
       - name: Infrastructure logs
         if: always()
         run: |
           mkdir -p test-results
           docker compose -f compose.test.yaml logs --no-color > test-results/infrastructure.log
+          docker compose -f compose.verify.yaml logs --no-color > test-results/packaged-infrastructure.log
       - uses: actions/upload-artifact@v7.0.2
         if: always()
         with:
@@ -51,4 +65,6 @@ jobs:
           retention-days: 7
       - name: Stop test services
         if: always()
-        run: docker compose -f compose.test.yaml down
+        run: |
+          docker compose -f compose.verify.yaml down
+          docker compose -f compose.test.yaml down

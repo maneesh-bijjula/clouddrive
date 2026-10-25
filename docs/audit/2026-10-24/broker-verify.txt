@@ -1,0 +1,1 @@
+PASS: worker recovered after broker restart; downloaded bytes and SHA-256 match; test file deleted.

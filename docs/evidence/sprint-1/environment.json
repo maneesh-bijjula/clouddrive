@@ -1,0 +1,18 @@
+{
+  "baseline_commit": "6f439d97b62d25b16ef22d9ab91208955bc97983",
+  "revision": "Sprint 1 implementation before direct main commit; GitHub CI binds the pushed SHA",
+  "local_date": "2026-10-24 America/Los_Angeles",
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "python": "3.12.14",
+  "node": "26.3.0",
+  "docker_engine": "29.5.3",
+  "provider": "local MinIO S3-compatible",
+  "compose_project": "clouddrive-sprint1-verify",
+  "database": "clouddrive_verify_test",
+  "bucket": "clouddrive-verify-test",
+  "unit_cases": 27,
+  "python_cases": 75,
+  "packaged_browser_cases": 11,
+  "browser": "Chrome",
+  "benchmark_claims": []
+}

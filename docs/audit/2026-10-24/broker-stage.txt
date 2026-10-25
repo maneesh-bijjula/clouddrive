@@ -1,0 +1,1 @@
+PASS: 18900011 bytes uploaded while broker is unavailable; download remains blocked.

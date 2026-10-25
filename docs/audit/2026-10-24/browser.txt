@@ -1,0 +1,12 @@
+
+Running 5 tests using 1 worker
+
+(node:83908) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests-browser/workspace.spec.ts:27:1 › uploads, verifies through Celery, previews safely, and downloads identical bytes (12.9s)
+  ✓  2 tests-browser/workspace.spec.ts:51:1 › resumes a multipart upload after reload without resending its confirmed part (14.8s)
+  ✓  3 tests-browser/workspace.spec.ts:121:1 › exports workspace access, reopens it in a fresh browser, searches, and deletes (10.3s)
+  ✓  4 tests-browser/workspace.spec.ts:154:1 › mobile workspace fits the screen and supports upload and file details (7.8s)
+  ✓  5 tests-browser/workspace.spec.ts:182:1 › validates empty uploads and renders a real populated workspace (18.2s)
+
+  5 passed (1.2m)

@@ -1,0 +1,7 @@
+Observed during audit on 2026-10-24 America/Los_Angeles.
+Existing clouddrive-api-1: restarting; health unhealthy; startup exits code 3.
+Startup error: psycopg.OperationalError: failed to resolve host postgres: Name or service not known.
+Existing CloudDrive API, worker, and beat containers were present. PostgreSQL, Redis, and MinIO for that original Compose project were not in the running-container inventory.
+No original CloudDrive container or any other project container was changed.
+New audit project used ports 18090, 15436, 16383, 19010 and disposable test data.
+Packaged API health returned {"status":"ok"}; five packaged browser workflows passed.

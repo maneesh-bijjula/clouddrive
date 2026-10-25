@@ -93,7 +93,8 @@ interface StoredFile {
   name: string;
   size: number;
   media_type: string;
-  status: "UPLOADING" | "FINALIZING" | "PROCESSING" | "READY" | "FAILED";
+  status:
+    "UPLOADING" | "FINALIZING" | "PROCESSING" | "READY" | "FAILED" | "EXPIRED";
   expected_sha256: string;
   sha256: string | null;
   created_at: string;
@@ -112,6 +113,8 @@ interface Transfer {
   state: string;
   progress: number;
   controllers: Set<XMLHttpRequest>;
+  workspace: string;
+  fingerprint?: string;
 }
 const transfers = new Map<string, Transfer>();
 let token = localStorage.getItem("clouddrive.access") || "";
@@ -119,12 +122,43 @@ let files: StoredFile[] = [];
 let stats = { total: 0, ready: 0, bytes: 0, pending: 0 };
 let connected = false;
 let workspaceLabel = "";
+let workspaceId = "";
 let pollTimer: ReturnType<typeof setInterval> | undefined;
 let view = "all";
 let limit = 256 * 1024 * 1024;
 let resumeTarget: string | undefined;
-let refreshInFlight = false;
+let refreshInFlight: string | undefined;
 let selectedDetail: string | undefined;
+
+class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly code?: string,
+    readonly status?: number,
+  ) {
+    super(message);
+  }
+}
+
+function requestFingerprint(
+  file: {
+    sha256?: string | null;
+    expected_sha256?: string | null;
+    size: number;
+    name: string;
+  },
+  workspace = workspaceId,
+) {
+  return `clouddrive.request.${workspace}.${file.expected_sha256 || file.sha256}.${file.size}.${file.name}`;
+}
+
+function forgetRequest(file: StoredFile, workspace: string) {
+  localStorage.removeItem(requestFingerprint(file, workspace));
+  // Retire fingerprints from the original unscoped browser implementation too.
+  localStorage.removeItem(
+    `clouddrive.request.${file.expected_sha256}.${file.size}.${file.name}`,
+  );
+}
 
 async function api<T = any>(
   path: string,
@@ -142,10 +176,12 @@ async function api<T = any>(
   });
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new Error(
+    throw new ApiError(
       typeof error.detail === "string"
         ? error.detail
-        : `Request failed (${response.status})`,
+        : error.detail?.message || `Request failed (${response.status})`,
+      error.detail?.code,
+      response.status,
     );
   }
   return response.status === 204 ? (undefined as T) : response.json();
@@ -213,8 +249,9 @@ function render() {
         FINALIZING: "Finalizing",
         PROCESSING: "Verifying",
         FAILED: "Needs attention",
+        EXPIRED: "Upload expired",
       }[file.status];
-      return `<tr><td><div class="file-name"><span class="file-type ${type}">${icon(typeIcon)}</span><button data-action="detail" data-id="${file.id}" title="${esc(file.name)}"><strong>${esc(file.name)}</strong><small>${typeName}</small></button></div></td><td>${bytes(file.size)}</td><td>${date(file.created_at)}</td><td><span class="badge ${file.status.toLowerCase()}">${status}</span></td><td><div class="row-actions">${file.status === "READY" ? action(file.id, "download", `Download ${file.name}`, "download") : file.status === "UPLOADING" ? action(file.id, "resume", `Resume ${file.name}`, "play") : file.status === "FAILED" ? action(file.id, "retry", `Retry ${file.name}`, "rotate-ccw") : action(file.id, "detail", `Details for ${file.name}`, "info")}${action(file.id, "delete", `Delete ${file.name}`, "trash-2")}</div></td></tr>`;
+      return `<tr><td><div class="file-name"><span class="file-type ${type}">${icon(typeIcon)}</span><button data-action="detail" data-id="${file.id}" title="${esc(file.name)}"><strong>${esc(file.name)}</strong><small>${typeName}</small></button></div></td><td>${bytes(file.size)}</td><td>${date(file.created_at)}</td><td><span class="badge ${file.status.toLowerCase()}">${status}</span></td><td><div class="row-actions">${file.status === "READY" ? action(file.id, "download", `Download ${file.name}`, "download") : file.status === "UPLOADING" ? action(file.id, "resume", `Resume ${file.name}`, "play") : file.status === "EXPIRED" ? action(file.id, "restart", `Restart ${file.name}`, "rotate-ccw") : file.status === "FAILED" ? action(file.id, "retry", `Retry ${file.name}`, "rotate-ccw") : action(file.id, "detail", `Details for ${file.name}`, "info")}${action(file.id, "delete", `Delete ${file.name}`, "trash-2")}</div></td></tr>`;
     })
     .join("");
   $("#empty").hidden = selected.length > 0;
@@ -246,21 +283,24 @@ function renderTransfers() {
 }
 
 async function refresh() {
-  if (refreshInFlight || !token) return;
-  refreshInFlight = true;
+  const accessKey = token;
+  if (refreshInFlight === accessKey || !accessKey) return;
+  refreshInFlight = accessKey;
   try {
-    const result = await api("/files");
+    const result = await api("/files", "GET", undefined, accessKey);
+    if (token !== accessKey) return;
     files = result.files;
     stats = result.stats;
     $("#workspace-id").textContent = workspaceLabel;
     render();
   } finally {
-    refreshInFlight = false;
+    if (refreshInFlight === accessKey) refreshInFlight = undefined;
   }
 }
 
 function assertActive(transfer: Transfer) {
-  if (transfer.paused) throw new DOMException("Paused", "AbortError");
+  if (transfer.paused || transfer.workspace !== workspaceId)
+    throw new DOMException("Paused", "AbortError");
 }
 function hex(value: Uint8Array) {
   return [...value].map((byte) => byte.toString(16).padStart(2, "0")).join("");
@@ -349,7 +389,12 @@ async function upload(file: File, target?: string) {
     );
     return;
   }
+  const accessKey = token;
+  const uploadWorkspace = workspaceId;
+  const uploadApi = (path: string, method = "GET", body?: unknown) =>
+    api(path, method, body, accessKey);
   const transfer: Transfer = {
+    workspace: uploadWorkspace,
     key: crypto.randomUUID(),
     name: file.name,
     paused: false,
@@ -365,7 +410,7 @@ async function upload(file: File, target?: string) {
       ? files.find((item) => item.id === target)
       : files.find(
           (item) =>
-            item.status === "UPLOADING" &&
+            (item.status === "UPLOADING" || item.status === "EXPIRED") &&
             item.name === file.name &&
             item.size === file.size &&
             item.expected_sha256 === checksum,
@@ -379,18 +424,60 @@ async function upload(file: File, target?: string) {
       throw new Error(
         "This is a different file. To resume, select the original file with matching contents.",
       );
-    const fingerprint = `clouddrive.request.${checksum}.${file.size}.${file.name}`;
-    const requestId = localStorage.getItem(fingerprint) || crypto.randomUUID();
+    const fingerprint = requestFingerprint(
+      { sha256: checksum, size: file.size, name: file.name },
+      uploadWorkspace,
+    );
+    transfer.fingerprint = fingerprint;
+    if (
+      [...transfers.values()].some(
+        (other) =>
+          other.key !== transfer.key &&
+          other.workspace === uploadWorkspace &&
+          other.fingerprint === fingerprint &&
+          !other.paused,
+      )
+    )
+      throw new Error("This file already has an active upload.");
+    assertActive(transfer);
+    let requestId = localStorage.getItem(fingerprint) || crypto.randomUUID();
     localStorage.setItem(fingerprint, requestId);
-    let session: StoredFile = existing
-      ? await api(`/uploads/${existing.id}`)
-      : await api("/uploads", "POST", {
-          request_id: requestId,
-          name: file.name,
-          size: file.size,
-          media_type: file.type || "application/octet-stream",
-          sha256: checksum,
-        });
+    const initiate = () =>
+      uploadApi("/uploads", "POST", {
+        request_id: requestId,
+        name: file.name,
+        size: file.size,
+        media_type: file.type || "application/octet-stream",
+        sha256: checksum,
+      });
+    let session: StoredFile;
+    try {
+      session = existing
+        ? await uploadApi(`/uploads/${existing.id}`)
+        : await initiate();
+    } catch (error) {
+      if (
+        !(error instanceof ApiError) ||
+        !(error.code === "upload_deleted" || (existing && error.status === 404))
+      )
+        throw error;
+      assertActive(transfer);
+      requestId = crypto.randomUUID();
+      localStorage.setItem(fingerprint, requestId);
+      session = await initiate();
+    }
+    assertActive(transfer);
+    if (session.status === "EXPIRED") {
+      // The user reselected content whose full hash matches the expired session.
+      // Expired bytes cannot be resumed; delete the old session and start afresh.
+      await uploadApi(`/files/${session.id}`, "DELETE");
+      assertActive(transfer);
+      forgetRequest(session, uploadWorkspace);
+      requestId = crypto.randomUUID();
+      localStorage.setItem(fingerprint, requestId);
+      session = await initiate();
+      assertActive(transfer);
+    }
     transfer.id = session.id;
     if (
       [...transfers.values()].some(
@@ -445,7 +532,7 @@ async function upload(file: File, target?: string) {
             sha256(new Uint8Array(await chunk.arrayBuffer())),
           );
           assertActive(transfer);
-          const signed = await api(
+          const signed = await uploadApi(
             `/uploads/${session.id}/parts/${number}/sign`,
             "POST",
             { checksum: partChecksum },
@@ -462,7 +549,7 @@ async function upload(file: File, target?: string) {
               },
             );
             assertActive(transfer);
-            await api(`/uploads/${session.id}/parts/${number}`, "PUT", {
+            await uploadApi(`/uploads/${session.id}/parts/${number}`, "PUT", {
               checksum: partChecksum,
               etag,
             });
@@ -480,7 +567,12 @@ async function upload(file: File, target?: string) {
     assertActive(transfer);
     transfer.state = "Finishing upload…";
     renderTransfers();
-    session = await api(`/uploads/${session.id}/complete`, "POST");
+    session = await uploadApi(`/uploads/${session.id}/complete`, "POST");
+    assertActive(transfer);
+    if (session.status === "EXPIRED")
+      throw new Error(
+        "Upload expired in storage. Select the original file to restart the upload.",
+      );
     localStorage.removeItem(fingerprint);
     transfers.delete(transfer.key);
     notice(
@@ -514,7 +606,7 @@ function openDetail(file: StoredFile) {
   selectedDetail = file.id;
   const [type, typeIcon] = fileType(file.name);
   $("#detail-content").innerHTML =
-    `<div class="dialog-heading"><span class="file-type ${type}">${icon(typeIcon)}</span><button class="icon-button" data-close aria-label="Close file details">${icon("x")}</button></div><h2>${esc(file.name)}</h2><div class="detail-meta"><div><span>FILE SIZE</span><strong>${bytes(file.size)}</strong></div><div><span>STATUS</span><strong>${{ READY: "Verified & ready", UPLOADING: "Waiting for upload", FINALIZING: "Finalizing upload", PROCESSING: "Verifying integrity", FAILED: "Verification failed" }[file.status]}</strong></div><div><span>ADDED</span><strong>${date(file.created_at)}</strong></div><div><span>UPLOAD PARTS</span><strong>${file.parts.filter((part) => part.etag).length} of ${file.part_count} confirmed</strong></div></div>${file.error ? `<p class="danger">${esc(file.error)}</p>` : ""}<div class="eyebrow">${file.status === "READY" ? "VERIFIED SHA-256" : file.sha256 ? "COMPUTED SHA-256" : "EXPECTED SHA-256"}</div><p class="hash">${esc(file.sha256 || file.expected_sha256)}</p>${file.status === "READY" && file.result?.preview !== null && file.result?.preview !== undefined ? `<div class="eyebrow">TEXT PREVIEW${file.result.preview_truncated ? " · FIRST 2,000 CHARACTERS" : ""}</div><pre class="preview">${esc(file.result.preview)}</pre>` : file.status === "UPLOADING" ? "<p>Choose Resume and select the same file. Confirmed parts will be kept.</p>" : ""}<div class="detail-actions">${file.status === "READY" ? `<button class="primary" data-action="download" data-id="${file.id}">${icon("download")}Download file</button>` : file.status === "UPLOADING" ? `<button class="primary" data-action="resume" data-id="${file.id}">${icon("play")}Resume upload</button>` : file.status === "FINALIZING" ? `<button class="primary" data-action="complete" data-id="${file.id}">Retry finalization</button>` : file.status === "FAILED" ? `<button class="primary" data-action="retry" data-id="${file.id}">Retry verification</button>` : ""}<button class="secondary danger" data-action="delete" data-id="${file.id}">${icon("trash-2")}Delete</button></div>`;
+    `<div class="dialog-heading"><span class="file-type ${type}">${icon(typeIcon)}</span><button class="icon-button" data-close aria-label="Close file details">${icon("x")}</button></div><h2>${esc(file.name)}</h2><div class="detail-meta"><div><span>FILE SIZE</span><strong>${bytes(file.size)}</strong></div><div><span>STATUS</span><strong>${{ READY: "Verified & ready", UPLOADING: "Waiting for upload", FINALIZING: "Finalizing upload", PROCESSING: "Verifying integrity", FAILED: "Verification failed", EXPIRED: "Upload expired" }[file.status]}</strong></div><div><span>ADDED</span><strong>${date(file.created_at)}</strong></div><div><span>UPLOAD PARTS</span><strong>${file.parts.filter((part) => part.etag).length} of ${file.part_count} confirmed</strong></div></div>${file.error ? `<p class="danger">${esc(file.error)}</p>` : ""}<div class="eyebrow">${file.status === "READY" ? "VERIFIED SHA-256" : file.sha256 ? "COMPUTED SHA-256" : "EXPECTED SHA-256"}</div><p class="hash">${esc(file.sha256 || file.expected_sha256)}</p>${file.status === "READY" && file.result?.preview !== null && file.result?.preview !== undefined ? `<div class="eyebrow">TEXT PREVIEW${file.result.preview_truncated ? " · FIRST 2,000 CHARACTERS" : ""}</div><pre class="preview">${esc(file.result.preview)}</pre>` : file.status === "UPLOADING" ? "<p>Choose Resume and select the same file. Confirmed parts will be kept.</p>" : ""}<div class="detail-actions">${file.status === "READY" ? `<button class="primary" data-action="download" data-id="${file.id}">${icon("download")}Download file</button>` : file.status === "UPLOADING" ? `<button class="primary" data-action="resume" data-id="${file.id}">${icon("play")}Resume upload</button>` : file.status === "FINALIZING" ? `<button class="primary" data-action="complete" data-id="${file.id}">Retry finalization</button>` : file.status === "EXPIRED" ? `<button class="primary" data-action="restart" data-id="${file.id}">Restart upload</button>` : file.status === "FAILED" ? `<button class="primary" data-action="retry" data-id="${file.id}">Retry verification</button>` : ""}<button class="secondary danger" data-action="delete" data-id="${file.id}">${icon("trash-2")}Delete</button></div>`;
   drawIcons();
   if (!$<HTMLDialogElement>("#detail-dialog").open)
     $<HTMLDialogElement>("#detail-dialog").showModal();
@@ -533,7 +625,11 @@ $("#file-input").addEventListener("change", async (event) => {
   const target = resumeTarget;
   resumeTarget = undefined;
   input.value = "";
-  for (const file of chosen) await upload(file, target);
+  const batchWorkspace = workspaceId;
+  for (const file of chosen) {
+    if (workspaceId !== batchWorkspace) break;
+    await upload(file, target);
+  }
 });
 $("#search").addEventListener("input", render);
 $("#sort").addEventListener("change", render);
@@ -583,15 +679,20 @@ document.addEventListener("click", async (event) => {
   const file = files.find((file) => file.id === button.dataset.id);
   if (!file) return;
   const action = button.dataset.action;
+  const actionKey = token;
+  const actionWorkspace = workspaceId;
+  const fileApi = (path: string, method = "GET") =>
+    api(path, method, undefined, actionKey);
   try {
     if (action === "detail") return openDetail(file);
-    if (action === "resume") {
+    if (action === "resume" || action === "restart") {
       $<HTMLDialogElement>("#detail-dialog").close();
       chooseFiles(file.id);
       return;
     }
     if (action === "download") {
-      const result = await api(`/files/${file.id}/download`);
+      const result = await fileApi(`/files/${file.id}/download`);
+      if (token !== actionKey) return;
       const anchor = document.createElement("a");
       anchor.href = result.url;
       anchor.rel = "noreferrer";
@@ -612,13 +713,16 @@ document.addEventListener("click", async (event) => {
           transfer.paused = true;
           transfer.controllers.forEach((controller) => controller.abort());
         }
-      await api(`/files/${file.id}`, "DELETE");
+      await fileApi(`/files/${file.id}`, "DELETE");
+      forgetRequest(file, actionWorkspace);
+      if (token !== actionKey) return;
       $<HTMLDialogElement>("#detail-dialog").close();
       notice(`${file.name} deleted.`, true);
     }
-    if (action === "retry") await api(`/files/${file.id}/retry`, "POST");
+    if (action === "retry") await fileApi(`/files/${file.id}/retry`, "POST");
     if (action === "complete")
-      await api(`/uploads/${file.id}/complete`, "POST");
+      await fileApi(`/uploads/${file.id}/complete`, "POST");
+    if (token !== actionKey) return;
     await refresh();
     if (
       $<HTMLDialogElement>("#detail-dialog").open &&
@@ -626,6 +730,8 @@ document.addEventListener("click", async (event) => {
     )
       openDetail(files.find((item) => item.id === file.id)!);
   } catch (error) {
+    if (token !== actionKey) return;
+    await refresh().catch(() => {});
     notice((error as Error).message);
   }
 });
@@ -640,8 +746,11 @@ drop.addEventListener("dragleave", () => drop.classList.remove("dragging"));
 drop.addEventListener("drop", async (event) => {
   event.preventDefault();
   drop.classList.remove("dragging");
-  for (const file of [...((event as DragEvent).dataTransfer?.files || [])])
+  const batchWorkspace = workspaceId;
+  for (const file of [...((event as DragEvent).dataTransfer?.files || [])]) {
+    if (workspaceId !== batchWorkspace) break;
     await upload(file);
+  }
 });
 for (const selector of ["#workspace-settings", "#workspace-settings-mobile"])
   $(selector).addEventListener("click", () =>
@@ -692,8 +801,14 @@ $("#key-input").addEventListener("change", async (event) => {
       undefined,
       data.access_key,
     );
+    transfers.clear();
+    files = [];
+    resumeTarget = undefined;
+    selectedDetail = undefined;
+    $<HTMLDialogElement>("#detail-dialog").close();
     token = data.access_key;
     localStorage.setItem("clouddrive.access", token);
+    workspaceId = workspace.id;
     workspaceLabel = `Workspace ${workspace.id.slice(0, 8)}`;
     $("#workspace-id").textContent = workspaceLabel;
     limit = workspace.max_file_bytes;
@@ -730,6 +845,7 @@ async function initialize() {
     }
     const workspace = await api("/workspace");
     limit = workspace.max_file_bytes;
+    workspaceId = workspace.id;
     workspaceLabel = `Workspace ${workspace.id.slice(0, 8)}`;
     $("#workspace-id").textContent = workspaceLabel;
     $("#upload-limit").textContent =
