@@ -327,3 +327,45 @@ def test_workspace_totals_include_files_outside_browsing_limit(client, auth):
     response = client.get("/api/files", headers=auth).json()
     assert len(response["files"]) == 200
     assert response["stats"] == {"total": 205, "ready": 2, "bytes": 200, "pending": 203}
+
+
+def test_target_size_metadata_and_rejection_before_storage_allocation(client, auth, monkeypatch):
+    upload, data = begin(client, auth, size=5_000_000_000)
+    assert upload["part_count"] == 597
+    with engine().connect() as conn:
+        assert (
+            query(conn, "SELECT size FROM files WHERE id=:id", id=UUID(upload["id"])).scalar_one()
+            == 5_000_000_000
+        )
+
+    def forbidden(**kwargs):
+        pytest.fail("over-limit request reached object storage")
+
+    monkeypatch.setattr(s3(), "create_multipart_upload", forbidden)
+    result = client.post(
+        "/api/uploads",
+        headers=auth,
+        json={**data, "request_id": str(uuid4()), "size": 5_000_000_001},
+    )
+    assert result.status_code == 413
+    with engine().connect() as conn:
+        assert query(conn, "SELECT count(*) FROM files").scalar_one() == 1
+    assert client.get("/api/workspace", headers=auth).json()["max_file_bytes"] == 5_000_000_000
+
+
+def test_sparse_parts_can_finish_in_reverse_order(client, auth):
+    content = b"a" * (8 * 1024**2) + b"b" * (8 * 1024**2) + b"last sparse bytes"
+    upload, _ = begin(client, auth, content)
+    for number in [3, 2, 1]:
+        send_part(
+            client,
+            auth,
+            upload,
+            number,
+            content[(number - 1) * upload["part_size"] : number * upload["part_size"]],
+        )
+    response = client.post(f"/api/uploads/{upload['id']}/complete", headers=auth)
+    assert response.status_code == 202
+    assert process_file(UUID(upload["id"])) == "ready"
+    url = client.get(f"/api/files/{upload['id']}/download", headers=auth).json()["url"]
+    assert httpx.get(url).content == content

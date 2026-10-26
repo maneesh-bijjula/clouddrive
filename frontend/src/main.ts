@@ -76,10 +76,10 @@ const esc = (value: string) =>
 const icon = (name: string) => `<i data-lucide="${name}"></i>`;
 const bytes = (value: number) => {
   const unit =
-    value < 1024
+    value < 1000
       ? 0
-      : Math.min(3, Math.floor(Math.log(value) / Math.log(1024)));
-  return `${Number((value / 1024 ** unit).toFixed(unit ? 1 : 0))} ${["B", "KB", "MB", "GB"][unit]}`;
+      : Math.min(3, Math.floor(Math.log(value) / Math.log(1000)));
+  return `${Number((value / 1000 ** unit).toFixed(unit ? 1 : 0))} ${["B", "kB", "MB", "GB"][unit]}`;
 };
 const date = (value: string) =>
   new Intl.DateTimeFormat("en", {
@@ -112,7 +112,8 @@ interface Transfer {
   paused: boolean;
   state: string;
   progress: number;
-  controllers: Set<XMLHttpRequest>;
+  controllers: Set<XMLHttpRequest | AbortController>;
+  cancelHash?: () => void;
   workspace: string;
   fingerprint?: string;
 }
@@ -125,7 +126,7 @@ let workspaceLabel = "";
 let workspaceId = "";
 let pollTimer: ReturnType<typeof setInterval> | undefined;
 let view = "all";
-let limit = 256 * 1024 * 1024;
+let limit = 0;
 let resumeTarget: string | undefined;
 let refreshInFlight: string | undefined;
 let selectedDetail: string | undefined;
@@ -165,8 +166,10 @@ async function api<T = any>(
   method = "GET",
   body?: unknown,
   accessKey = token,
+  signal?: AbortSignal,
 ): Promise<T> {
   const response = await fetch(`/api${path}`, {
+    signal,
     method,
     headers: {
       ...(accessKey ? { Authorization: `Bearer ${accessKey}` } : {}),
@@ -302,28 +305,79 @@ function assertActive(transfer: Transfer) {
   if (transfer.paused || transfer.workspace !== workspaceId)
     throw new DOMException("Paused", "AbortError");
 }
-function hex(value: Uint8Array) {
-  return [...value].map((byte) => byte.toString(16).padStart(2, "0")).join("");
-}
+
 function base64(value: Uint8Array) {
   return btoa(String.fromCharCode(...value));
 }
 
-async function hashFile(file: File, transfer: Transfer) {
-  const hash = sha256.create();
-  for (let offset = 0; offset < file.size; offset += 8 * 1024 * 1024) {
-    assertActive(transfer);
-    hash.update(
-      new Uint8Array(
-        await file.slice(offset, offset + 8 * 1024 * 1024).arrayBuffer(),
-      ),
+function hashFile(file: File, transfer: Transfer): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(new URL("./hash-worker.ts", import.meta.url), {
+      type: "module",
+    });
+    const finish = (hash?: string, error?: Error) => {
+      worker.terminate();
+      transfer.cancelHash = undefined;
+      if (error) reject(error);
+      else resolve(hash!);
+    };
+    transfer.cancelHash = () =>
+      finish(undefined, new DOMException("Paused", "AbortError"));
+    worker.onmessage = ({ data }) => {
+      if (data.error) return finish(undefined, new Error(data.error));
+      if (data.hash) return finish(data.hash);
+      transfer.state = `Checking file · ${Math.round(data.progress * 100)}%`;
+      renderTransfers();
+    };
+    worker.onerror = () =>
+      finish(
+        undefined,
+        new Error("File hashing failed. Select the file again to retry."),
+      );
+    try {
+      assertActive(transfer);
+      worker.postMessage({ file });
+    } catch (error) {
+      finish(undefined, error as Error);
+    }
+  });
+}
+
+class RetryableTransferError extends Error {}
+
+function retryable(error: unknown) {
+  return (
+    error instanceof RetryableTransferError ||
+    error instanceof TypeError ||
+    (error instanceof ApiError &&
+      (error.status === 408 ||
+        error.status === 429 ||
+        (error.status || 0) >= 500))
+  );
+}
+
+function retryDelay(attempt: number, transfer: Transfer) {
+  return new Promise<void>((resolve, reject) => {
+    const controller = new AbortController();
+    transfer.controllers.add(controller);
+    const timer = setTimeout(
+      () => {
+        transfer.controllers.delete(controller);
+        resolve();
+      },
+      Math.min(2000, 250 * 2 ** attempt),
     );
-    transfer.state = `Checking file · ${Math.min(100, Math.round(((offset + 8 * 1024 * 1024) / file.size) * 100))}%`;
-    renderTransfers();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-  }
-  assertActive(transfer);
-  return hex(hash.digest());
+    controller.signal.onabort = () => {
+      clearTimeout(timer);
+      transfer.controllers.delete(controller);
+      reject(new DOMException("Paused", "AbortError"));
+    };
+    try {
+      assertActive(transfer);
+    } catch {
+      controller.abort();
+    }
+  });
 }
 
 function putPart(
@@ -344,12 +398,27 @@ function putPart(
     xhr.upload.onprogress = (event) => progress(event.loaded);
     xhr.onload = () => {
       transfer.controllers.delete(xhr);
-      if (xhr.status < 200 || xhr.status >= 300)
+      if (xhr.status < 200 || xhr.status >= 300) {
+        const code = xhr.responseText.match(/<Code>([^<]+)<\/Code>/)?.[1];
+        const expired =
+          xhr.status === 403 &&
+          (code === "RequestExpired" ||
+            code === "ExpiredToken" ||
+            (code === "AccessDenied" &&
+              /request.*expired/i.test(xhr.responseText)));
+        const transient =
+          expired ||
+          xhr.status === 408 ||
+          xhr.status === 429 ||
+          xhr.status >= 500 ||
+          (xhr.status === 404 && code === "NoSuchUpload");
+        const ErrorType = transient ? RetryableTransferError : Error;
         return reject(
-          new Error(
+          new ErrorType(
             `Storage upload failed (${xhr.status}). Select the file again to resume.`,
           ),
         );
+      }
       const etag = xhr.getResponseHeader("ETag");
       if (!etag)
         return reject(
@@ -362,7 +431,7 @@ function putPart(
     xhr.onerror = xhr.ontimeout = () => {
       transfer.controllers.delete(xhr);
       reject(
-        new Error(
+        new RetryableTransferError(
           "Upload connection interrupted. Select the same file to resume.",
         ),
       );
@@ -377,6 +446,10 @@ function putPart(
 }
 
 async function upload(file: File, target?: string) {
+  if (!workspaceId || !limit) {
+    notice("Connect to a workspace before uploading.");
+    return;
+  }
   if (!file.size) {
     notice(
       "Empty files are not supported. Choose a file with at least one byte.",
@@ -391,8 +464,25 @@ async function upload(file: File, target?: string) {
   }
   const accessKey = token;
   const uploadWorkspace = workspaceId;
-  const uploadApi = (path: string, method = "GET", body?: unknown) =>
-    api(path, method, body, accessKey);
+  const uploadApi = async (path: string, method = "GET", body?: unknown) => {
+    assertActive(transfer);
+    const controller = new AbortController();
+    transfer.controllers.add(controller);
+    const timer = setTimeout(() => controller.abort(), 30_000);
+    try {
+      return await api(path, method, body, accessKey, controller.signal);
+    } catch (error) {
+      assertActive(transfer);
+      if (controller.signal.aborted)
+        throw new RetryableTransferError(
+          "Upload request timed out. Select the same file to resume.",
+        );
+      throw error;
+    } finally {
+      clearTimeout(timer);
+      transfer.controllers.delete(controller);
+    }
+  };
   const transfer: Transfer = {
     workspace: uploadWorkspace,
     key: crypto.randomUUID(),
@@ -520,8 +610,10 @@ async function upload(file: File, target?: string) {
         (number) =>
           !session.parts.some((part) => part.number === number && part.etag),
       );
+      let partFailure: unknown;
       const send = async () => {
         while (queue.length) {
+          if (partFailure) throw partFailure;
           assertActive(transfer);
           const number = queue.shift()!;
           const chunk = file.slice(
@@ -532,27 +624,51 @@ async function upload(file: File, target?: string) {
             sha256(new Uint8Array(await chunk.arrayBuffer())),
           );
           assertActive(transfer);
-          const signed = await uploadApi(
-            `/uploads/${session.id}/parts/${number}/sign`,
-            "POST",
-            { checksum: partChecksum },
-          );
-          if (!signed.uploaded) {
-            const etag = await putPart(
-              signed.url,
-              signed.headers,
-              chunk,
-              transfer,
-              (loaded) => {
-                partProgress.set(number, loaded);
-                update();
-              },
-            );
+          for (let attempt = 0; ; attempt++) {
             assertActive(transfer);
-            await uploadApi(`/uploads/${session.id}/parts/${number}`, "PUT", {
-              checksum: partChecksum,
-              etag,
-            });
+            try {
+              const signed = await uploadApi(
+                `/uploads/${session.id}/parts/${number}/sign`,
+                "POST",
+                { checksum: partChecksum },
+              );
+              if (!signed.uploaded) {
+                const etag = await putPart(
+                  signed.url,
+                  signed.headers,
+                  chunk,
+                  transfer,
+                  (loaded) => {
+                    partProgress.set(number, loaded);
+                    update();
+                  },
+                );
+                assertActive(transfer);
+                await uploadApi(
+                  `/uploads/${session.id}/parts/${number}`,
+                  "PUT",
+                  {
+                    checksum: partChecksum,
+                    etag,
+                  },
+                );
+              }
+              break;
+            } catch (error) {
+              if (partFailure) throw partFailure;
+              assertActive(transfer);
+              if (!retryable(error) || attempt >= 3) {
+                partFailure = error;
+                transfer.controllers.forEach((controller) =>
+                  controller.abort(),
+                );
+                throw error;
+              }
+              partProgress.set(number, 0);
+              transfer.state = `Retrying part ${number} · attempt ${attempt + 2} of 4`;
+              renderTransfers();
+              await retryDelay(attempt, transfer);
+            }
           }
           partProgress.set(number, chunk.size);
           update();
@@ -582,6 +698,7 @@ async function upload(file: File, target?: string) {
     await refresh();
   } catch (error) {
     transfer.controllers.forEach((controller) => controller.abort());
+    transfer.cancelHash?.();
     transfer.paused = true;
     transfer.state =
       error instanceof DOMException && error.name === "AbortError"
@@ -664,6 +781,7 @@ $("#transfer-panel").addEventListener("click", (event) => {
   if (transfer) {
     transfer.paused = true;
     transfer.controllers.forEach((controller) => controller.abort());
+    transfer.cancelHash?.();
     transfer.state = "Pausing…";
     renderTransfers();
   }
@@ -712,6 +830,7 @@ document.addEventListener("click", async (event) => {
         if (transfer.id === file.id) {
           transfer.paused = true;
           transfer.controllers.forEach((controller) => controller.abort());
+          transfer.cancelHash?.();
         }
       await fileApi(`/files/${file.id}`, "DELETE");
       forgetRequest(file, actionWorkspace);

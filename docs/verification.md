@@ -1,5 +1,9 @@
 # Verification
 
+## Sprint 2 procedure
+
+The default cap is decimal 5 GB. Current regression coverage is 28 unit cases, 50 integration cases, and 20 browser workflows; this browser count is unrelated to the planned 20-case recovery matrix. Reuse the isolated small-fixture commands below for regressions. [Sprint 2](sprint-2.md) documents the separate disk-backed profile, bounded retry behavior, and opt-in target-size runner. Full-size evidence is recorded separately from ordinary CI.
+
 ## Sprint 1
 
 Sprint 1 adds durable deletion, terminal multipart expiry and browser restart, workspace-scoped saved request IDs, and deterministic race/isolation/migration coverage. See [the Sprint 1 report](sprint-1.md). Local execution uses macOS ARM64, Python 3.12.14, Node 26.3.0, Chrome, Docker Engine 29.5.3, PostgreSQL 17, Redis 7, and MinIO. CI uses Ubuntu, Python 3.12, Node 24, and Chromium.

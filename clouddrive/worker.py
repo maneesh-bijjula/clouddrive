@@ -53,6 +53,7 @@ def process_file(id):
             id=id,
             claim=claim,
         )
+    verification_started = time.monotonic()
     try:
         response = s3().get_object(Bucket=settings().s3_bucket, Key=file["object_key"])
         digest = hashlib.sha256()
@@ -80,7 +81,12 @@ def process_file(id):
             response["Body"].close()
         sha256 = digest.hexdigest()
         matches = size == file["size"] and sha256 == file["expected_sha256"]
-        result = {"bytes_verified": size, "checksum_algorithm": "SHA-256", "preview": None}
+        result = {
+            "bytes_verified": size,
+            "checksum_algorithm": "SHA-256",
+            "stream_verification_seconds": time.monotonic() - verification_started,
+            "preview": None,
+        }
         # Preview only valid UTF-8 text, never HTML rendered as markup.
         if b"\x00" not in preview:
             try:

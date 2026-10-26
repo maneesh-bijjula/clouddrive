@@ -7,7 +7,8 @@
     "dev": "vite frontend --host 127.0.0.1 --port 5173",
     "build": "tsc --noEmit && vite build frontend --outDir ../dist --emptyOutDir",
     "test:browser": "playwright test",
-    "format": "prettier --write frontend tests-browser *.json *.ts .github README.md compose.yaml"
+    "format": "prettier --write frontend tests-browser *.json *.ts .github README.md compose.yaml",
+    "bench:upload": "node scripts/benchmark-upload.mjs"
   },
   "dependencies": {
     "@noble/hashes": "2.4.0",

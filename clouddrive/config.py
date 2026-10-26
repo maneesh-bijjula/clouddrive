@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     s3_secret_key: str = "clouddrive-local"
     s3_bucket: str = "clouddrive"
     s3_region: str = "us-east-1"
-    max_file_bytes: int = Field(default=256 * 1024 * 1024, ge=1, le=5 * 1024**3)
-    part_bytes: int = Field(default=8 * 1024 * 1024, ge=5 * 1024 * 1024)
+    max_file_bytes: int = Field(default=5_000_000_000, ge=1, le=5_000_000_000)
+    part_bytes: int = Field(default=8 * 1024 * 1024, ge=5 * 1024 * 1024, le=64 * 1024 * 1024)
     signed_url_seconds: int = Field(default=900, ge=60, le=3600)
 
 

@@ -59,11 +59,22 @@ def head(key):
 
 
 def remote_part(file, number):
-    response = s3().list_parts(
-        Bucket=settings().s3_bucket,
-        Key=file["object_key"],
-        UploadId=file["upload_id"],
-        PartNumberMarker=number - 1,
-        MaxParts=1,
+    # Follow the provider's pagination tokens, not number-1: MinIO's sparse
+    # ListParts marker lookup can skip a part that finished out of order.
+    # The 5 GB limit / minimum 5 MiB parts fits in one 1,000-entry page;
+    # pagination also accommodates older sessions with a different limit.
+    pages = (
+        s3()
+        .get_paginator("list_parts")
+        .paginate(
+            Bucket=settings().s3_bucket,
+            Key=file["object_key"],
+            UploadId=file["upload_id"],
+            PaginationConfig={"PageSize": 1000},
+        )
     )
-    return next((part for part in response.get("Parts", []) if part["PartNumber"] == number), None)
+    for page in pages:
+        for part in page.get("Parts", []):
+            if part["PartNumber"] == number:
+                return part
+    return None

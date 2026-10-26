@@ -4,7 +4,7 @@ Audit date: October 24, 2026 (America/Los_Angeles). Baseline: `6f439d97b62d25b16
 
 **Sequence: Sprint 1, correctness and recovery state transitions, followed by Sprint 2, large-file verification.** Extend the existing service. The core architecture works; the remaining work is closing specific failure gaps, enabling and measuring the resume targets, and adding operational recovery evidence.
 
-This document preserves the baseline audit and proposed sprint sequence. Sprint 1 was subsequently authorized for direct delivery to `main`; see [the Sprint 1 report](sprint-1.md) for implementation and current verification. Baseline fault probes assert the original defects and apply only to baseline `6f439d9`, not to the corrected implementation. The resume and other projects remain outside the implementation scope.
+This document preserves the baseline audit and proposed sprint sequence. Sprints 1 and 2 were subsequently authorized for direct delivery to `main`; see [the Sprint 1 report](sprint-1.md) for implementation and current verification. See [Sprint 2](sprint-2.md) for the large-file implementation and measurement procedure. Baseline fault probes assert the original defects and apply only to baseline `6f439d9`, not to the corrected implementation. The resume and other projects remain outside the implementation scope.
 
 ## Evidence and current status
 

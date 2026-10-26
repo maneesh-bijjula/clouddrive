@@ -1,0 +1,46 @@
+name: Large upload verification (manual)
+on:
+  workflow_dispatch:
+    inputs:
+      bytes:
+        description: File bytes (small smoke run is not 5 GB evidence)
+        type: choice
+        options: ["5000000000", "67108881"]
+        default: "5000000000"
+permissions:
+  contents: read
+jobs:
+  large-upload:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Build a dedicated disk-backed stack
+        run: docker compose -p clouddrive-ci-large -f compose.large.yaml up --build -d --wait
+      - name: Browser resume and independent download verification
+        env:
+          FIXTURE_BYTES: ${{ inputs.bytes }}
+        run: |
+          mkdir -p test-results/large-file
+          set -o pipefail
+          npm run bench:upload -- --bytes "$FIXTURE_BYTES" --project clouddrive-ci-large --output test-results/large-file/run.json 2>&1 | tee test-results/large-file/run.txt
+      - name: Stack diagnostics
+        if: always()
+        run: |
+          mkdir -p test-results/large-file
+          docker compose -p clouddrive-ci-large -f compose.large.yaml logs --no-color > test-results/large-file/stack.txt
+      - uses: actions/upload-artifact@v7.0.2
+        if: always()
+        with:
+          name: large-upload-evidence
+          path: test-results/large-file
+          retention-days: 30
+      - name: Remove only this disposable test stack and its volumes
+        if: always()
+        run: docker compose -p clouddrive-ci-large -f compose.large.yaml down -v

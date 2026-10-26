@@ -72,3 +72,20 @@ def test_sha256_checksum():
 def test_full_hash_validation(value):
     with pytest.raises(ValidationError):
         NewUpload(request_id=uuid4(), name="test.txt", size=1, sha256=value)
+
+
+def test_decimal_large_file_contract():
+    from clouddrive.config import Settings
+
+    config = Settings(_env_file=None)
+    assert config.max_file_bytes == 5_000_000_000
+    assert config.part_bytes == 8 * 1024**2
+    assert part_count(5_000_000_000, config.part_bytes) == 597
+    assert (
+        part_length(5_000_000_000, config.part_bytes, 597)
+        == 5_000_000_000 - 596 * config.part_bytes
+    )
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None, max_file_bytes=5_000_000_001)
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None, part_bytes=64 * 1024**2 + 1)

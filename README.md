@@ -8,8 +8,8 @@ A private file workspace with resumable multipart uploads, direct object-storage
 
 ## What it does
 
-- Upload files directly from the browser to private object storage using signed multipart requests. The default limit is **256 MiB per file**, with 8 MiB parts and up to three concurrent part transfers per file.
-- Pause an upload, reload the page, and resume by selecting the same file. A full-file SHA-256 check identifies the original content; confirmed parts are reused. Lost upload acknowledgements are reconciled against storage.
+- Upload files directly from the browser to private object storage using signed multipart requests. The default inclusive limit is **5 GB (5,000,000,000 bytes) per file**, with 8 MiB parts and up to three concurrent part transfers per file.
+- Pause an upload, reload the page, and resume by selecting the same file. A cancellable browser worker hashes the file in bounded chunks; full-file SHA-256 identifies the original content; confirmed parts are reused. Lost upload acknowledgements are reconciled against storage.
 - Verify each part with SHA-256 at the storage boundary, then independently stream and verify the entire file in a Celery worker. Downloads stay blocked until verification passes.
 - Browse, search, sort, inspect checksums, preview UTF-8 text, download, and delete files. The interface works on desktop and mobile.
 - Keep processing requests in a PostgreSQL outbox during broker outages. Recover lost messages and expired worker claims, and prevent duplicate or stale workers from overwriting newer state.
@@ -105,11 +105,13 @@ celery -A clouddrive.worker:celery beat --loglevel=INFO --schedule=/tmp/clouddri
 
 `npm run dev` serves the frontend at port 5173 with an API proxy to port 8090. The API serves the compiled frontend directly after `npm run build`. Database migrations run at API startup under a PostgreSQL advisory lock, and applied migration checksums are verified.
 
+Existing `.env` files retain their configured limit: update `CLOUDDRIVE_MAX_FILE_BYTES=5000000000` to enable the new 5 GB default in development. MB/GB use decimal bytes; MiB/GiB use powers of 1024.
+
 Configuration uses `CLOUDDRIVE_` environment variables; see [.env.example](.env.example) and [config.py](clouddrive/config.py). The internal S3 endpoint must be reachable by the API and worker. The public endpoint must be reachable by the browser **with the same hostname used when signing**. Storage CORS must permit the browser origin, `PUT`, and `x-amz-checksum-sha256`, and expose `ETag`.
 
 ## Tests
 
-The implementation passes **27 unit tests, 48 real-service integration tests, and 11 browser workflows**. The browser workflows also pass against the packaged Docker stack. See [verification notes](docs/verification.md) for the tested failure cases and a repeatable broker-outage check.
+The implementation passes **28 unit tests, 50 real-service integration tests, and 20 browser workflows**. The browser workflows also pass against the packaged Docker stack. See [verification notes](docs/verification.md) for the tested failure cases and a repeatable broker-outage check.
 
 Unit tests run without infrastructure:
 
@@ -136,7 +138,7 @@ Sprint 1 changes and evidence are recorded in [the Sprint 1 report](docs/sprint-
 
 ## Operating scope
 
-This repository runs a complete local storage workflow. Integration and browser verification use **MinIO**, an S3-compatible service. No live AWS account, 5 GB transfer, throughput benchmark, or concurrency benchmark is asserted by these tests.
+This repository runs a complete local storage workflow. Integration and browser verification use **MinIO**, an S3-compatible service. Ordinary CI uses small fixtures and does not by itself verify target-size transfer or concurrency capacity. The opt-in [large-file procedure](docs/sprint-2.md) records separate evidence. No live AWS behavior or concurrency capacity is asserted by the small-fixture tests.
 
 Workspace keys are bearer credentials stored in browser local storage. There are no user accounts, role permissions, access-key rotation, or recovery if every copy of a key is lost. Upload URLs last 15 minutes; download URLs last 60 seconds and remain usable until expiration. Use HTTPS, restricted storage credentials, authentication controls, rate limits, backups, and operational monitoring before exposing a deployment beyond a trusted environment.
 
