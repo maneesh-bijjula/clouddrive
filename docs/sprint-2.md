@@ -36,8 +36,49 @@ JSON evidence contains source size/hash, exact runtime/image/source identities, 
 
 The manual `large-upload.yml` workflow runs the same procedure and retains evidence for 30 days. It is separate from ordinary CI because the full run consumes substantial disk and time. Capacity failure is a failure, not a skipped success; a sufficiently provisioned runner is required.
 
-## Measurement status
+## Measured target-size result
 
-The target-size run is performed after committing the implementation so its report can identify a clean, immutable tested code revision. The final results and scoped acceptance evidence are added in the subsequent evidence commit. Until that measurement passes, a configured 5 GB limit and small-fixture tests alone do not verify the 5 GB requirement.
+**Passed October 26, 2026**, on clean implementation commit [`b82831e93e679170dd5c49d3bbd0d4dedb976fa2`](https://github.com/maneesh-bijjula/clouddrive/commit/b82831e93e679170dd5c49d3bbd0d4dedb976fa2). The evidence commit adds reports/documentation without changing that measured implementation. Source digests and immutable image IDs are included in the [JSON run record](evidence/sprint-2/5gb-run-1.json).
 
-Sprint 3's named 20-case recovery matrix and Sprint 4's ten concurrent 500 MB transfers remain separate requirements. Browser workflow counts must not be substituted for the recovery denominator. No live AWS or production-readiness claim is made by MinIO execution.
+The denominator is **one target-size file, one full-size attempt, passed**. The file contained exactly **5,000,000,000 bytes**. All **597 parts** were confirmed. Parts **1, 2, and 3** were acknowledged before pause/reload; none were requested again during resume. The source hash, worker hash, and streamed downloaded-file hash all equal:
+
+```text
+3d38c1add12fbf81b468f29b946c4a30d092b8c2f5310eb89d1c8cbe62711817
+```
+
+The API returned 413 for 5,000,000,001 bytes, and the browser rejected a sparse file of that size without creating upload metadata. The successfully verified benchmark object was deleted afterward.
+
+| Phase                                                                                                                                    | Observed time |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | ------------: |
+| Deterministic fixture generation                                                                                                         |        5.12 s |
+| Initial browser selection/hash to initiation request                                                                                     |       79.31 s |
+| Reselection/hash to persisted-session lookup                                                                                             |       77.42 s |
+| Sum of active transfer windows                                                                                                           |      111.11 s |
+| Multipart completion API round trip                                                                                                      |        0.09 s |
+| Successful worker stream/hash                                                                                                            |        8.43 s |
+| Completion reply to READY observed by API polling                                                                                        |       10.82 s |
+| Browser download click to local download completion                                                                                      |       34.70 s |
+| Independent streamed downloaded-file SHA-256                                                                                             |        6.09 s |
+| Complete runner including fixture/source hash, setup, both browser hashes, pause/reload, processing, download, verification, and cleanup |      350.73 s |
+
+The transfer-window rate was **45.00 decimal MB/s** under the definition above. It is not the end-to-end rate, a p95 measurement, or an AWS/network-capacity claim.
+
+The shared local host was an **Apple M3, 8 logical CPUs, 8 GiB RAM**, with Node 26.3.0 and Chrome 156.0.8078.48. Docker Engine 29.5.3 reported 8 CPUs and about 3.83 GiB usable VM memory. Storage was local disk-backed MinIO, with PostgreSQL/Redis/Celery in the same isolated project. Three other containers were running when the run began. The host and Docker disk-capacity preflight passed.
+
+| Sampled memory metric                                  |      Peak |
+| ------------------------------------------------------ | --------: |
+| Sum of Chrome process RSS                              | 849.2 MiB |
+| Node runner RSS                                        | 219.1 MiB |
+| API Docker memory usage                                | 100.0 MiB |
+| Worker container memory usage, including its processes | 190.1 MiB |
+| MinIO Docker memory usage                              | 386.8 MiB |
+
+There were **150 successful resource samples and zero sampling errors**. The nominal timer was 1 second; collection takes time and overlapping samples are skipped, so actual timestamps are authoritative. Sampling covers browser phases rather than fixture generation. Chrome RSS can count shared memory more than once; Docker usage follows the CLI's memory accounting. These sampled peaks are observations, not hard resource limits or proof of instantaneous maxima.
+
+Evidence: [run JSON](evidence/sprint-2/5gb-run-1.json), [runner transcript](evidence/sprint-2/5gb-run-1.txt), [verified browser screenshot](evidence/sprint-2/5gb-run-1-verified.png), [78 Python tests](evidence/sprint-2/python-final.txt), [JUnit](evidence/sprint-2/python-final.xml), [20 packaged browser workflows](evidence/sprint-2/browser-complete.txt), and [run history](evidence/sprint-2/run-history.json).
+
+## Development failures and scope
+
+The run history preserves the earlier smaller rehearsals: the first exposed the sparse MinIO receipt issue, the second failed in the runner's UI/download synchronization, and the third passed with 67,108,881 bytes. Those are development rehearsals, not additional target-size successes. The initial broader browser run also caught the workspace readiness race; a deterministic test now covers it. Final verification passed 28 unit cases, 50 real-service integration cases, and 20 packaged browser workflows without retries locally.
+
+Sprint 3's named **20-case recovery matrix remains pending**. The 20 browser workflow count is unrelated to that denominator. Sprint 4's **ten concurrent 500 MB transfers remain unmeasured**. This single-file MinIO result does not verify live AWS, repeated-run reliability, WAN behavior, production availability, or total memory bounds under concurrent users.

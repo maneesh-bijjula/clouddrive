@@ -1,0 +1,25 @@
+
+> clouddrive@0.1.0 bench:upload
+> node scripts/benchmark-upload.mjs --channel chrome --output /private/tmp/clouddrive-sprint2-evidence/5gb-run-1.json
+
+{"stage":"generate-source","elapsed_s":1.282983,"bytes":5000000000}
+{"stage":"initial-browser-hash-and-partial-upload","elapsed_s":22.552532,"bytes":5000000000}
+{"stage":"progress","phase":"first","elapsed_s":44.792935,"state":["Checking file · 28%Pause"]}
+{"stage":"progress","phase":"first","elapsed_s":65.221029,"state":["Checking file · 54%Pause"]}
+{"stage":"progress","phase":"first","elapsed_s":86.621975,"state":["Checking file · 81%Pause"]}
+{"stage":"resume-browser-hash-and-transfer","elapsed_s":104.432041,"bytes":5000000000}
+{"stage":"progress","phase":"resume","elapsed_s":107.17737,"state":["Checking file · 3%Pause"]}
+{"stage":"progress","phase":"resume","elapsed_s":128.694666,"state":["Checking file · 31%Pause"]}
+{"stage":"progress","phase":"resume","elapsed_s":149.05504,"state":["Checking file · 57%Pause"]}
+{"stage":"progress","phase":"resume","elapsed_s":170.428181,"state":["Checking file · 86%Pause"]}
+{"stage":"progress","phase":"resume","elapsed_s":191.080374,"state":["Uploading · 10%Pause"]}
+{"stage":"progress","phase":"resume","elapsed_s":213.147993,"state":["Uploading · 27%Pause"]}
+{"stage":"progress","phase":"resume","elapsed_s":233.72904,"state":["Uploading · 46%Pause"]}
+{"stage":"progress","phase":"resume","elapsed_s":253.974582,"state":["Uploading · 64%Pause"]}
+{"stage":"progress","phase":"resume","elapsed_s":274.303692,"state":["Uploading · 83%Pause"]}
+{"stage":"progress","phase":"resume","elapsed_s":294.760328,"state":[]}
+{"stage":"browser-download-and-independent-hash","elapsed_s":303.8332,"bytes":5000000000}
+{"stage":"progress","phase":"download","elapsed_s":315.289455,"state":[]}
+{"stage":"passed","elapsed_s":347.007289,"bytes":5000000000}
+{"stage":"progress","phase":"download","elapsed_s":347.025246,"state":[]}
+{"status":"passed","report":"/private/tmp/clouddrive-sprint2-evidence/5gb-run-1.json"}

@@ -1,0 +1,23 @@
+
+> clouddrive@0.1.0 bench:upload
+> node scripts/benchmark-upload.mjs --bytes 67108881 --channel chrome --output /private/tmp/clouddrive-sprint2-evidence/smoke-run-2.json
+
+{"stage":"generate-source","elapsed_s":2.103343,"bytes":67108881}
+{"stage":"initial-browser-hash-and-partial-upload","elapsed_s":6.88792,"bytes":67108881}
+{"stage":"resume-browser-hash-and-transfer","elapsed_s":12.406155,"bytes":67108881}
+{"stage":"browser-download-and-independent-hash","elapsed_s":20.874999,"bytes":67108881}
+{"stage":"progress","phase":"download","elapsed_s":30.002764,"state":[]}
+node:internal/process/promises:324
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+page.waitForEvent: Timeout 30000ms exceeded while waiting for event "download"
+=========================== logs ===========================
+waiting for event "download"
+============================================================
+    at /Users/maneeshbijjula/Documents/New project/clouddrive/scripts/benchmark-upload.mjs:602:30 {
+  log: [],
+  name: 'TimeoutError'
+}
+
+Node.js v26.3.0

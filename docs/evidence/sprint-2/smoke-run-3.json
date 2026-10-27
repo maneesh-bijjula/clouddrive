@@ -1,0 +1,675 @@
+{
+  "schema_version": 1,
+  "status": "passed",
+  "started_at": "2026-10-26T23:35:46.301Z",
+  "scope": "One file, browser pause/reload/reselection, local MinIO, one attempt; not a concurrency or 20-case recovery benchmark",
+  "source": {
+    "bytes": 67108881,
+    "unit": "B",
+    "generator": "AES-256-CTR over zeros; SHA-256(seed) key; zero IV; 4 MiB writes",
+    "seed": "CloudDrive Sprint 2 fixture v1",
+    "sha256": "654d1d7cafeafca545f1c4ededce22c406d6028d5b8461d08f801ced6c400041"
+  },
+  "environment": {
+    "platform": "darwin",
+    "release": "27.0.0",
+    "architecture": "arm64",
+    "host_cpu": "Apple M3",
+    "host_logical_cpus": 8,
+    "host_memory_bytes": 8589934592,
+    "node": "v26.3.0",
+    "compose_project": "clouddrive-sprint2-large",
+    "images": [
+      {
+        "service": "api",
+        "image_id": "sha256:5e386e4c94bff0c5160c51ffa5f8da2eaa672d52bdac5c7cdf9f014ff4af9712"
+      },
+      {
+        "service": "beat",
+        "image_id": "sha256:5e386e4c94bff0c5160c51ffa5f8da2eaa672d52bdac5c7cdf9f014ff4af9712"
+      },
+      {
+        "service": "minio",
+        "image_id": "sha256:9c48c56d15710de71060d2bfc9689515a089c708043897cdf72c34680868c304"
+      },
+      {
+        "service": "postgres",
+        "image_id": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24"
+      },
+      {
+        "service": "redis",
+        "image_id": "sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499"
+      },
+      {
+        "service": "worker",
+        "image_id": "sha256:5e386e4c94bff0c5160c51ffa5f8da2eaa672d52bdac5c7cdf9f014ff4af9712"
+      }
+    ],
+    "database": "clouddrive_large_test",
+    "bucket": "clouddrive-large-test",
+    "docker": {
+      "cpus": 8,
+      "memory_bytes": 4108632064,
+      "version": "29.5.3"
+    },
+    "git_sha": "2ab7e701bdf4bd5435538e84f8b923b24914d964",
+    "git_dirty": true,
+    "source_sha256": {
+      "clouddrive/config.py": "45135623c42881c6a47d17546a4359ce3b058fc92430a4637508ecc86e611932",
+      "clouddrive/storage.py": "5e3539c250497518c976d58096a3c0e43c1261d4140a752aac5c7afc075722e5",
+      "clouddrive/worker.py": "0a8619f9e6ad2cc53bffb7cea8a55e42109e1e09b492ececa565990cc44976fb",
+      "frontend/src/main.ts": "0c433e14a9c085a0e8f4f6123b55590f023e26e14cb4539ca3b517be37e66cb8",
+      "frontend/src/hash-worker.ts": "5ee4090dfd1a207a2b48214295927cf086e26441ee624041760bd94efaa53d7e",
+      "scripts/benchmark-upload.mjs": "e6b56c559c5dd9bc03a05276b6f0421ecc91bed968192fe4e1eb453adcf07cdc",
+      "compose.large.yaml": "bc160643cb3e861a71edb96a3d56ad96693a3c6e69fb7427094bd2d9895da8db"
+    },
+    "other_running_container_count": 12,
+    "host_free_bytes": 28628733952,
+    "storage_free_bytes": 196828839936,
+    "browser": "155.0.8059.85",
+    "part_bytes": 8388608,
+    "part_concurrency": 3
+  },
+  "timings": {
+    "fixture_generation_s": 0.051526000000000405,
+    "browser_initial_hash_to_initiation_s": 1.5302369999999996,
+    "completion_started_s": 20.498394,
+    "completion_response_s": 20.59293,
+    "browser_resume_hash_to_session_lookup_s": 1.523413999999999,
+    "resume_selection_to_ready_s": 13.483122999999999,
+    "multipart_completion_s": 0.09453599999999796,
+    "completion_response_to_ready_observed_s": 8.908221000000001,
+    "worker_stream_verification_s": 5.64875658599999,
+    "first_transfer_window_s": 1.3316209999999984,
+    "resume_transfer_window_s": 2.0170920000000017,
+    "active_transfer_windows_s": 3.348713,
+    "browser_download_click_to_local_completion_s": 3.7688169999999985,
+    "independent_download_hash_s": 0.11597899999999584,
+    "runner_total_s": 38.891368
+  },
+  "checks": {
+    "oversized_api_status": 413,
+    "oversized_browser_rejected": true,
+    "confirmed_before_reload": [
+      1,
+      2,
+      3
+    ],
+    "acknowledged_parts": 9,
+    "expected_parts": 9,
+    "resent_confirmed_parts": [],
+    "worker_verified_bytes": 67108881,
+    "worker_sha256": "654d1d7cafeafca545f1c4ededce22c406d6028d5b8461d08f801ced6c400041",
+    "download": {
+      "bytes": 67108881,
+      "sha256": "654d1d7cafeafca545f1c4ededce22c406d6028d5b8461d08f801ced6c400041"
+    },
+    "object_deleted": true
+  },
+  "events": [
+    {
+      "kind": "part_request",
+      "phase": "first",
+      "number": 1,
+      "t_s": 12.354297
+    },
+    {
+      "kind": "part_request",
+      "phase": "first",
+      "number": 2,
+      "t_s": 12.605876
+    },
+    {
+      "kind": "part_request",
+      "phase": "first",
+      "number": 3,
+      "t_s": 12.824224
+    },
+    {
+      "kind": "storage_response",
+      "phase": "first",
+      "number": 1,
+      "status": 200,
+      "t_s": 13.212447
+    },
+    {
+      "kind": "part_ack",
+      "phase": "first",
+      "number": 1,
+      "t_s": 13.491478
+    },
+    {
+      "kind": "storage_response",
+      "phase": "first",
+      "number": 2,
+      "status": 200,
+      "t_s": 13.51671
+    },
+    {
+      "kind": "storage_response",
+      "phase": "first",
+      "number": 3,
+      "status": 200,
+      "t_s": 13.536101
+    },
+    {
+      "kind": "part_ack",
+      "phase": "first",
+      "number": 3,
+      "t_s": 13.684138
+    },
+    {
+      "kind": "part_ack",
+      "phase": "first",
+      "number": 2,
+      "t_s": 13.685918
+    },
+    {
+      "kind": "part_request",
+      "phase": "first",
+      "number": 4,
+      "t_s": 14.597942
+    },
+    {
+      "kind": "part_request",
+      "phase": "first",
+      "number": 5,
+      "t_s": 14.884743
+    },
+    {
+      "kind": "part_request",
+      "phase": "first",
+      "number": 6,
+      "t_s": 14.88485
+    },
+    {
+      "kind": "part_request",
+      "phase": "resume",
+      "number": 6,
+      "t_s": 18.478668
+    },
+    {
+      "kind": "part_request",
+      "phase": "resume",
+      "number": 4,
+      "t_s": 18.486652
+    },
+    {
+      "kind": "part_request",
+      "phase": "resume",
+      "number": 5,
+      "t_s": 18.569185
+    },
+    {
+      "kind": "storage_response",
+      "phase": "resume",
+      "number": 6,
+      "status": 200,
+      "t_s": 19.274364
+    },
+    {
+      "kind": "storage_response",
+      "phase": "resume",
+      "number": 5,
+      "status": 200,
+      "t_s": 19.321528
+    },
+    {
+      "kind": "part_ack",
+      "phase": "resume",
+      "number": 6,
+      "t_s": 19.344805
+    },
+    {
+      "kind": "storage_response",
+      "phase": "resume",
+      "number": 4,
+      "status": 200,
+      "t_s": 19.382527
+    },
+    {
+      "kind": "part_ack",
+      "phase": "resume",
+      "number": 5,
+      "t_s": 19.382605
+    },
+    {
+      "kind": "part_ack",
+      "phase": "resume",
+      "number": 4,
+      "t_s": 19.543919
+    },
+    {
+      "kind": "part_request",
+      "phase": "resume",
+      "number": 8,
+      "t_s": 19.71937
+    },
+    {
+      "kind": "part_request",
+      "phase": "resume",
+      "number": 9,
+      "t_s": 19.719413
+    },
+    {
+      "kind": "part_request",
+      "phase": "resume",
+      "number": 7,
+      "t_s": 19.753937
+    },
+    {
+      "kind": "storage_response",
+      "phase": "resume",
+      "number": 9,
+      "status": 200,
+      "t_s": 19.769201
+    },
+    {
+      "kind": "part_ack",
+      "phase": "resume",
+      "number": 9,
+      "t_s": 19.799358
+    },
+    {
+      "kind": "storage_response",
+      "phase": "resume",
+      "number": 8,
+      "status": 200,
+      "t_s": 20.434095
+    },
+    {
+      "kind": "storage_response",
+      "phase": "resume",
+      "number": 7,
+      "status": 200,
+      "t_s": 20.441418
+    },
+    {
+      "kind": "part_ack",
+      "phase": "resume",
+      "number": 8,
+      "t_s": 20.477159
+    },
+    {
+      "kind": "part_ack",
+      "phase": "resume",
+      "number": 7,
+      "t_s": 20.49576
+    }
+  ],
+  "resources": {
+    "interval_ms": 1000,
+    "samples": [
+      {
+        "t_s": 13.106142,
+        "phase": "first",
+        "chrome_sum_rss_bytes": 620756992,
+        "node_rss_bytes": 108101632,
+        "ui_transfer_state": [
+          "Uploading · 23%Pause"
+        ],
+        "services": [
+          {
+            "service": "api",
+            "memory_bytes": 93837066,
+            "cpu_percent": 9.25
+          },
+          {
+            "service": "beat",
+            "memory_bytes": 76042732,
+            "cpu_percent": 0
+          },
+          {
+            "service": "minio",
+            "memory_bytes": 123941683,
+            "cpu_percent": 20.7
+          },
+          {
+            "service": "postgres",
+            "memory_bytes": 40957379,
+            "cpu_percent": 5.47
+          },
+          {
+            "service": "redis",
+            "memory_bytes": 10416554,
+            "cpu_percent": 1.8
+          },
+          {
+            "service": "worker",
+            "memory_bytes": 184129946,
+            "cpu_percent": 1.09
+          }
+        ]
+      },
+      {
+        "t_s": 18.579903,
+        "phase": "resume",
+        "chrome_sum_rss_bytes": 379224064,
+        "node_rss_bytes": 38535168,
+        "ui_transfer_state": [
+          "Uploading · 37%Pause"
+        ],
+        "services": [
+          {
+            "service": "api",
+            "memory_bytes": 94686413,
+            "cpu_percent": 25.71
+          },
+          {
+            "service": "beat",
+            "memory_bytes": 76042732,
+            "cpu_percent": 14.25
+          },
+          {
+            "service": "minio",
+            "memory_bytes": 123836826,
+            "cpu_percent": 10.62
+          },
+          {
+            "service": "postgres",
+            "memory_bytes": 40464548,
+            "cpu_percent": 5.67
+          },
+          {
+            "service": "redis",
+            "memory_bytes": 10416554,
+            "cpu_percent": 0.72
+          },
+          {
+            "service": "worker",
+            "memory_bytes": 183710515,
+            "cpu_percent": 5.96
+          }
+        ]
+      },
+      {
+        "t_s": 22.518059,
+        "phase": "resume",
+        "chrome_sum_rss_bytes": 323026944,
+        "node_rss_bytes": 37814272,
+        "ui_transfer_state": [],
+        "services": [
+          {
+            "service": "api",
+            "memory_bytes": 104742257,
+            "cpu_percent": 18.21
+          },
+          {
+            "service": "beat",
+            "memory_bytes": 76042732,
+            "cpu_percent": 0
+          },
+          {
+            "service": "minio",
+            "memory_bytes": 125095117,
+            "cpu_percent": 0
+          },
+          {
+            "service": "postgres",
+            "memory_bytes": 40359690,
+            "cpu_percent": 3.48
+          },
+          {
+            "service": "redis",
+            "memory_bytes": 10416554,
+            "cpu_percent": 2.8
+          },
+          {
+            "service": "worker",
+            "memory_bytes": 182766797,
+            "cpu_percent": 2.04
+          }
+        ]
+      },
+      {
+        "t_s": 25.971031,
+        "phase": "resume",
+        "chrome_sum_rss_bytes": 230703104,
+        "node_rss_bytes": 32718848,
+        "ui_transfer_state": [],
+        "services": [
+          {
+            "service": "api",
+            "memory_bytes": 94707384,
+            "cpu_percent": 13.93
+          },
+          {
+            "service": "beat",
+            "memory_bytes": 76042732,
+            "cpu_percent": 0
+          },
+          {
+            "service": "minio",
+            "memory_bytes": 125095117,
+            "cpu_percent": 12.12
+          },
+          {
+            "service": "postgres",
+            "memory_bytes": 40831549,
+            "cpu_percent": 8.5
+          },
+          {
+            "service": "redis",
+            "memory_bytes": 10416554,
+            "cpu_percent": 6.27
+          },
+          {
+            "service": "worker",
+            "memory_bytes": 194405990,
+            "cpu_percent": 41.09
+          }
+        ]
+      },
+      {
+        "t_s": 28.101471,
+        "phase": "resume",
+        "chrome_sum_rss_bytes": 231161856,
+        "node_rss_bytes": 34488320,
+        "ui_transfer_state": [],
+        "services": [
+          {
+            "service": "api",
+            "memory_bytes": 94885642,
+            "cpu_percent": 125.97
+          },
+          {
+            "service": "beat",
+            "memory_bytes": 76042732,
+            "cpu_percent": 9.56
+          },
+          {
+            "service": "minio",
+            "memory_bytes": 125199974,
+            "cpu_percent": 105.02
+          },
+          {
+            "service": "postgres",
+            "memory_bytes": 43096474,
+            "cpu_percent": 11.26
+          },
+          {
+            "service": "redis",
+            "memory_bytes": 10416554,
+            "cpu_percent": 0.96
+          },
+          {
+            "service": "worker",
+            "memory_bytes": 198180864,
+            "cpu_percent": 17.65
+          }
+        ]
+      },
+      {
+        "t_s": 30.174573,
+        "phase": "download",
+        "chrome_sum_rss_bytes": 249380864,
+        "node_rss_bytes": 29147136,
+        "ui_transfer_state": [],
+        "services": [
+          {
+            "service": "api",
+            "memory_bytes": 96259277,
+            "cpu_percent": 11.06
+          },
+          {
+            "service": "beat",
+            "memory_bytes": 76042732,
+            "cpu_percent": 0
+          },
+          {
+            "service": "minio",
+            "memory_bytes": 127716557,
+            "cpu_percent": 13.54
+          },
+          {
+            "service": "postgres",
+            "memory_bytes": 40632320,
+            "cpu_percent": 4.68
+          },
+          {
+            "service": "redis",
+            "memory_bytes": 10416554,
+            "cpu_percent": 1.71
+          },
+          {
+            "service": "worker",
+            "memory_bytes": 197551718,
+            "cpu_percent": 18.08
+          }
+        ]
+      },
+      {
+        "t_s": 32.59196,
+        "phase": "download",
+        "chrome_sum_rss_bytes": 228966400,
+        "node_rss_bytes": 22364160,
+        "ui_transfer_state": [],
+        "services": [
+          {
+            "service": "api",
+            "memory_bytes": 110100480,
+            "cpu_percent": 82.61
+          },
+          {
+            "service": "beat",
+            "memory_bytes": 76042732,
+            "cpu_percent": 0
+          },
+          {
+            "service": "minio",
+            "memory_bytes": 130652570,
+            "cpu_percent": 36.88
+          },
+          {
+            "service": "postgres",
+            "memory_bytes": 40684749,
+            "cpu_percent": 5.11
+          },
+          {
+            "service": "redis",
+            "memory_bytes": 10416554,
+            "cpu_percent": 4.1
+          },
+          {
+            "service": "worker",
+            "memory_bytes": 196922573,
+            "cpu_percent": 1.73
+          }
+        ]
+      },
+      {
+        "t_s": 34.88125,
+        "phase": "download",
+        "chrome_sum_rss_bytes": 284770304,
+        "node_rss_bytes": 28655616,
+        "ui_transfer_state": [],
+        "services": [
+          {
+            "service": "api",
+            "memory_bytes": 96353649,
+            "cpu_percent": 4.78
+          },
+          {
+            "service": "beat",
+            "memory_bytes": 76042732,
+            "cpu_percent": 0
+          },
+          {
+            "service": "minio",
+            "memory_bytes": 136105165,
+            "cpu_percent": 41.48
+          },
+          {
+            "service": "postgres",
+            "memory_bytes": 40988836,
+            "cpu_percent": 4.71
+          },
+          {
+            "service": "redis",
+            "memory_bytes": 10412360,
+            "cpu_percent": 0.74
+          },
+          {
+            "service": "worker",
+            "memory_bytes": 196922573,
+            "cpu_percent": 1.47
+          }
+        ]
+      },
+      {
+        "t_s": 37.046189,
+        "phase": "download",
+        "chrome_sum_rss_bytes": 287408128,
+        "node_rss_bytes": 26640384,
+        "ui_transfer_state": [],
+        "services": [
+          {
+            "service": "api",
+            "memory_bytes": 96353649,
+            "cpu_percent": 80.36
+          },
+          {
+            "service": "beat",
+            "memory_bytes": 76042732,
+            "cpu_percent": 0
+          },
+          {
+            "service": "minio",
+            "memory_bytes": 136105165,
+            "cpu_percent": 7.87
+          },
+          {
+            "service": "postgres",
+            "memory_bytes": 40726692,
+            "cpu_percent": 2.32
+          },
+          {
+            "service": "redis",
+            "memory_bytes": 10416554,
+            "cpu_percent": 1.95
+          },
+          {
+            "service": "worker",
+            "memory_bytes": 195769139,
+            "cpu_percent": 0.63
+          }
+        ]
+      }
+    ],
+    "sample_errors": 1,
+    "definition": "Chrome sum of process RSS (shared pages can be counted multiple times); Node RSS; Docker memory usage and CPU from docker stats. Samples are not instantaneous allocation maxima.",
+    "chrome_sum_rss_peak_bytes": 620756992,
+    "node_rss_peak_bytes": 108101632,
+    "service_memory_peak_bytes": {
+      "api": 110100480,
+      "beat": 76042732,
+      "minio": 136105165,
+      "postgres": 43096474,
+      "redis": 10416554,
+      "worker": 198180864
+    }
+  },
+  "transfer_window_MB_per_s": 20.040200817448373,
+  "transfer_definition": "Source bytes / sum of first-PUT-to-last-ack windows before pause and after resume; includes signing, acknowledgements and retries, excludes both prehashes, intentional pause/reload, processing and download. Browser request events include intentionally intercepted/unaccepted requests 4..6 before pause.",
+  "finished_at": "2026-10-26T23:36:25.192Z"
+}

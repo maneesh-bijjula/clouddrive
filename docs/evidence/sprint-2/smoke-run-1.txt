@@ -1,0 +1,8 @@
+
+> clouddrive@0.1.0 bench:upload
+> node scripts/benchmark-upload.mjs --bytes 67108881 --channel chrome --output /private/tmp/clouddrive-sprint2-evidence/smoke-run-1.json
+
+{"stage":"generate-source","elapsed_s":1.274351,"bytes":67108881}
+{"stage":"initial-browser-hash-and-partial-upload","elapsed_s":2.52548,"bytes":67108881}
+Transfer stopped: Storage has not confirmed this part and checksum
+{"status":"failed","report":"/private/tmp/clouddrive-sprint2-evidence/smoke-run-1.json"}

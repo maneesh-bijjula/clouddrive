@@ -1,8 +1,8 @@
 # Verification
 
-## Sprint 2 procedure
+## Sprint 2 verification
 
-The default cap is decimal 5 GB. Current regression coverage is 28 unit cases, 50 integration cases, and 20 browser workflows; this browser count is unrelated to the planned 20-case recovery matrix. Reuse the isolated small-fixture commands below for regressions. [Sprint 2](sprint-2.md) documents the separate disk-backed profile, bounded retry behavior, and opt-in target-size runner. Full-size evidence is recorded separately from ordinary CI.
+The default cap is decimal 5 GB. Current regression coverage is 28 unit cases, 50 integration cases, and 20 browser workflows; this browser count is unrelated to the planned 20-case recovery matrix. Reuse the isolated small-fixture commands below for regressions. [Sprint 2](sprint-2.md) documents the separate disk-backed profile, bounded retry behavior, and opt-in target-size runner. The [one-file 5,000,000,000-byte run](evidence/sprint-2/5gb-run-1.json) passed with matching source/worker/download hashes and no confirmed-part resends after reload, on clean implementation revision `b82831e`. The [report](sprint-2.md) defines exact timings, denominator, sampled memory, and limitations. This is separate from ordinary CI.
 
 ## Sprint 1
 

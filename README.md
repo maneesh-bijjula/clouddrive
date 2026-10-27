@@ -15,6 +15,10 @@ A private file workspace with resumable multipart uploads, direct object-storage
 - Keep processing requests in a PostgreSQL outbox during broker outages. Recover lost messages and expired worker claims, and prevent duplicate or stale workers from overwriting newer state.
 - Export and import a private workspace access key to reopen the same workspace in another browser. Only the key hash is stored in PostgreSQL.
 
+## Measured large-file workflow
+
+A local packaged-browser run uploaded **5,000,000,000 bytes**, paused/reloaded after three acknowledged parts, resumed without resending those parts, and verified all **597 parts** plus the full downloaded SHA-256. Active transfer windows totaled **111.11 s**; the full fixture-to-cleanup runner took **350.73 s**, including both browser prehashes and the download check. This was **one file, one attempt, on local MinIO**; it does not establish live AWS behavior or ten-upload concurrency. [Exact scope, environment, commands, timings, and evidence](docs/sprint-2.md).
+
 ## Run locally
 
 Requires Docker with Compose v2. All application ports bind to the loopback interface.

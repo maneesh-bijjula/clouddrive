@@ -1,0 +1,78 @@
+ Image clouddrive-minio:2025-10-15 Building
+ Image clouddrive:large-test Building
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.06kB done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 571B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:24-bookworm-slim
+#3 DONE 0.4s
+
+#4 [internal] load metadata for docker.io/library/python:3.12-slim
+#4 DONE 0.7s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 177B done
+#5 DONE 0.0s
+
+#6 [runtime 1/6] FROM docker.io/library/python:3.12-slim@sha256:5b8b1421ccb6a525860a77863c049eab5847076cda34e030c75a80c58faf3f3c
+#6 resolve docker.io/library/python:3.12-slim@sha256:5b8b1421ccb6a525860a77863c049eab5847076cda34e030c75a80c58faf3f3c done
+#6 DONE 0.0s
+
+#7 [frontend 1/7] FROM docker.io/library/node:24-bookworm-slim@sha256:55fb5f5a527ea2c5c4a95f963e48ef90aa38c7b346054fdc8ee9957a2b55d205
+#7 resolve docker.io/library/node:24-bookworm-slim@sha256:55fb5f5a527ea2c5c4a95f963e48ef90aa38c7b346054fdc8ee9957a2b55d205 done
+#7 DONE 0.0s
+
+#8 [internal] load build context
+#8 transferring context: 7.05kB done
+#8 DONE 0.0s
+
+#9 [frontend 2/7] WORKDIR /build
+#9 CACHED
+
+#10 [frontend 3/7] COPY package*.json ./
+#10 CACHED
+
+#11 [frontend 4/7] RUN npm ci
+#11 CACHED
+
+#12 [frontend 5/7] COPY tsconfig.json ./
+#12 CACHED
+
+#13 [frontend 6/7] COPY frontend ./frontend
+#13 CACHED
+
+#14 [frontend 7/7] RUN npm run build
+#14 CACHED
+
+#15 [runtime 3/6] COPY requirements.txt ./
+#15 CACHED
+
+#16 [runtime 2/6] WORKDIR /app
+#16 CACHED
+
+#17 [runtime 4/6] RUN pip install --no-cache-dir -r requirements.txt && useradd --create-home --uid 10001 app
+#17 CACHED
+
+#18 [runtime 5/6] COPY clouddrive ./clouddrive
+#18 DONE 0.1s
+
+#19 [runtime 6/6] COPY --from=frontend /build/dist ./dist
+#19 DONE 0.0s
+
+#20 exporting to image
+#20 exporting layers 0.0s done
+#20 exporting manifest sha256:49f32a4dbb52f62c8ccfc434480f117f42eb69aa56970c3ad41c18face11f042 done
+#20 exporting config sha256:21681b04685c9fb3114aa542b0b1e5a05ad1166dde08b285879351de5ad4521e done
+#20 exporting attestation manifest sha256:7fe38828fe6bef3d02ad16f11f04dded1985dfd0a2c55aa270da50ecdb6c1348 done
+#20 exporting manifest list sha256:5e386e4c94bff0c5160c51ffa5f8da2eaa672d52bdac5c7cdf9f014ff4af9712 done
+#20 naming to docker.io/library/clouddrive:large-test done
+#20 unpacking to docker.io/library/clouddrive:large-test 0.0s done
+#20 DONE 0.1s
+
+#21 resolving provenance for metadata file
+#21 DONE 0.0s
+ Image clouddrive:large-test Built

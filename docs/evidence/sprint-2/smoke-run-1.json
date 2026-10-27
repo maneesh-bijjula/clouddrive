@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "status": "failed",
+  "started_at": "2026-10-26T23:29:46.390Z",
+  "scope": "One file, browser pause/reload/reselection, local MinIO, one attempt; not a concurrency or 20-case recovery benchmark",
+  "source": {
+    "bytes": 67108881,
+    "unit": "B",
+    "generator": "AES-256-CTR over zeros; SHA-256(seed) key; zero IV; 4 MiB writes",
+    "seed": "CloudDrive Sprint 2 fixture v1",
+    "sha256": "654d1d7cafeafca545f1c4ededce22c406d6028d5b8461d08f801ced6c400041"
+  },
+  "environment": {
+    "platform": "darwin",
+    "release": "27.0.0",
+    "architecture": "arm64",
+    "host_cpu": "Apple M3",
+    "host_logical_cpus": 8,
+    "host_memory_bytes": 8589934592,
+    "node": "v26.3.0",
+    "compose_project": "clouddrive-sprint2-large",
+    "images": [
+      {
+        "service": "api",
+        "image_id": "sha256:4e88e97eb9eee60cdcae37aeb477fd13641d826b628d1bc9eaf18bc6ca76e5ad"
+      },
+      {
+        "service": "beat",
+        "image_id": "sha256:4e88e97eb9eee60cdcae37aeb477fd13641d826b628d1bc9eaf18bc6ca76e5ad"
+      },
+      {
+        "service": "minio",
+        "image_id": "sha256:9c48c56d15710de71060d2bfc9689515a089c708043897cdf72c34680868c304"
+      },
+      {
+        "service": "postgres",
+        "image_id": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24"
+      },
+      {
+        "service": "redis",
+        "image_id": "sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499"
+      },
+      {
+        "service": "worker",
+        "image_id": "sha256:4e88e97eb9eee60cdcae37aeb477fd13641d826b628d1bc9eaf18bc6ca76e5ad"
+      }
+    ],
+    "database": "clouddrive_large_test",
+    "bucket": "clouddrive-large-test",
+    "docker": {
+      "cpus": 8,
+      "memory_bytes": 4108632064,
+      "version": "29.5.3"
+    },
+    "git_sha": "2ab7e701bdf4bd5435538e84f8b923b24914d964",
+    "git_dirty": true,
+    "source_sha256": {
+      "clouddrive/config.py": "45135623c42881c6a47d17546a4359ce3b058fc92430a4637508ecc86e611932",
+      "clouddrive/worker.py": "0a8619f9e6ad2cc53bffb7cea8a55e42109e1e09b492ececa565990cc44976fb",
+      "frontend/src/main.ts": "0c433e14a9c085a0e8f4f6123b55590f023e26e14cb4539ca3b517be37e66cb8",
+      "frontend/src/hash-worker.ts": "5ee4090dfd1a207a2b48214295927cf086e26441ee624041760bd94efaa53d7e",
+      "scripts/benchmark-upload.mjs": "afbd9cd220ec0fb2a415e143350a26ba22597f850b6f43cccefa365fcc70623b",
+      "compose.large.yaml": "bc160643cb3e861a71edb96a3d56ad96693a3c6e69fb7427094bd2d9895da8db"
+    },
+    "other_running_container_count": 6,
+    "host_free_bytes": 30119440384,
+    "storage_free_bytes": 197633884160,
+    "browser": "155.0.8059.85",
+    "part_bytes": 8388608,
+    "part_concurrency": 3
+  },
+  "timings": {
+    "fixture_generation_s": 0.04894200000000004,
+    "runner_total_s": 5.543091
+  },
+  "checks": {
+    "oversized_api_status": 413,
+    "oversized_browser_rejected": true,
+    "failure_cleanup_status": 204
+  },
+  "events": [
+    {
+      "kind": "part_request",
+      "phase": "first",
+      "number": 2,
+      "t_s": 4.070772
+    },
+    {
+      "kind": "part_request",
+      "phase": "first",
+      "number": 3,
+      "t_s": 4.169025
+    },
+    {
+      "kind": "part_request",
+      "phase": "first",
+      "number": 1,
+      "t_s": 4.298921
+    },
+    {
+      "kind": "storage_response",
+      "phase": "first",
+      "number": 2,
+      "status": 200,
+      "t_s": 4.301891
+    }
+  ],
+  "resources": {
+    "interval_ms": 1000,
+    "samples": [
+      {
+        "t_s": 5.435166,
+        "phase": "first",
+        "chrome_sum_rss_bytes": 928153600,
+        "node_rss_bytes": 171180032,
+        "ui_transfer_state": [
+          "Interrupted · Select file to resume"
+        ],
+        "services": [
+          {
+            "service": "api",
+            "memory_bytes": 86465577,
+            "cpu_percent": 15.32
+          },
+          {
+            "service": "beat",
+            "memory_bytes": 74878812,
+            "cpu_percent": 1.22
+          },
+          {
+            "service": "minio",
+            "memory_bytes": 109261619,
+            "cpu_percent": 0.34
+          },
+          {
+            "service": "postgres",
+            "memory_bytes": 38514196,
+            "cpu_percent": 0.38
+          },
+          {
+            "service": "redis",
+            "memory_bytes": 10473177,
+            "cpu_percent": 1.9
+          },
+          {
+            "service": "worker",
+            "memory_bytes": 202480026,
+            "cpu_percent": 0.92
+          }
+        ]
+      }
+    ],
+    "sample_errors": 0,
+    "definition": "Chrome sum of process RSS (shared pages can be counted multiple times); Node RSS; Docker memory usage and CPU from docker stats. Samples are not instantaneous allocation maxima.",
+    "chrome_sum_rss_peak_bytes": 928153600,
+    "node_rss_peak_bytes": 171180032,
+    "service_memory_peak_bytes": {
+      "api": 86465577,
+      "beat": 74878812,
+      "minio": 109261619,
+      "postgres": 38514196,
+      "redis": 10473177,
+      "worker": 202480026
+    }
+  },
+  "error": "Transfer stopped: Storage has not confirmed this part and checksum",
+  "finished_at": "2026-10-26T23:29:51.931Z"
+}

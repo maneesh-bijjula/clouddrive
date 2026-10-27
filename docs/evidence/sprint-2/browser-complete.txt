@@ -1,0 +1,27 @@
+
+Running 20 tests using 1 worker
+
+(node:16517) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests-browser/recovery.spec.ts:62:1 › interrupted upload can be deleted and uploaded again with a fresh request ID (17.9s)
+  ✓   2 tests-browser/recovery.spec.ts:94:3 › a deleted upload remembered by another tab is replaced without reload (21.8s)
+  ✓   3 tests-browser/recovery.spec.ts:94:3 › a deleted upload remembered by another tab is replaced after reload (13.5s)
+  ✓   4 tests-browser/recovery.spec.ts:119:1 › expired storage becomes terminal and Restart verifies the reselected original file (16.0s)
+  ✓   5 tests-browser/recovery.spec.ts:154:1 › duplicate file selection keeps one active upload and one storage transfer (8.0s)
+  ✓   6 tests-browser/recovery.spec.ts:183:1 › workspace switch isolates saved requests and an old in-flight response (3.8s)
+  ✓   7 tests-browser/transfer.spec.ts:30:1 › a transient signing failure retries automatically (7.1s)
+  ✓   8 tests-browser/transfer.spec.ts:47:3 › a lost storage-reply is reconciled without a second PUT (5.1s)
+  ✓   9 tests-browser/transfer.spec.ts:47:3 › a lost acknowledgement-reply is reconciled without a second PUT (4.4s)
+  ✓  10 tests-browser/transfer.spec.ts:77:1 › a genuinely expired S3 URL is re-signed without expiring the upload (3.8s)
+  ✓  11 tests-browser/transfer.spec.ts:113:1 › a permanent storage rejection is not retried (387ms)
+  ✓  12 tests-browser/transfer.spec.ts:132:1 › transient failures stop after four attempts and can then resume (6.6s)
+  ✓  13 tests-browser/transfer.spec.ts:152:1 › pause cancels a hashing worker before creating an upload (382ms)
+  ✓  14 tests-browser/transfer.spec.ts:184:1 › upload can start after workspace configuration while the first listing is pending (3.9s)
+  ✓  15 tests-browser/transfer.spec.ts:212:1 › the last multipart part can finish before the first two parts (3.6s)
+  ✓  16 tests-browser/workspace.spec.ts:27:1 › uploads, verifies through Celery, previews safely, and downloads identical bytes (6.8s)
+  ✓  17 tests-browser/workspace.spec.ts:51:1 › resumes a multipart upload after reload without resending its confirmed part (8.7s)
+  ✓  18 tests-browser/workspace.spec.ts:121:1 › exports workspace access, reopens it in a fresh browser, searches, and deletes (5.2s)
+  ✓  19 tests-browser/workspace.spec.ts:154:1 › mobile workspace fits the screen and supports upload and file details (6.9s)
+  ✓  20 tests-browser/workspace.spec.ts:182:1 › validates empty uploads and renders a real populated workspace (12.7s)
+
+  20 passed (2.8m)

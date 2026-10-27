@@ -1,0 +1,43 @@
+{
+  "target_size": {
+    "scenarios": 1,
+    "attempts": 1,
+    "passed": 1,
+    "failed": 0,
+    "report": "5gb-run-1.json"
+  },
+  "development_rehearsals": [
+    {
+      "report": "smoke-run-1.json",
+      "bytes": 67108881,
+      "status": "failed",
+      "reason": "Sparse/out-of-order multipart receipt lookup in MinIO; corrected with regression tests."
+    },
+    {
+      "log": "smoke-run-2.txt",
+      "bytes": 67108881,
+      "status": "failed",
+      "reason": "Harness waited for a download before waiting for the UI to reflect READY; uncaught event timeout. Empty JSON was not treated as evidence."
+    },
+    {
+      "report": "smoke-run-3.json",
+      "bytes": 67108881,
+      "status": "passed",
+      "scope": "Development rehearsal, not 5 GB evidence."
+    }
+  ],
+  "browser_development_failure": {
+    "log": "browser-initial.txt",
+    "status": "17 passed, 1 failed",
+    "reason": "Workspace readiness guard raced initial listing; fixed and covered by a deterministic test."
+  },
+  "final_regressions": {
+    "python": 78,
+    "unit": 28,
+    "integration": 50,
+    "browser_workflows": 20
+  },
+  "recovery_matrix_20_case_claim": false,
+  "ten_concurrent_500MB_claim": false,
+  "live_AWS_claim": false
+}

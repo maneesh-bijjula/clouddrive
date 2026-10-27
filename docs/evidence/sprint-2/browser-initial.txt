@@ -1,0 +1,70 @@
+
+Running 18 tests using 1 worker
+
+(node:12004) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests-browser/recovery.spec.ts:62:1 › interrupted upload can be deleted and uploaded again with a fresh request ID (10.7s)
+  ✓   2 tests-browser/recovery.spec.ts:94:3 › a deleted upload remembered by another tab is replaced without reload (3.7s)
+  ✓   3 tests-browser/recovery.spec.ts:94:3 › a deleted upload remembered by another tab is replaced after reload (6.2s)
+  ✘   4 tests-browser/recovery.spec.ts:119:1 › expired storage becomes terminal and Restart verifies the reselected original file (30.5s)
+(node:12176) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   5 tests-browser/recovery.spec.ts:154:1 › duplicate file selection keeps one active upload and one storage transfer (7.1s)
+  ✓   6 tests-browser/recovery.spec.ts:183:1 › workspace switch isolates saved requests and an old in-flight response (4.4s)
+  ✓   7 tests-browser/transfer.spec.ts:30:1 › a transient signing failure retries automatically (4.4s)
+  ✓   8 tests-browser/transfer.spec.ts:47:3 › a lost storage-reply is reconciled without a second PUT (6.9s)
+  ✓   9 tests-browser/transfer.spec.ts:47:3 › a lost acknowledgement-reply is reconciled without a second PUT (3.9s)
+  ✓  10 tests-browser/transfer.spec.ts:77:1 › a genuinely expired S3 URL is re-signed without expiring the upload (6.8s)
+  ✓  11 tests-browser/transfer.spec.ts:113:1 › a permanent storage rejection is not retried (380ms)
+  ✓  12 tests-browser/transfer.spec.ts:132:1 › transient failures stop after four attempts and can then resume (6.7s)
+  ✓  13 tests-browser/transfer.spec.ts:152:1 › pause cancels a hashing worker before creating an upload (375ms)
+  ✓  14 tests-browser/workspace.spec.ts:27:1 › uploads, verifies through Celery, previews safely, and downloads identical bytes (6.8s)
+  ✓  15 tests-browser/workspace.spec.ts:51:1 › resumes a multipart upload after reload without resending its confirmed part (8.4s)
+  ✓  16 tests-browser/workspace.spec.ts:121:1 › exports workspace access, reopens it in a fresh browser, searches, and deletes (7.4s)
+  ✓  17 tests-browser/workspace.spec.ts:154:1 › mobile workspace fits the screen and supports upload and file details (3.8s)
+  ✓  18 tests-browser/workspace.spec.ts:182:1 › validates empty uploads and renders a real populated workspace (15.6s)
+
+
+  1) tests-browser/recovery.spec.ts:119:1 › expired storage becomes terminal and Restart verifies the reselected original file
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('#notice')
+    Expected substring: "Upload connection interrupted"
+    Received string:    "Connect to a workspace before uploading."
+    Timeout: 30000ms
+
+    Call log:
+      - Expect "toContainText" locator('#notice') with timeout 30000ms
+      - waiting for locator('#notice')
+        63 × locator resolved to <div class="" id="notice" role="status">Connect to a workspace before uploading.</div>
+           - unexpected value "Connect to a workspace before uploading."
+
+
+      40 |   );
+      41 |   await page.locator("#file-input").setInputFiles(file);
+    > 42 |   await expect(page.locator("#notice")).toContainText(
+         |                                         ^
+      43 |     "Upload connection interrupted",
+      44 |   );
+      45 |   await expect(page.locator("tbody tr", { hasText: file.name })).toBeVisible();
+        at interrupt (/Users/maneeshbijjula/Documents/New project/clouddrive/tests-browser/recovery.spec.ts:42:41)
+        at /Users/maneeshbijjula/Documents/New project/clouddrive/tests-browser/recovery.spec.ts:123:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/recovery-expired-storage-b-aaa08-he-reselected-original-file/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/recovery-expired-storage-b-aaa08-he-reselected-original-file/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/browser/recovery-expired-storage-b-aaa08-he-reselected-original-file/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/browser/recovery-expired-storage-b-aaa08-he-reselected-original-file/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests-browser/recovery.spec.ts:119:1 › expired storage becomes terminal and Restart verifies the reselected original file
+  17 passed (2.3m)
