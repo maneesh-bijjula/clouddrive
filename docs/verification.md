@@ -2,7 +2,7 @@
 
 ## Sprint 3 implementation verification
 
-The recovery harness has passed separate development batches of nine browser cases and eleven backend cases. Those partial batches do not constitute a complete 20-case pass or the 60-attempt release gate. Regression verification passed **89 Python cases (39 unit + 50 integration)** and **20 packaged browser workflows**, without local browser retries. The [Sprint 3 report](sprint-3.md) and [versioned manifest](recovery-matrix.json) define fault proof, timing, isolation, and the pending three-pass release procedure.
+The [versioned 20-case recovery matrix](recovery-matrix.json) passed **three complete local passes, 60/60 attempts**, on clean implementation `7569c88`. Separate Linux CI passed 20/20 once on the same SHA. Each case proves its fault and validates exact source/worker/download bytes and SHA-256, unique logical effects, download access gates, and cleanup. Regression verification passed **89 Python cases (39 unit + 50 integration)** and **20 packaged browser workflows** without local retries; CI also passed all 20 workflows in both host and packaged modes. See [Sprint 3](sprint-3.md) for raw evidence, timing definitions, environment, and limitations. Development batches remain separate from the release denominator.
 
 ## Sprint 2 verification
 

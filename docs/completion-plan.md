@@ -2,9 +2,9 @@
 
 Audit date: October 24, 2026 (America/Los_Angeles). Baseline: `6f439d97b62d25b16ef22d9ab91208955bc97983` on `main`.
 
-**Progress: Sprints 1 and 2 are complete; Sprint 3 is implemented and its three-pass release gate is in progress.** Extend the existing service. The core architecture works; the remaining work is closing specific failure gaps, enabling and measuring the resume targets, and adding operational recovery evidence.
+**Progress: Sprints 1-3 are complete; Sprint 4 measures ten concurrent uploads next.** Extend the existing service. The core architecture works; the remaining work is closing specific failure gaps, enabling and measuring the resume targets, and adding operational recovery evidence.
 
-This document preserves the baseline audit and proposed sprint sequence. Sprints 1 and 2 were subsequently authorized for direct delivery to `main`; see [the Sprint 1 report](sprint-1.md) for implementation and current verification. See [Sprint 2](sprint-2.md) for the large-file implementation and measurement procedure. Baseline fault probes assert the original defects and apply only to baseline `6f439d9`, not to the corrected implementation. The resume and other projects remain outside the implementation scope.
+This document preserves the baseline audit and proposed sprint sequence. Sprints 1-3 were subsequently authorized for direct delivery to `main`; see [the Sprint 1 report](sprint-1.md) for implementation and current verification. See [Sprint 2](sprint-2.md) for the large-file implementation and measurement procedure, and [Sprint 3](sprint-3.md) for the completed recovery matrix. Baseline fault probes assert the original defects and apply only to baseline `6f439d9`, not to the corrected implementation. The resume and other projects remain outside the implementation scope.
 
 ## Evidence and current status
 
@@ -57,7 +57,7 @@ Use `MB = 10^6 B`, `GB = 10^9 B`, `MiB = 2^20 B`, and `GiB = 2^30 B` throughout.
 
 The resume says AWS S3; existing execution evidence uses MinIO. Label provider scope explicitly. A MinIO result establishes the tested S3-compatible workflow, not execution against live AWS. A live AWS validation can be added with an authorized account and budget; public hosting is independent and optional.
 
-## Remaining work and risks, in priority order
+## Baseline audit gaps and risks, in priority order
 
 | Priority | Finding and evidence                                                                                                                                                                                                                                                                                            | Required action                                                                                                                                        |
 | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -98,7 +98,7 @@ Suggested first working sequence after selecting Sprint 1:
 
 ## Planned recovery matrix: exactly 20 distinct scenarios
 
-These are proposed acceptance cases, not audit results. Each case uses a known source file and an isolated workspace/database/bucket. Its recovery must finish within a documented per-case deadline after dependency restoration. Record injection boundary, file bytes/hash, process/service identity, elapsed recovery time, retried parts/tasks, final object count, status, and downloaded bytes/hash.
+These cases were defined during the baseline audit and subsequently implemented and verified in [Sprint 3](sprint-3.md); the baseline audit itself did not establish their success. Each case uses a known source file and an isolated workspace/database/bucket. Its recovery must finish within a documented per-case deadline after dependency restoration. Record injection boundary, file bytes/hash, process/service identity, elapsed recovery time, retried parts/tasks, final object count, status, and downloaded bytes/hash.
 
 | ID  | Injected recoverable fault                                                    | Expected recovery                                                         |
 | --- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
@@ -172,4 +172,4 @@ Use the existing smoke script's `--base-url http://localhost:18090` override and
 
 Audit cleanup: the disposable audit Compose project was stopped and removed after verification. Existing CloudDrive, Projects 1 and 2 containers and data were left as found.
 
-All future sprint gates include preserving existing data, scoped test cleanup, packaged browser/API verification, documentation, commit/push, and checking GitHub CI against the exact pushed SHA. Sprints 1 and 2 were authorized and completed; later sprints begin when the user chooses them.
+All future sprint gates include preserving existing data, scoped test cleanup, packaged browser/API verification, documentation, commit/push, and checking GitHub CI against the exact pushed SHA. Sprints 1-3 were authorized and completed; Sprint 3 passed 20/20 named cases across three full local passes (60/60 attempts), with separate 20/20 Linux CI verification. See [Sprint 3](sprint-3.md). Later sprints begin when the user chooses them.

@@ -1,0 +1,25 @@
+
+> clouddrive@0.1.0 test:recovery
+> node scripts/recovery-matrix.mjs --project clouddrive-ci-recovery --passes 1 --output test-results/recovery/matrix.json
+
+{"pass":1,"case":"R01","status":"passed","recovery_s":5.941499}
+{"pass":1,"case":"R02","status":"passed","recovery_s":3.262903}
+{"pass":1,"case":"R03","status":"passed","recovery_s":5.806155}
+{"pass":1,"case":"R04","status":"passed","recovery_s":3.254118}
+{"pass":1,"case":"R05","status":"passed","recovery_s":5.556278}
+{"pass":1,"case":"R06","status":"passed","recovery_s":3.229053}
+{"pass":1,"case":"R07","status":"passed","recovery_s":8.850419}
+{"pass":1,"case":"R08","status":"passed","recovery_s":5.855568}
+{"pass":1,"case":"R09","status":"passed","recovery_s":5.445797}
+{"pass":1,"case":"R10","status":"passed","recovery_s":6.366558}
+{"pass":1,"case":"R11","status":"passed","recovery_s":33.661049}
+{"pass":1,"case":"R12","status":"passed","recovery_s":3.575021}
+{"pass":1,"case":"R13","status":"passed","recovery_s":4.06794}
+{"pass":1,"case":"R14","status":"passed","recovery_s":6.991034}
+{"pass":1,"case":"R15","status":"passed","recovery_s":5.761429}
+{"pass":1,"case":"R16","status":"passed","recovery_s":3.747594}
+{"pass":1,"case":"R17","status":"passed","recovery_s":32.619805}
+{"pass":1,"case":"R18","status":"passed","recovery_s":94.237487}
+{"pass":1,"case":"R19","status":"passed","recovery_s":94.643302}
+{"pass":1,"case":"R20","status":"passed","recovery_s":2.359185}
+{"status":"passed","passed_attempts":20,"expected_attempts":20,"release_gate_passed":false,"output":"/home/runner/work/clouddrive/clouddrive/test-results/recovery/matrix.json"}

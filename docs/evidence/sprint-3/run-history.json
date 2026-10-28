@@ -24,6 +24,28 @@
       "attempts": 11,
       "counts_toward_release": false,
       "git_dirty": true
+    },
+    {
+      "artifact": "release-1.json",
+      "kind": "three complete local release passes",
+      "status": "passed",
+      "distinct_cases": 20,
+      "complete_passes": 3,
+      "attempts": 60,
+      "counts_toward_release": true,
+      "git_sha": "7569c8891eca8361027308fb2f9139d582d96931",
+      "git_dirty": false,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "artifact": "ci-recovery-implementation.json",
+      "kind": "separate Linux CI verification",
+      "status": "passed",
+      "distinct_cases": 20,
+      "complete_passes": 1,
+      "attempts": 20,
+      "counts_toward_release": false,
+      "git_sha": "7569c8891eca8361027308fb2f9139d582d96931"
     }
   ]
 }

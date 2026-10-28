@@ -1,0 +1,3963 @@
+{
+  "schema_version": 1,
+  "suite": "clouddrive-recovery-20",
+  "started_at": "2026-10-28T00:27:35.544Z",
+  "run_id": "823384ee-c4d7-4ce1-bc6a-fc7239d949ff",
+  "status": "passed",
+  "scope": "Packaged local MinIO/PostgreSQL/Redis/Celery recovery; small deterministic fixtures; no live AWS, concurrency or large-file measurement",
+  "manifest_sha256": "00686d71fb0ad7845f3cfcb0c1dd0b2fdd67d9cae73572d0188cf2cf01f1a01d",
+  "selected_cases": [
+    "R01",
+    "R02",
+    "R03",
+    "R04",
+    "R05",
+    "R06",
+    "R07",
+    "R08",
+    "R09",
+    "R10",
+    "R11",
+    "R12",
+    "R13",
+    "R14",
+    "R15",
+    "R16",
+    "R17",
+    "R18",
+    "R19",
+    "R20"
+  ],
+  "full_matrix": true,
+  "requested_full_passes": 1,
+  "expected_attempts": 20,
+  "environment": {
+    "platform": "linux",
+    "architecture": "x64",
+    "node": "v24.22.1",
+    "host_cpu": "AMD EPYC 9V45 96-Core Processor",
+    "host_logical_cpus": 4,
+    "host_memory_bytes": 16760344576,
+    "compose_project": "clouddrive-ci-recovery",
+    "git_sha": "7569c8891eca8361027308fb2f9139d582d96931",
+    "git_dirty": false,
+    "docker": {
+      "version": "28.0.4",
+      "cpus": 4,
+      "memory_bytes": 16760344576
+    },
+    "images": [
+      {
+        "service": "api",
+        "image_id": "sha256:3e73f16bb1e4b859e9724822931d7f5e19e08d208a9698f40ac3461602d171b2"
+      },
+      {
+        "service": "beat",
+        "image_id": "sha256:3e73f16bb1e4b859e9724822931d7f5e19e08d208a9698f40ac3461602d171b2"
+      },
+      {
+        "service": "minio",
+        "image_id": "sha256:781cebe53d3ce3fe358d150dd49e48b198a1a58fd0f3d114ec5d33938efa9c49"
+      },
+      {
+        "service": "postgres",
+        "image_id": "sha256:ab20e934b27ba3ff927c1b4c9ff8cf6c32f315f743efe68dd3441182a87fb085"
+      },
+      {
+        "service": "redis",
+        "image_id": "sha256:98c6ca8f397f86e469be752c3e7ed5eb8b17f2479840cb69a2e413037038e9f4"
+      },
+      {
+        "service": "worker",
+        "image_id": "sha256:3e73f16bb1e4b859e9724822931d7f5e19e08d208a9698f40ac3461602d171b2"
+      }
+    ],
+    "other_running_container_count": 0,
+    "source_sha256": {
+      "clouddrive/__init__.py": "bc50749c7527c8869db75c23b477b100459807d9b37f030007e99e5babac9779",
+      "clouddrive/api.py": "590bf12b515a14d78b46a3585f1b832dc4cc752621a024f4b756e82fcc06961f",
+      "clouddrive/config.py": "45135623c42881c6a47d17546a4359ce3b058fc92430a4637508ecc86e611932",
+      "clouddrive/db.py": "e413b085ddeaeae257b0b7965d9f5b892759f3ede7e441f636451836e143f06b",
+      "clouddrive/models.py": "ad6eeabadb6cc63bd3ae032262f52ed30b7eea1239059db666d46feb14af9fb3",
+      "clouddrive/recovery_faults.py": "d5933deee21b83d9ba7a8dbb70b00520b89bc3b80e201cdc6eefbf121a81a899",
+      "clouddrive/service.py": "6d452d42f85692fa02503f7e273de5c2a7b4db528a68039259443385e4e2f629",
+      "clouddrive/storage.py": "5e3539c250497518c976d58096a3c0e43c1261d4140a752aac5c7afc075722e5",
+      "clouddrive/worker.py": "871a68920f5b9e405bd625039c2d9cb6639e82bf39bc72f2c70df8f3a5e350e9",
+      "scripts/recovery-inspect.py": "89ed857bb21e9446ca24ec7d31a96f3b0716d65db9065ef24c1418ebf89eca12",
+      "scripts/recovery-matrix.mjs": "10eef37ceb4e5eee32e1fe168177b396dff67667f2c3d501045900754e22061c",
+      "scripts/recovery-upload.mjs": "7648bbbd3b7c965cfd67e17984b00b2db404f2b5c6c5a315bb4a35ff923cf478",
+      "scripts/recovery_backend.py": "d8f3bbd41f48730878c22f452ce388e64597a2ff809c8ad063ae8a4a5dfed4f6",
+      "compose.recovery.yaml": "a456b65e679407d01d6ea2f6138ee80eea663c2257a7101eba2bd73030be70fb",
+      "frontend/src/main.ts": "0c433e14a9c085a0e8f4f6123b55590f023e26e14cb4539ca3b517be37e66cb8",
+      "frontend/src/hash-worker.ts": "5ee4090dfd1a207a2b48214295927cf086e26441ee624041760bd94efaa53d7e"
+    },
+    "packaged_python_source_matches": true
+  },
+  "passes": [
+    {
+      "pass": 1,
+      "started_at": "2026-10-28T00:27:35.979Z",
+      "cases": [
+        {
+          "id": "R01",
+          "name": "Upload initiation commits, response is lost",
+          "status": "passed",
+          "fault_observed": true,
+          "source": {
+            "bytes": 262161,
+            "sha256": "3e8d2c4f901a429a061164185a2e491d8334a27f199995045a28e7b5f88f4e81"
+          },
+          "deadline_s": 120,
+          "recovery_clock": "Injected fault observed to READY observed in browser; includes retries or explicit original-file reselection.",
+          "fault": {
+            "kind": "browser transport interception",
+            "committed_response_status": 201,
+            "delivered_to_browser": false,
+            "same_request_id_same_upload": true
+          },
+          "pre_ready_download_status": 409,
+          "cross_workspace_download_status": 404,
+          "download": {
+            "bytes": 262161,
+            "sha256": "3e8d2c4f901a429a061164185a2e491d8334a27f199995045a28e7b5f88f4e81"
+          },
+          "file_id": "048d1802-4ec3-40d0-8e25-8e25a747c553",
+          "final": {
+            "file_id": "048d1802-4ec3-40d0-8e25-8e25a747c553",
+            "workspace_id": "66eaf4e2-01b5-4cfe-be70-754c4ae2a862",
+            "status": "READY",
+            "size": 262161,
+            "sha256": "3e8d2c4f901a429a061164185a2e491d8334a27f199995045a28e7b5f88f4e81",
+            "bytes_verified": 262161,
+            "metadata_count": 1,
+            "object_count": 1,
+            "object_bytes": 262161,
+            "multipart_count": 0,
+            "result_count": 1,
+            "outbox_count": 0,
+            "claim_active": false,
+            "confirmed_parts": [
+              1
+            ],
+            "remote_parts": [],
+            "remote_part_sizes": []
+          },
+          "events": {
+            "storage_puts": [
+              1
+            ],
+            "signs": [
+              1
+            ],
+            "acknowledgements": [
+              1
+            ]
+          },
+          "recovery_s": 5.941499,
+          "cleanup": [
+            {
+              "file_id": "048d1802-4ec3-40d0-8e25-8e25a747c553",
+              "status": 204
+            }
+          ],
+          "elapsed_s": 7.504382
+        },
+        {
+          "id": "R02",
+          "name": "Part-signing transaction commits, response is lost",
+          "status": "passed",
+          "fault_observed": true,
+          "source": {
+            "bytes": 262161,
+            "sha256": "73fcc5e70f77a47f0d255cfb1316555b756b611d5fe8602e8bcbb218e82adcb3"
+          },
+          "deadline_s": 120,
+          "recovery_clock": "Injected fault observed to READY observed in browser; includes retries or explicit original-file reselection.",
+          "fault": {
+            "kind": "browser transport interception",
+            "committed_response_status": 200,
+            "delivered_to_browser": false
+          },
+          "pre_ready_download_status": 409,
+          "cross_workspace_download_status": 404,
+          "download": {
+            "bytes": 262161,
+            "sha256": "73fcc5e70f77a47f0d255cfb1316555b756b611d5fe8602e8bcbb218e82adcb3"
+          },
+          "file_id": "320ce70f-1f82-462f-a8fd-49bd05cbbe2e",
+          "final": {
+            "file_id": "320ce70f-1f82-462f-a8fd-49bd05cbbe2e",
+            "workspace_id": "4af27154-8102-4e92-b03b-14093426ce78",
+            "status": "READY",
+            "size": 262161,
+            "sha256": "73fcc5e70f77a47f0d255cfb1316555b756b611d5fe8602e8bcbb218e82adcb3",
+            "bytes_verified": 262161,
+            "metadata_count": 1,
+            "object_count": 1,
+            "object_bytes": 262161,
+            "multipart_count": 0,
+            "result_count": 1,
+            "outbox_count": 0,
+            "claim_active": false,
+            "confirmed_parts": [
+              1
+            ],
+            "remote_parts": [],
+            "remote_part_sizes": []
+          },
+          "events": {
+            "storage_puts": [
+              1
+            ],
+            "signs": [
+              1,
+              1
+            ],
+            "acknowledgements": [
+              1
+            ]
+          },
+          "recovery_s": 3.262903,
+          "cleanup": [
+            {
+              "file_id": "320ce70f-1f82-462f-a8fd-49bd05cbbe2e",
+              "status": 204
+            }
+          ],
+          "elapsed_s": 4.252421
+        },
+        {
+          "id": "R03",
+          "name": "Storage PUT interrupted before accepting the complete part",
+          "status": "passed",
+          "fault_observed": true,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "7c0ec58ad77f6502f28bb5f568440141685ed0d8d890844b3ea384c81ad16fe7"
+          },
+          "deadline_s": 120,
+          "recovery_clock": "Injected fault observed to READY observed in browser; includes retries or explicit original-file reselection.",
+          "fault": {
+            "kind": "real truncated storage PUT plus browser transport failure",
+            "transmitted_prefix_bytes": 65536,
+            "declared_bytes": 8388608,
+            "remote_parts_after_interruption": [
+              1
+            ],
+            "confirmed_parts_preserved": [
+              1
+            ],
+            "interrupted_part": 2
+          },
+          "pre_ready_download_status": 409,
+          "cross_workspace_download_status": 404,
+          "download": {
+            "bytes": 17825809,
+            "sha256": "7c0ec58ad77f6502f28bb5f568440141685ed0d8d890844b3ea384c81ad16fe7"
+          },
+          "file_id": "379ffd95-f590-4cba-9718-6819d1762df9",
+          "final": {
+            "file_id": "379ffd95-f590-4cba-9718-6819d1762df9",
+            "workspace_id": "548f0dea-a59d-4aae-9616-290230485926",
+            "status": "READY",
+            "size": 17825809,
+            "sha256": "7c0ec58ad77f6502f28bb5f568440141685ed0d8d890844b3ea384c81ad16fe7",
+            "bytes_verified": 17825809,
+            "metadata_count": 1,
+            "object_count": 1,
+            "object_bytes": 17825809,
+            "multipart_count": 0,
+            "result_count": 1,
+            "outbox_count": 0,
+            "claim_active": false,
+            "confirmed_parts": [
+              1,
+              2,
+              3
+            ],
+            "remote_parts": [],
+            "remote_part_sizes": []
+          },
+          "events": {
+            "storage_puts": [
+              3,
+              2,
+              1,
+              2
+            ],
+            "signs": [
+              3,
+              2,
+              1,
+              2
+            ],
+            "acknowledgements": [
+              1,
+              3,
+              2
+            ]
+          },
+          "recovery_s": 5.806155,
+          "cleanup": [
+            {
+              "file_id": "379ffd95-f590-4cba-9718-6819d1762df9",
+              "status": 204
+            }
+          ],
+          "elapsed_s": 10.237837
+        },
+        {
+          "id": "R04",
+          "name": "Storage accepts PUT, its response is lost",
+          "status": "passed",
+          "fault_observed": true,
+          "source": {
+            "bytes": 262161,
+            "sha256": "cb2152f3a273e80fc4ed57f3462c2f6ca90132b08cc8874acaaf92575a1f9c16"
+          },
+          "deadline_s": 120,
+          "recovery_clock": "Injected fault observed to READY observed in browser; includes retries or explicit original-file reselection.",
+          "fault": {
+            "kind": "browser transport interception",
+            "upstream_response_status": 200,
+            "delivered_to_browser": false
+          },
+          "pre_ready_download_status": 409,
+          "cross_workspace_download_status": 404,
+          "download": {
+            "bytes": 262161,
+            "sha256": "cb2152f3a273e80fc4ed57f3462c2f6ca90132b08cc8874acaaf92575a1f9c16"
+          },
+          "file_id": "48d4da6a-98e1-4005-9f31-89e2ed6e5698",
+          "final": {
+            "file_id": "48d4da6a-98e1-4005-9f31-89e2ed6e5698",
+            "workspace_id": "fad3c820-ac64-40b6-b805-0eee79f36a01",
+            "status": "READY",
+            "size": 262161,
+            "sha256": "cb2152f3a273e80fc4ed57f3462c2f6ca90132b08cc8874acaaf92575a1f9c16",
+            "bytes_verified": 262161,
+            "metadata_count": 1,
+            "object_count": 1,
+            "object_bytes": 262161,
+            "multipart_count": 0,
+            "result_count": 1,
+            "outbox_count": 0,
+            "claim_active": false,
+            "confirmed_parts": [
+              1
+            ],
+            "remote_parts": [],
+            "remote_part_sizes": []
+          },
+          "events": {
+            "storage_puts": [
+              1
+            ],
+            "signs": [
+              1,
+              1
+            ],
+            "acknowledgements": []
+          },
+          "recovery_s": 3.254118,
+          "cleanup": [
+            {
+              "file_id": "48d4da6a-98e1-4005-9f31-89e2ed6e5698",
+              "status": 204
+            }
+          ],
+          "elapsed_s": 4.230546
+        },
+        {
+          "id": "R05",
+          "name": "Acknowledgement request is lost before reaching API",
+          "status": "passed",
+          "fault_observed": true,
+          "source": {
+            "bytes": 262161,
+            "sha256": "2195ed80016f8f3e858e4b6a5348bcb2d30f0529aa2ce53617ef8a4a4b82951b"
+          },
+          "deadline_s": 120,
+          "recovery_clock": "Injected fault observed to READY observed in browser; includes retries or explicit original-file reselection.",
+          "fault": {
+            "kind": "browser transport interception",
+            "reached_api": false,
+            "remote_parts": [
+              1
+            ],
+            "confirmed_parts": []
+          },
+          "pre_ready_download_status": 409,
+          "cross_workspace_download_status": 404,
+          "download": {
+            "bytes": 262161,
+            "sha256": "2195ed80016f8f3e858e4b6a5348bcb2d30f0529aa2ce53617ef8a4a4b82951b"
+          },
+          "file_id": "2ba7dbde-6d91-4754-83da-41ca8ce7b99c",
+          "final": {
+            "file_id": "2ba7dbde-6d91-4754-83da-41ca8ce7b99c",
+            "workspace_id": "94ad704d-625a-4daa-a8b2-84e88872855f",
+            "status": "READY",
+            "size": 262161,
+            "sha256": "2195ed80016f8f3e858e4b6a5348bcb2d30f0529aa2ce53617ef8a4a4b82951b",
+            "bytes_verified": 262161,
+            "metadata_count": 1,
+            "object_count": 1,
+            "object_bytes": 262161,
+            "multipart_count": 0,
+            "result_count": 1,
+            "outbox_count": 0,
+            "claim_active": false,
+            "confirmed_parts": [
+              1
+            ],
+            "remote_parts": [],
+            "remote_part_sizes": []
+          },
+          "events": {
+            "storage_puts": [
+              1
+            ],
+            "signs": [
+              1,
+              1
+            ],
+            "acknowledgements": [
+              1
+            ]
+          },
+          "recovery_s": 5.556278,
+          "cleanup": [
+            {
+              "file_id": "2ba7dbde-6d91-4754-83da-41ca8ce7b99c",
+              "status": 204
+            }
+          ],
+          "elapsed_s": 7.314581
+        },
+        {
+          "id": "R06",
+          "name": "Acknowledgement commits, its response is lost",
+          "status": "passed",
+          "fault_observed": true,
+          "source": {
+            "bytes": 262161,
+            "sha256": "abedaaa4191dee5654221538d7b532797fb259ec5b0685c0281fb43b08271dd6"
+          },
+          "deadline_s": 120,
+          "recovery_clock": "Injected fault observed to READY observed in browser; includes retries or explicit original-file reselection.",
+          "fault": {
+            "kind": "browser transport interception",
+            "upstream_response_status": 200,
+            "delivered_to_browser": false
+          },
+          "pre_ready_download_status": 409,
+          "cross_workspace_download_status": 404,
+          "download": {
+            "bytes": 262161,
+            "sha256": "abedaaa4191dee5654221538d7b532797fb259ec5b0685c0281fb43b08271dd6"
+          },
+          "file_id": "18749119-1aa4-4925-a3c4-8cc6548b63fb",
+          "final": {
+            "file_id": "18749119-1aa4-4925-a3c4-8cc6548b63fb",
+            "workspace_id": "b9c9eff4-32e8-4567-8ca8-0034f1497239",
+            "status": "READY",
+            "size": 262161,
+            "sha256": "abedaaa4191dee5654221538d7b532797fb259ec5b0685c0281fb43b08271dd6",
+            "bytes_verified": 262161,
+            "metadata_count": 1,
+            "object_count": 1,
+            "object_bytes": 262161,
+            "multipart_count": 0,
+            "result_count": 1,
+            "outbox_count": 0,
+            "claim_active": false,
+            "confirmed_parts": [
+              1
+            ],
+            "remote_parts": [],
+            "remote_part_sizes": []
+          },
+          "events": {
+            "storage_puts": [
+              1
+            ],
+            "signs": [
+              1,
+              1
+            ],
+            "acknowledgements": [
+              1
+            ]
+          },
+          "recovery_s": 3.229053,
+          "cleanup": [
+            {
+              "file_id": "18749119-1aa4-4925-a3c4-8cc6548b63fb",
+              "status": 204
+            }
+          ],
+          "elapsed_s": 4.243926
+        },
+        {
+          "id": "R07",
+          "name": "Browser reload after several acknowledged parts",
+          "status": "passed",
+          "fault_observed": true,
+          "source": {
+            "bytes": 25165824,
+            "sha256": "b7cdbf9b495a3175a892e961f0fe45cfeb66791f59f0f38abc8692f2ce6a5b4b"
+          },
+          "deadline_s": 120,
+          "recovery_clock": "Original-file reselection requested after reload/pause to READY observed in browser; includes resume hashing and excludes deliberate interruption hold.",
+          "fault": {
+            "kind": "real browser reload after durable acknowledgements",
+            "acknowledged_before_fault": [
+              1,
+              2
+            ],
+            "held_inflight_parts": [
+              3
+            ],
+            "confirmed_after_interruption": [
+              1,
+              2
+            ],
+            "browser_reloaded": true
+          },
+          "puts_before_resume": [
+            2,
+            1,
+            3
+          ],
+          "must_not_resend": [
+            1,
+            2
+          ],
+          "pre_ready_download_status": 409,
+          "cross_workspace_download_status": 404,
+          "download": {
+            "bytes": 25165824,
+            "sha256": "b7cdbf9b495a3175a892e961f0fe45cfeb66791f59f0f38abc8692f2ce6a5b4b"
+          },
+          "file_id": "f3cd51d3-b3e1-4cfd-b45d-2245a7d55c87",
+          "final": {
+            "file_id": "f3cd51d3-b3e1-4cfd-b45d-2245a7d55c87",
+            "workspace_id": "4d8d7010-6107-4506-bad6-996c1229a35d",
+            "status": "READY",
+            "size": 25165824,
+            "sha256": "b7cdbf9b495a3175a892e961f0fe45cfeb66791f59f0f38abc8692f2ce6a5b4b",
+            "bytes_verified": 25165824,
+            "metadata_count": 1,
+            "object_count": 1,
+            "object_bytes": 25165824,
+            "multipart_count": 0,
+            "result_count": 1,
+            "outbox_count": 0,
+            "claim_active": false,
+            "confirmed_parts": [
+              1,
+              2,
+              3
+            ],
+            "remote_parts": [],
+            "remote_part_sizes": []
+          },
+          "events": {
+            "storage_puts": [
+              3
+            ],
+            "signs": [
+              2,
+              1,
+              3,
+              3
+            ],
+            "acknowledgements": [
+              2,
+              1,
+              3
+            ]
+          },
+          "recovery_s": 8.850419,
+          "cleanup": [
+            {
+              "file_id": "f3cd51d3-b3e1-4cfd-b45d-2245a7d55c87",
+              "status": 204
+            }
+          ],
+          "elapsed_s": 14.936283
+        },
+        {
+          "id": "R08",
+          "name": "User pause while parts are in flight",
+          "status": "passed",
+          "fault_observed": true,
+          "source": {
+            "bytes": 25165824,
+            "sha256": "b0c23952fe7de97caffc57e9c9b48859df13fe720c35ded58cab401f2ff8a08f"
+          },
+          "deadline_s": 120,
+          "recovery_clock": "Original-file reselection requested after reload/pause to READY observed in browser; includes resume hashing and excludes deliberate interruption hold.",
+          "fault": {
+            "kind": "user pause during real storage PUTs throttled by Chrome DevTools",
+            "acknowledged_before_fault": [
+              1
+            ],
+            "held_inflight_parts": [
+              2,
+              3
+            ],
+            "confirmed_after_interruption": [
+              1
+            ],
+            "upload_throughput_bytes_s": 524288,
+            "xhr_events": [
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 65536,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 114688,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 163840,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 212992,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 278528,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 327680,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 376832,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 425984,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 475136,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 540672,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 589824,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 638976,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 688128,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 753664,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 802816,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 851968,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 901120,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 950272,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1015808,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1064960,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1114112,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1163264,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1212416,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1277952,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1327104,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1376256,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1425408,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1474560,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1540096,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1589248,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1638400,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1687552,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1753088,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1802240,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1851392,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1900544,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1966080,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2015232,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2064384,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2113536,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2179072,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2228224,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2277376,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2326528,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2375680,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2441216,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2490368,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2539520,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2588672,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2654208,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2703360,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2752512,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2801664,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2850816,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2916352,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2965504,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3014656,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3063808,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3129344,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3178496,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3227648,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3276800,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3325952,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3391488,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3440640,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3489792,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3538944,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3604480,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3653632,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3702784,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3751936,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3801088,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3866624,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3915776,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3964928,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4014080,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4079616,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4128768,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4177920,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4227072,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4276224,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4341760,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4390912,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4440064,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4489216,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4554752,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4603904,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4653056,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4702208,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4751360,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4816896,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4866048,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4915200,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4964352,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5029888,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5079040,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5128192,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5177344,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5226496,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5292032,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5341184,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5390336,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5439488,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5505024,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5554176,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5603328,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5652480,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5701632,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5767168,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5816320,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5865472,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5914624,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5980160,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6029312,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6078464,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6127616,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6176768,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6242304,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6291456,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6340608,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6389760,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6455296,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6504448,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6553600,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6602752,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6668288,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6717440,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6766592,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6815744,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6864896,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6930432,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6979584,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7028736,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7077888,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7143424,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7192576,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7241728,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7290880,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7340032,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7405568,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7454720,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7503872,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7553024,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7618560,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7667712,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7716864,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7766016,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7815168,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7880704,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7929856,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7979008,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 8028160,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 8093696,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 8142848,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 8192000,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 8241152,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 8306688,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 8355840,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 8388608,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 2,
+                "loaded": 32768,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 3,
+                "loaded": 32768,
+                "total": 8388608
+              },
+              {
+                "type": "abort",
+                "part": 2
+              },
+              {
+                "type": "abort",
+                "part": 3
+              }
+            ]
+          },
+          "puts_before_resume": [
+            2,
+            1,
+            3
+          ],
+          "must_not_resend": [
+            1
+          ],
+          "pre_ready_download_status": 409,
+          "cross_workspace_download_status": 404,
+          "download": {
+            "bytes": 25165824,
+            "sha256": "b0c23952fe7de97caffc57e9c9b48859df13fe720c35ded58cab401f2ff8a08f"
+          },
+          "file_id": "977c3322-8327-4be2-bbc4-86bd64c6babe",
+          "final": {
+            "file_id": "977c3322-8327-4be2-bbc4-86bd64c6babe",
+            "workspace_id": "7fb28800-e303-4b3f-84ad-bb5668ddb6cf",
+            "status": "READY",
+            "size": 25165824,
+            "sha256": "b0c23952fe7de97caffc57e9c9b48859df13fe720c35ded58cab401f2ff8a08f",
+            "bytes_verified": 25165824,
+            "metadata_count": 1,
+            "object_count": 1,
+            "object_bytes": 25165824,
+            "multipart_count": 0,
+            "result_count": 1,
+            "outbox_count": 0,
+            "claim_active": false,
+            "confirmed_parts": [
+              1,
+              2,
+              3
+            ],
+            "remote_parts": [],
+            "remote_part_sizes": []
+          },
+          "events": {
+            "storage_puts": [
+              3,
+              2
+            ],
+            "signs": [
+              2,
+              1,
+              3,
+              3,
+              2
+            ],
+            "acknowledgements": [
+              1,
+              3,
+              2
+            ]
+          },
+          "recovery_s": 5.855568,
+          "cleanup": [
+            {
+              "file_id": "977c3322-8327-4be2-bbc4-86bd64c6babe",
+              "status": 204
+            }
+          ],
+          "elapsed_s": 28.046007
+        },
+        {
+          "id": "R09",
+          "name": "Part URL expires before PUT",
+          "status": "passed",
+          "fault_observed": true,
+          "source": {
+            "bytes": 262161,
+            "sha256": "49d131d54cefe42db27fa2c453044498bcb76dcfbb8a6fdace4d5f67c38f57ad"
+          },
+          "deadline_s": 120,
+          "recovery_clock": "First actual expired-signature HTTP 403 observed to READY observed in browser; includes URL renewal and transfer.",
+          "fault": {
+            "kind": "genuinely expired signed URL rejected by MinIO",
+            "rejected_status": 403,
+            "storage_statuses": [
+              403,
+              200
+            ],
+            "expired_signature_seconds": 60,
+            "signature_age_hours": 2
+          },
+          "pre_ready_download_status": 409,
+          "cross_workspace_download_status": 404,
+          "download": {
+            "bytes": 262161,
+            "sha256": "49d131d54cefe42db27fa2c453044498bcb76dcfbb8a6fdace4d5f67c38f57ad"
+          },
+          "file_id": "9b92c42d-f18c-4503-b028-5823c6d661c9",
+          "final": {
+            "file_id": "9b92c42d-f18c-4503-b028-5823c6d661c9",
+            "workspace_id": "cbf686ba-b78c-4e2b-9280-04422309af6e",
+            "status": "READY",
+            "size": 262161,
+            "sha256": "49d131d54cefe42db27fa2c453044498bcb76dcfbb8a6fdace4d5f67c38f57ad",
+            "bytes_verified": 262161,
+            "metadata_count": 1,
+            "object_count": 1,
+            "object_bytes": 262161,
+            "multipart_count": 0,
+            "result_count": 1,
+            "outbox_count": 0,
+            "claim_active": false,
+            "confirmed_parts": [
+              1
+            ],
+            "remote_parts": [],
+            "remote_part_sizes": []
+          },
+          "events": {
+            "storage_puts": [
+              1,
+              1
+            ],
+            "signs": [
+              1,
+              1
+            ],
+            "acknowledgements": [
+              1
+            ]
+          },
+          "recovery_s": 5.445797,
+          "cleanup": [
+            {
+              "file_id": "9b92c42d-f18c-4503-b028-5823c6d661c9",
+              "status": 204
+            }
+          ],
+          "elapsed_s": 7.021341
+        },
+        {
+          "id": "R10",
+          "title": "API killed during incomplete multipart upload",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:29:04Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "424c4740802b721a3bd67f99f9d0766c049803f4f75480f038442c6e63da4210"
+          },
+          "fault_proof": {
+            "api_exit_code": 137,
+            "acknowledged_part_survived": 1,
+            "mechanism": "real_api_SIGKILL"
+          },
+          "events": [],
+          "environment": {
+            "compose_project": "clouddrive-ci-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "334167d011c0",
+                "service": "api"
+              },
+              {
+                "id": "faafb1ccd27f",
+                "service": "beat"
+              },
+              {
+                "id": "e8c8cab381af",
+                "service": "minio"
+              },
+              {
+                "id": "c9fcf77380a5",
+                "service": "postgres"
+              },
+              {
+                "id": "9971f628b9ce",
+                "service": "redis"
+              },
+              {
+                "id": "2e715252f78a",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "340d9c2b-6008-4e1e-8d60-2c0b49b39b5b",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "restoration_requested_elapsed_s": 0.470067,
+          "restoration_sequence_finished_elapsed_s": 2.150584,
+          "ready_observed_elapsed_s": 6.836625,
+          "recovery_s": 6.366558,
+          "post_restoration_sequence_ready_observation_s": 4.686041,
+          "recovery_clock_definition": "Restoration request (before Docker start or HTTP completion retry) to API READY observation; R18 begins after confirmed worker death and includes the natural lease wait. The separately labelled post-restoration sequence observation excludes startup/readiness probes.",
+          "download": {
+            "bytes": 17825809,
+            "sha256": "424c4740802b721a3bd67f99f9d0766c049803f4f75480f038442c6e63da4210"
+          },
+          "worker": {
+            "bytes": 17825809,
+            "sha256": "424c4740802b721a3bd67f99f9d0766c049803f4f75480f038442c6e63da4210"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 1,
+          "part_puts": [
+            1,
+            2,
+            3
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "340d9c2b-6008-4e1e-8d60-2c0b49b39b5b",
+              "pid": 1,
+              "time_unix": 1793147346.5293756
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "340d9c2b-6008-4e1e-8d60-2c0b49b39b5b",
+              "pid": 1,
+              "time_unix": 1793147346.537251
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "340d9c2b-6008-4e1e-8d60-2c0b49b39b5b",
+              "pid": 1,
+              "time_unix": 1793147346.5394452
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "340d9c2b-6008-4e1e-8d60-2c0b49b39b5b",
+              "pid": 1,
+              "time_unix": 1793147346.540346
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "340d9c2b-6008-4e1e-8d60-2c0b49b39b5b",
+              "pid": 8,
+              "time_unix": 1793147350.6945171
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "340d9c2b-6008-4e1e-8d60-2c0b49b39b5b",
+              "pid": 8,
+              "time_unix": 1793147350.6961687,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "d847b613-01ee-4024-b872-175e55199757"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "340d9c2b-6008-4e1e-8d60-2c0b49b39b5b",
+              "pid": 8,
+              "time_unix": 1793147350.7006743,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "340d9c2b-6008-4e1e-8d60-2c0b49b39b5b",
+              "pid": 8,
+              "time_unix": 1793147350.711355,
+              "bytes_read": 17825809,
+              "backend_pid": 105
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "340d9c2b-6008-4e1e-8d60-2c0b49b39b5b",
+              "pid": 8,
+              "time_unix": 1793147350.7120843,
+              "outcome": "ready"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "340d9c2b-6008-4e1e-8d60-2c0b49b39b5b",
+              "pid": 8,
+              "time_unix": 1793147350.6961687,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "d847b613-01ee-4024-b872-175e55199757"
+            }
+          ],
+          "publication_count": 1,
+          "stream_attempts": 1,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 6.995077
+        },
+        {
+          "id": "R11",
+          "title": "API killed after durable FINALIZING intent",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:29:11Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "08f904652c2776f064f7bb235ef8a85c09f14ce0345a529feb92b8ae4b3da164"
+          },
+          "fault_proof": {
+            "api_exit_code": 137,
+            "request_connection_lost": true,
+            "checkpoint": {
+              "checkpoint": "finalizing_committed",
+              "file_id": "1f8d7ef1-c3c7-4098-bb24-361e26f0be58",
+              "pid": 1,
+              "time_unix": 1793147351.9471488
+            },
+            "durable_status": "FINALIZING",
+            "mechanism": "real_api_SIGKILL"
+          },
+          "events": [],
+          "environment": {
+            "compose_project": "clouddrive-ci-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "334167d011c0",
+                "service": "api"
+              },
+              {
+                "id": "faafb1ccd27f",
+                "service": "beat"
+              },
+              {
+                "id": "e8c8cab381af",
+                "service": "minio"
+              },
+              {
+                "id": "c9fcf77380a5",
+                "service": "postgres"
+              },
+              {
+                "id": "9971f628b9ce",
+                "service": "redis"
+              },
+              {
+                "id": "2e715252f78a",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "1f8d7ef1-c3c7-4098-bb24-361e26f0be58",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "restoration_requested_elapsed_s": 0.860062,
+          "restoration_sequence_finished_elapsed_s": 2.538342,
+          "ready_observed_elapsed_s": 34.521111,
+          "recovery_s": 33.661049,
+          "post_restoration_sequence_ready_observation_s": 31.98277,
+          "recovery_clock_definition": "Restoration request (before Docker start or HTTP completion retry) to API READY observation; R18 begins after confirmed worker death and includes the natural lease wait. The separately labelled post-restoration sequence observation excludes startup/readiness probes.",
+          "download": {
+            "bytes": 17825809,
+            "sha256": "08f904652c2776f064f7bb235ef8a85c09f14ce0345a529feb92b8ae4b3da164"
+          },
+          "worker": {
+            "bytes": 17825809,
+            "sha256": "08f904652c2776f064f7bb235ef8a85c09f14ce0345a529feb92b8ae4b3da164"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 1,
+          "part_puts": [
+            1,
+            2,
+            3
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "1f8d7ef1-c3c7-4098-bb24-361e26f0be58",
+              "pid": 1,
+              "time_unix": 1793147351.9471488
+            },
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "1f8d7ef1-c3c7-4098-bb24-361e26f0be58",
+              "pid": 8,
+              "time_unix": 1793147385.6951675
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "1f8d7ef1-c3c7-4098-bb24-361e26f0be58",
+              "pid": 8,
+              "time_unix": 1793147385.7153425
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "1f8d7ef1-c3c7-4098-bb24-361e26f0be58",
+              "pid": 8,
+              "time_unix": 1793147385.7187784
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "1f8d7ef1-c3c7-4098-bb24-361e26f0be58",
+              "pid": 8,
+              "time_unix": 1793147385.7218204
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "1f8d7ef1-c3c7-4098-bb24-361e26f0be58",
+              "pid": 8,
+              "time_unix": 1793147385.7240837,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "6bc8aed4-ffa6-43fe-b614-ff9b1e1dc579"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "1f8d7ef1-c3c7-4098-bb24-361e26f0be58",
+              "pid": 8,
+              "time_unix": 1793147385.7310674,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "1f8d7ef1-c3c7-4098-bb24-361e26f0be58",
+              "pid": 8,
+              "time_unix": 1793147385.742746,
+              "bytes_read": 17825809,
+              "backend_pid": 105
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "1f8d7ef1-c3c7-4098-bb24-361e26f0be58",
+              "pid": 8,
+              "time_unix": 1793147385.7443044,
+              "outcome": "ready"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "1f8d7ef1-c3c7-4098-bb24-361e26f0be58",
+              "pid": 8,
+              "time_unix": 1793147385.7240837,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "6bc8aed4-ffa6-43fe-b614-ff9b1e1dc579"
+            }
+          ],
+          "publication_count": 1,
+          "stream_attempts": 1,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 34.634424
+        },
+        {
+          "id": "R12",
+          "title": "Storage completion reply lost at the client boundary",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:29:46Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "2093bc3fb2ebb16279aac3d35c6ade0cd8c69fcbe5573075d2f574a1596854fb"
+          },
+          "fault_proof": {
+            "checkpoint": {
+              "checkpoint": "storage_completed",
+              "file_id": "89a28a8c-513a-4299-9d6d-f6a28d0ffe2d",
+              "pid": 1,
+              "time_unix": 1793147387.0396354
+            },
+            "mechanism": "function_boundary_exception_injection",
+            "request_status": 503,
+            "durable_status": "FINALIZING",
+            "committed_outbox_rows": 0,
+            "completed_storage_object_present": true
+          },
+          "events": [],
+          "environment": {
+            "compose_project": "clouddrive-ci-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "334167d011c0",
+                "service": "api"
+              },
+              {
+                "id": "faafb1ccd27f",
+                "service": "beat"
+              },
+              {
+                "id": "e8c8cab381af",
+                "service": "minio"
+              },
+              {
+                "id": "c9fcf77380a5",
+                "service": "postgres"
+              },
+              {
+                "id": "9971f628b9ce",
+                "service": "redis"
+              },
+              {
+                "id": "2e715252f78a",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "89a28a8c-513a-4299-9d6d-f6a28d0ffe2d",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "restoration_requested_elapsed_s": 0.522989,
+          "restoration_sequence_finished_elapsed_s": 0.523,
+          "ready_observed_elapsed_s": 4.09801,
+          "recovery_s": 3.575021,
+          "post_restoration_sequence_ready_observation_s": 3.575011,
+          "recovery_clock_definition": "Restoration request (before Docker start or HTTP completion retry) to API READY observation; R18 begins after confirmed worker death and includes the natural lease wait. The separately labelled post-restoration sequence observation excludes startup/readiness probes.",
+          "download": {
+            "bytes": 17825809,
+            "sha256": "2093bc3fb2ebb16279aac3d35c6ade0cd8c69fcbe5573075d2f574a1596854fb"
+          },
+          "worker": {
+            "bytes": 17825809,
+            "sha256": "2093bc3fb2ebb16279aac3d35c6ade0cd8c69fcbe5573075d2f574a1596854fb"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 2,
+          "part_puts": [
+            1,
+            2,
+            3
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "89a28a8c-513a-4299-9d6d-f6a28d0ffe2d",
+              "pid": 1,
+              "time_unix": 1793147387.0313373
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "89a28a8c-513a-4299-9d6d-f6a28d0ffe2d",
+              "pid": 1,
+              "time_unix": 1793147387.0396354
+            },
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "89a28a8c-513a-4299-9d6d-f6a28d0ffe2d",
+              "pid": 1,
+              "time_unix": 1793147387.1857994
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "89a28a8c-513a-4299-9d6d-f6a28d0ffe2d",
+              "pid": 1,
+              "time_unix": 1793147387.1898997
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "89a28a8c-513a-4299-9d6d-f6a28d0ffe2d",
+              "pid": 1,
+              "time_unix": 1793147387.1909926
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "89a28a8c-513a-4299-9d6d-f6a28d0ffe2d",
+              "pid": 8,
+              "time_unix": 1793147390.6970832
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "89a28a8c-513a-4299-9d6d-f6a28d0ffe2d",
+              "pid": 8,
+              "time_unix": 1793147390.6997766,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "8439685a-0277-4d1f-befc-2b00e9873ea1"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "89a28a8c-513a-4299-9d6d-f6a28d0ffe2d",
+              "pid": 8,
+              "time_unix": 1793147390.715457,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "89a28a8c-513a-4299-9d6d-f6a28d0ffe2d",
+              "pid": 8,
+              "time_unix": 1793147390.7312827,
+              "bytes_read": 17825809,
+              "backend_pid": 105
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "89a28a8c-513a-4299-9d6d-f6a28d0ffe2d",
+              "pid": 8,
+              "time_unix": 1793147390.7336216,
+              "outcome": "ready"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "89a28a8c-513a-4299-9d6d-f6a28d0ffe2d",
+              "pid": 8,
+              "time_unix": 1793147390.6997766,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "8439685a-0277-4d1f-befc-2b00e9873ea1"
+            }
+          ],
+          "publication_count": 1,
+          "stream_attempts": 1,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 4.144887
+        },
+        {
+          "id": "R13",
+          "title": "Completion database transaction rolls back after storage completion",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:29:51Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "19f8f4f8a58456f4d6bd4a64917536dcd861a3dc0173796931c796f6a9f0b0c2"
+          },
+          "fault_proof": {
+            "checkpoint": {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "2d6c7347-18cb-4f36-9913-6e5c3238b2b4",
+              "pid": 1,
+              "time_unix": 1793147391.5772498
+            },
+            "mechanism": "function_boundary_exception_injection",
+            "request_status": 503,
+            "durable_status": "FINALIZING",
+            "committed_outbox_rows": 0,
+            "completed_storage_object_present": true
+          },
+          "events": [],
+          "environment": {
+            "compose_project": "clouddrive-ci-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "334167d011c0",
+                "service": "api"
+              },
+              {
+                "id": "faafb1ccd27f",
+                "service": "beat"
+              },
+              {
+                "id": "e8c8cab381af",
+                "service": "minio"
+              },
+              {
+                "id": "c9fcf77380a5",
+                "service": "postgres"
+              },
+              {
+                "id": "9971f628b9ce",
+                "service": "redis"
+              },
+              {
+                "id": "2e715252f78a",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "2d6c7347-18cb-4f36-9913-6e5c3238b2b4",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "restoration_requested_elapsed_s": 0.501737,
+          "restoration_sequence_finished_elapsed_s": 0.501746,
+          "ready_observed_elapsed_s": 4.569677,
+          "recovery_s": 4.06794,
+          "post_restoration_sequence_ready_observation_s": 4.067931,
+          "recovery_clock_definition": "Restoration request (before Docker start or HTTP completion retry) to API READY observation; R18 begins after confirmed worker death and includes the natural lease wait. The separately labelled post-restoration sequence observation excludes startup/readiness probes.",
+          "download": {
+            "bytes": 17825809,
+            "sha256": "19f8f4f8a58456f4d6bd4a64917536dcd861a3dc0173796931c796f6a9f0b0c2"
+          },
+          "worker": {
+            "bytes": 17825809,
+            "sha256": "19f8f4f8a58456f4d6bd4a64917536dcd861a3dc0173796931c796f6a9f0b0c2"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 2,
+          "part_puts": [
+            1,
+            2,
+            3
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "2d6c7347-18cb-4f36-9913-6e5c3238b2b4",
+              "pid": 1,
+              "time_unix": 1793147391.5657213
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "2d6c7347-18cb-4f36-9913-6e5c3238b2b4",
+              "pid": 1,
+              "time_unix": 1793147391.5749803
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "2d6c7347-18cb-4f36-9913-6e5c3238b2b4",
+              "pid": 1,
+              "time_unix": 1793147391.5772498
+            },
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "2d6c7347-18cb-4f36-9913-6e5c3238b2b4",
+              "pid": 1,
+              "time_unix": 1793147391.7137191
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "2d6c7347-18cb-4f36-9913-6e5c3238b2b4",
+              "pid": 1,
+              "time_unix": 1793147391.716883
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "2d6c7347-18cb-4f36-9913-6e5c3238b2b4",
+              "pid": 1,
+              "time_unix": 1793147391.717807
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "2d6c7347-18cb-4f36-9913-6e5c3238b2b4",
+              "pid": 8,
+              "time_unix": 1793147395.6951559
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "2d6c7347-18cb-4f36-9913-6e5c3238b2b4",
+              "pid": 8,
+              "time_unix": 1793147395.6967757,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "fe8c2e43-4cea-442f-8680-543d965bf2b3"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "2d6c7347-18cb-4f36-9913-6e5c3238b2b4",
+              "pid": 8,
+              "time_unix": 1793147395.700939,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "2d6c7347-18cb-4f36-9913-6e5c3238b2b4",
+              "pid": 8,
+              "time_unix": 1793147395.711282,
+              "bytes_read": 17825809,
+              "backend_pid": 105
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "2d6c7347-18cb-4f36-9913-6e5c3238b2b4",
+              "pid": 8,
+              "time_unix": 1793147395.712115,
+              "outcome": "ready"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "2d6c7347-18cb-4f36-9913-6e5c3238b2b4",
+              "pid": 8,
+              "time_unix": 1793147395.6967757,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "fe8c2e43-4cea-442f-8680-543d965bf2b3"
+            }
+          ],
+          "publication_count": 1,
+          "stream_attempts": 1,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 4.604827
+        },
+        {
+          "id": "R14",
+          "title": "Completion commits then API dies before replying",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:29:56Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "7299aa5ce7e4c1e9a4c97467ed7869d0821376e4edcb68ebc0d0e15e9e2b42c7"
+          },
+          "fault_proof": {
+            "committed_outbox_rows_before_kill": 1,
+            "api_exit_code": 137,
+            "request_connection_lost": true,
+            "checkpoint": {
+              "checkpoint": "completion_committed",
+              "file_id": "1503943d-1642-499d-9eba-81a67c0e1559",
+              "pid": 1,
+              "time_unix": 1793147398.8941512
+            },
+            "durable_status": "PROCESSING",
+            "mechanism": "real_api_SIGKILL"
+          },
+          "events": [
+            {
+              "action": "container_stopped",
+              "service": "beat",
+              "container": "faafb1ccd27f6a8270bfac1832bde2cd1d4c2630a9339c3233d8ffe776fe226c",
+              "exit_code": 0,
+              "elapsed_s": 2.567193
+            },
+            {
+              "action": "container_stopped",
+              "service": "worker",
+              "container": "2e715252f78a2c6b3361cbc34336edaa92e825d9c08fc2cfac1c26e2e3d43883",
+              "exit_code": 137,
+              "elapsed_s": 2.636183
+            }
+          ],
+          "environment": {
+            "compose_project": "clouddrive-ci-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "334167d011c0",
+                "service": "api"
+              },
+              {
+                "id": "faafb1ccd27f",
+                "service": "beat"
+              },
+              {
+                "id": "e8c8cab381af",
+                "service": "minio"
+              },
+              {
+                "id": "c9fcf77380a5",
+                "service": "postgres"
+              },
+              {
+                "id": "9971f628b9ce",
+                "service": "redis"
+              },
+              {
+                "id": "2e715252f78a",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "1503943d-1642-499d-9eba-81a67c0e1559",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "restoration_requested_elapsed_s": 3.166077,
+          "restoration_sequence_finished_elapsed_s": 7.60365,
+          "ready_observed_elapsed_s": 10.157111,
+          "recovery_s": 6.991034,
+          "post_restoration_sequence_ready_observation_s": 2.553462,
+          "recovery_clock_definition": "Restoration request (before Docker start or HTTP completion retry) to API READY observation; R18 begins after confirmed worker death and includes the natural lease wait. The separately labelled post-restoration sequence observation excludes startup/readiness probes.",
+          "download": {
+            "bytes": 17825809,
+            "sha256": "7299aa5ce7e4c1e9a4c97467ed7869d0821376e4edcb68ebc0d0e15e9e2b42c7"
+          },
+          "worker": {
+            "bytes": 17825809,
+            "sha256": "7299aa5ce7e4c1e9a4c97467ed7869d0821376e4edcb68ebc0d0e15e9e2b42c7"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 2,
+          "part_puts": [
+            1,
+            2,
+            3
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "1503943d-1642-499d-9eba-81a67c0e1559",
+              "pid": 1,
+              "time_unix": 1793147398.8858542
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "1503943d-1642-499d-9eba-81a67c0e1559",
+              "pid": 1,
+              "time_unix": 1793147398.8913531
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "1503943d-1642-499d-9eba-81a67c0e1559",
+              "pid": 1,
+              "time_unix": 1793147398.893344
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "1503943d-1642-499d-9eba-81a67c0e1559",
+              "pid": 1,
+              "time_unix": 1793147398.8941512
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "1503943d-1642-499d-9eba-81a67c0e1559",
+              "pid": 1,
+              "time_unix": 1793147401.1376646
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "1503943d-1642-499d-9eba-81a67c0e1559",
+              "pid": 7,
+              "time_unix": 1793147406.0058491
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "1503943d-1642-499d-9eba-81a67c0e1559",
+              "pid": 7,
+              "time_unix": 1793147406.0087965,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "714bec6b-7d68-4571-acab-47d3f96faf6d"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "1503943d-1642-499d-9eba-81a67c0e1559",
+              "pid": 7,
+              "time_unix": 1793147406.0909283,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "1503943d-1642-499d-9eba-81a67c0e1559",
+              "pid": 7,
+              "time_unix": 1793147406.1030304,
+              "bytes_read": 17825809,
+              "backend_pid": 632
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "1503943d-1642-499d-9eba-81a67c0e1559",
+              "pid": 7,
+              "time_unix": 1793147406.1047947,
+              "outcome": "ready"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "1503943d-1642-499d-9eba-81a67c0e1559",
+              "pid": 7,
+              "time_unix": 1793147406.0087965,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "714bec6b-7d68-4571-acab-47d3f96faf6d"
+            }
+          ],
+          "publication_count": 1,
+          "stream_attempts": 1,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 10.281643
+        },
+        {
+          "id": "R15",
+          "title": "Redis unavailable before publication",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:30:06Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "3db322f38148869cf882cb1e2d4a0c02072b254bb8570061dbd84cdb6bb08b7c"
+          },
+          "fault_proof": {
+            "mechanism": "real_redis_container_outage",
+            "publication_error": "OperationalError",
+            "durable_outbox_rows": 1
+          },
+          "events": [
+            {
+              "action": "container_stopped",
+              "service": "redis",
+              "container": "9971f628b9ce23e289ffccbf82759271e6a925d563adc0e046a08e76d72793a4",
+              "exit_code": 0,
+              "elapsed_s": 0.711963
+            }
+          ],
+          "environment": {
+            "compose_project": "clouddrive-ci-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "334167d011c0",
+                "service": "api"
+              },
+              {
+                "id": "faafb1ccd27f",
+                "service": "beat"
+              },
+              {
+                "id": "e8c8cab381af",
+                "service": "minio"
+              },
+              {
+                "id": "c9fcf77380a5",
+                "service": "postgres"
+              },
+              {
+                "id": "9971f628b9ce",
+                "service": "redis"
+              },
+              {
+                "id": "2e715252f78a",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "9cf5595a-192e-4ce4-b74f-98ec2a9cdd88",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "restoration_requested_elapsed_s": 8.050627,
+          "restoration_sequence_finished_elapsed_s": 8.22709,
+          "ready_observed_elapsed_s": 13.812056,
+          "recovery_s": 5.761429,
+          "post_restoration_sequence_ready_observation_s": 5.584966,
+          "recovery_clock_definition": "Restoration request (before Docker start or HTTP completion retry) to API READY observation; R18 begins after confirmed worker death and includes the natural lease wait. The separately labelled post-restoration sequence observation excludes startup/readiness probes.",
+          "download": {
+            "bytes": 17825809,
+            "sha256": "3db322f38148869cf882cb1e2d4a0c02072b254bb8570061dbd84cdb6bb08b7c"
+          },
+          "worker": {
+            "bytes": 17825809,
+            "sha256": "3db322f38148869cf882cb1e2d4a0c02072b254bb8570061dbd84cdb6bb08b7c"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 1,
+          "part_puts": [
+            1,
+            2,
+            3
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "9cf5595a-192e-4ce4-b74f-98ec2a9cdd88",
+              "pid": 1,
+              "time_unix": 1793147407.6419694
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "9cf5595a-192e-4ce4-b74f-98ec2a9cdd88",
+              "pid": 1,
+              "time_unix": 1793147407.6508307
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "9cf5595a-192e-4ce4-b74f-98ec2a9cdd88",
+              "pid": 1,
+              "time_unix": 1793147407.6535375
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "9cf5595a-192e-4ce4-b74f-98ec2a9cdd88",
+              "pid": 1,
+              "time_unix": 1793147407.654452
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "9cf5595a-192e-4ce4-b74f-98ec2a9cdd88",
+              "pid": 7,
+              "time_unix": 1793147420.4901261
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "9cf5595a-192e-4ce4-b74f-98ec2a9cdd88",
+              "pid": 7,
+              "time_unix": 1793147420.4919016,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "18a6b332-21a8-4b45-a83f-180b2496fd40"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "9cf5595a-192e-4ce4-b74f-98ec2a9cdd88",
+              "pid": 7,
+              "time_unix": 1793147420.4971125,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "9cf5595a-192e-4ce4-b74f-98ec2a9cdd88",
+              "pid": 7,
+              "time_unix": 1793147420.5079596,
+              "bytes_read": 17825809,
+              "backend_pid": 632
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "9cf5595a-192e-4ce4-b74f-98ec2a9cdd88",
+              "pid": 7,
+              "time_unix": 1793147420.5088358,
+              "outcome": "ready"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "9cf5595a-192e-4ce4-b74f-98ec2a9cdd88",
+              "pid": 7,
+              "time_unix": 1793147420.4919016,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "18a6b332-21a8-4b45-a83f-180b2496fd40"
+            }
+          ],
+          "publication_count": 1,
+          "stream_attempts": 1,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 13.905123
+        },
+        {
+          "id": "R16",
+          "title": "Dispatcher SIGKILL after publication before outbox commit",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:30:21Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "3e41ca1e9fb9b629941a3400b657c1728ecfbb8ee2746316745bff65d18ba14c"
+          },
+          "fault_proof": {
+            "mechanism": "real_packaged_dispatcher_SIGKILL",
+            "checkpoint": {
+              "checkpoint": "outbox_published",
+              "file_id": "58cf83a9-6385-4fe4-97f7-537a8e284aee",
+              "pid": 1,
+              "time_unix": 1793147425.0593393
+            },
+            "dispatcher_exit_code": 137,
+            "queue_messages": 1,
+            "durable_outbox_rows": 1
+          },
+          "events": [
+            {
+              "action": "container_stopped",
+              "service": "beat",
+              "container": "faafb1ccd27f6a8270bfac1832bde2cd1d4c2630a9339c3233d8ffe776fe226c",
+              "exit_code": 0,
+              "elapsed_s": 2.56348
+            },
+            {
+              "action": "container_stopped",
+              "service": "worker",
+              "container": "2e715252f78a2c6b3361cbc34336edaa92e825d9c08fc2cfac1c26e2e3d43883",
+              "exit_code": 137,
+              "elapsed_s": 2.635365
+            }
+          ],
+          "environment": {
+            "compose_project": "clouddrive-ci-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "334167d011c0",
+                "service": "api"
+              },
+              {
+                "id": "faafb1ccd27f",
+                "service": "beat"
+              },
+              {
+                "id": "e8c8cab381af",
+                "service": "minio"
+              },
+              {
+                "id": "c9fcf77380a5",
+                "service": "postgres"
+              },
+              {
+                "id": "9971f628b9ce",
+                "service": "redis"
+              },
+              {
+                "id": "2e715252f78a",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "58cf83a9-6385-4fe4-97f7-537a8e284aee",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "restoration_requested_elapsed_s": 4.2456,
+          "restoration_sequence_finished_elapsed_s": 5.450535,
+          "ready_observed_elapsed_s": 7.993194,
+          "recovery_s": 3.747594,
+          "post_restoration_sequence_ready_observation_s": 2.542659,
+          "recovery_clock_definition": "Restoration request (before Docker start or HTTP completion retry) to API READY observation; R18 begins after confirmed worker death and includes the natural lease wait. The separately labelled post-restoration sequence observation excludes startup/readiness probes.",
+          "download": {
+            "bytes": 17825809,
+            "sha256": "3e41ca1e9fb9b629941a3400b657c1728ecfbb8ee2746316745bff65d18ba14c"
+          },
+          "worker": {
+            "bytes": 17825809,
+            "sha256": "3e41ca1e9fb9b629941a3400b657c1728ecfbb8ee2746316745bff65d18ba14c"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 1,
+          "part_puts": [
+            1,
+            2,
+            3
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "58cf83a9-6385-4fe4-97f7-537a8e284aee",
+              "pid": 1,
+              "time_unix": 1793147424.0691843
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "58cf83a9-6385-4fe4-97f7-537a8e284aee",
+              "pid": 1,
+              "time_unix": 1793147424.0748804
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "58cf83a9-6385-4fe4-97f7-537a8e284aee",
+              "pid": 1,
+              "time_unix": 1793147424.0769498
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "58cf83a9-6385-4fe4-97f7-537a8e284aee",
+              "pid": 1,
+              "time_unix": 1793147424.0777934
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "58cf83a9-6385-4fe4-97f7-537a8e284aee",
+              "pid": 1,
+              "time_unix": 1793147425.0593393
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "58cf83a9-6385-4fe4-97f7-537a8e284aee",
+              "pid": 8,
+              "time_unix": 1793147428.5799446,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "3bfe20cc-0251-44f6-bf2d-77d83ff9d9bf"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "58cf83a9-6385-4fe4-97f7-537a8e284aee",
+              "pid": 8,
+              "time_unix": 1793147428.7593896,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "58cf83a9-6385-4fe4-97f7-537a8e284aee",
+              "pid": 8,
+              "time_unix": 1793147428.7711537,
+              "bytes_read": 17825809,
+              "backend_pid": 715
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "58cf83a9-6385-4fe4-97f7-537a8e284aee",
+              "pid": 8,
+              "time_unix": 1793147428.7724884,
+              "outcome": "ready"
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "58cf83a9-6385-4fe4-97f7-537a8e284aee",
+              "pid": 8,
+              "time_unix": 1793147428.782564
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "58cf83a9-6385-4fe4-97f7-537a8e284aee",
+              "pid": 8,
+              "time_unix": 1793147428.7845767,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "bdb60eb7-98c0-48de-a624-932698283aa0"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "58cf83a9-6385-4fe4-97f7-537a8e284aee",
+              "pid": 8,
+              "time_unix": 1793147428.5799446,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "3bfe20cc-0251-44f6-bf2d-77d83ff9d9bf"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "58cf83a9-6385-4fe4-97f7-537a8e284aee",
+              "pid": 8,
+              "time_unix": 1793147428.7845767,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "bdb60eb7-98c0-48de-a624-932698283aa0"
+            }
+          ],
+          "publication_count": 2,
+          "stream_attempts": 1,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 8.156079
+        },
+        {
+          "id": "R17",
+          "title": "Published broker message removed before worker delivery",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:30:29Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "630e44dcccd7f3252904dd5853f28ca00b7aa988b02d4ad9794779f1e41227c7"
+          },
+          "fault_proof": {
+            "mechanism": "real_broker_message_removal",
+            "checkpoint": {
+              "checkpoint": "outbox_published",
+              "file_id": "036dd3fb-c107-41a9-bfb5-83317920bbbf",
+              "pid": 1,
+              "time_unix": 1793147433.5845895
+            },
+            "removed_task": "clouddrive.process",
+            "outbox_rows_after_publish": 0,
+            "queue_before": 1,
+            "queue_after": 0
+          },
+          "events": [
+            {
+              "action": "container_stopped",
+              "service": "beat",
+              "container": "faafb1ccd27f6a8270bfac1832bde2cd1d4c2630a9339c3233d8ffe776fe226c",
+              "exit_code": 0,
+              "elapsed_s": 2.537096
+            },
+            {
+              "action": "container_stopped",
+              "service": "worker",
+              "container": "2e715252f78a2c6b3361cbc34336edaa92e825d9c08fc2cfac1c26e2e3d43883",
+              "exit_code": 137,
+              "elapsed_s": 2.608523
+            }
+          ],
+          "environment": {
+            "compose_project": "clouddrive-ci-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "334167d011c0",
+                "service": "api"
+              },
+              {
+                "id": "faafb1ccd27f",
+                "service": "beat"
+              },
+              {
+                "id": "e8c8cab381af",
+                "service": "minio"
+              },
+              {
+                "id": "c9fcf77380a5",
+                "service": "postgres"
+              },
+              {
+                "id": "9971f628b9ce",
+                "service": "redis"
+              },
+              {
+                "id": "2e715252f78a",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "036dd3fb-c107-41a9-bfb5-83317920bbbf",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "restoration_requested_elapsed_s": 4.50656,
+          "restoration_sequence_finished_elapsed_s": 5.718635,
+          "ready_observed_elapsed_s": 37.126366,
+          "recovery_s": 32.619805,
+          "post_restoration_sequence_ready_observation_s": 31.407731,
+          "recovery_clock_definition": "Restoration request (before Docker start or HTTP completion retry) to API READY observation; R18 begins after confirmed worker death and includes the natural lease wait. The separately labelled post-restoration sequence observation excludes startup/readiness probes.",
+          "download": {
+            "bytes": 17825809,
+            "sha256": "630e44dcccd7f3252904dd5853f28ca00b7aa988b02d4ad9794779f1e41227c7"
+          },
+          "worker": {
+            "bytes": 17825809,
+            "sha256": "630e44dcccd7f3252904dd5853f28ca00b7aa988b02d4ad9794779f1e41227c7"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 1,
+          "part_puts": [
+            1,
+            2,
+            3
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "036dd3fb-c107-41a9-bfb5-83317920bbbf",
+              "pid": 1,
+              "time_unix": 1793147432.5644233
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "036dd3fb-c107-41a9-bfb5-83317920bbbf",
+              "pid": 1,
+              "time_unix": 1793147432.5700161
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "036dd3fb-c107-41a9-bfb5-83317920bbbf",
+              "pid": 1,
+              "time_unix": 1793147432.5721018
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "036dd3fb-c107-41a9-bfb5-83317920bbbf",
+              "pid": 1,
+              "time_unix": 1793147432.5730321
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "036dd3fb-c107-41a9-bfb5-83317920bbbf",
+              "pid": 1,
+              "time_unix": 1793147433.5845895
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "036dd3fb-c107-41a9-bfb5-83317920bbbf",
+              "pid": 8,
+              "time_unix": 1793147466.2900035
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "036dd3fb-c107-41a9-bfb5-83317920bbbf",
+              "pid": 8,
+              "time_unix": 1793147466.2922902,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "8389d252-e7e7-457f-9659-ce39b309184c"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "036dd3fb-c107-41a9-bfb5-83317920bbbf",
+              "pid": 8,
+              "time_unix": 1793147466.377342,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "036dd3fb-c107-41a9-bfb5-83317920bbbf",
+              "pid": 8,
+              "time_unix": 1793147466.389442,
+              "bytes_read": 17825809,
+              "backend_pid": 753
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "036dd3fb-c107-41a9-bfb5-83317920bbbf",
+              "pid": 8,
+              "time_unix": 1793147466.3906436,
+              "outcome": "ready"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "036dd3fb-c107-41a9-bfb5-83317920bbbf",
+              "pid": 8,
+              "time_unix": 1793147466.2922902,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "8389d252-e7e7-457f-9659-ce39b309184c"
+            }
+          ],
+          "publication_count": 2,
+          "stream_attempts": 1,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 37.227398
+        },
+        {
+          "id": "R18",
+          "title": "Worker child SIGKILL during streaming verification",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:31:07Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "46f967ec14a2044cb931c1abe9319faaed54d6788185e4c4b528ef36cc18511a"
+          },
+          "fault_proof": {
+            "mechanism": "real_worker_pool_child_SIGKILL",
+            "checkpoint": {
+              "checkpoint": "worker_streaming",
+              "file_id": "86c7d5b3-2572-47ff-b96e-fb77d99a7583",
+              "pid": 8,
+              "time_unix": 1793147471.2924027,
+              "bytes_read": 1048576
+            },
+            "persisted_claim": "a019a087-c473-4fb6-aa3b-71803771940b",
+            "lease_until": "2026-10-28T00:32:41.287583+00:00"
+          },
+          "events": [],
+          "environment": {
+            "compose_project": "clouddrive-ci-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "334167d011c0",
+                "service": "api"
+              },
+              {
+                "id": "faafb1ccd27f",
+                "service": "beat"
+              },
+              {
+                "id": "e8c8cab381af",
+                "service": "minio"
+              },
+              {
+                "id": "c9fcf77380a5",
+                "service": "postgres"
+              },
+              {
+                "id": "9971f628b9ce",
+                "service": "redis"
+              },
+              {
+                "id": "2e715252f78a",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "86c7d5b3-2572-47ff-b96e-fb77d99a7583",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "restoration_requested_elapsed_s": 5.249548,
+          "restoration_sequence_finished_elapsed_s": 5.249557,
+          "ready_observed_elapsed_s": 99.487035,
+          "recovery_s": 94.237487,
+          "post_restoration_sequence_ready_observation_s": 94.237477,
+          "recovery_clock_definition": "Restoration request (before Docker start or HTTP completion retry) to API READY observation; R18 begins after confirmed worker death and includes the natural lease wait. The separately labelled post-restoration sequence observation excludes startup/readiness probes.",
+          "download": {
+            "bytes": 17825809,
+            "sha256": "46f967ec14a2044cb931c1abe9319faaed54d6788185e4c4b528ef36cc18511a"
+          },
+          "worker": {
+            "bytes": 17825809,
+            "sha256": "46f967ec14a2044cb931c1abe9319faaed54d6788185e4c4b528ef36cc18511a"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 1,
+          "part_puts": [
+            1,
+            2,
+            3
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "86c7d5b3-2572-47ff-b96e-fb77d99a7583",
+              "pid": 1,
+              "time_unix": 1793147467.6274962
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "86c7d5b3-2572-47ff-b96e-fb77d99a7583",
+              "pid": 1,
+              "time_unix": 1793147467.6319697
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "86c7d5b3-2572-47ff-b96e-fb77d99a7583",
+              "pid": 1,
+              "time_unix": 1793147467.633864
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "86c7d5b3-2572-47ff-b96e-fb77d99a7583",
+              "pid": 1,
+              "time_unix": 1793147467.6346562
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "86c7d5b3-2572-47ff-b96e-fb77d99a7583",
+              "pid": 8,
+              "time_unix": 1793147471.2855806
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "86c7d5b3-2572-47ff-b96e-fb77d99a7583",
+              "pid": 8,
+              "time_unix": 1793147471.2873268,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "5c48c94e-c90d-4222-9299-ed47b6c40b27"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "86c7d5b3-2572-47ff-b96e-fb77d99a7583",
+              "pid": 8,
+              "time_unix": 1793147471.2924027,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "86c7d5b3-2572-47ff-b96e-fb77d99a7583",
+              "pid": 33,
+              "time_unix": 1793147472.431356,
+              "retries": 0,
+              "redelivered": true,
+              "task_id": "5c48c94e-c90d-4222-9299-ed47b6c40b27"
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "86c7d5b3-2572-47ff-b96e-fb77d99a7583",
+              "pid": 33,
+              "time_unix": 1793147566.2891245
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "86c7d5b3-2572-47ff-b96e-fb77d99a7583",
+              "pid": 33,
+              "time_unix": 1793147566.2911406,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "1c9d5732-cd81-46e6-b585-59870d834ec3"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "86c7d5b3-2572-47ff-b96e-fb77d99a7583",
+              "pid": 33,
+              "time_unix": 1793147566.4159825,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "86c7d5b3-2572-47ff-b96e-fb77d99a7583",
+              "pid": 33,
+              "time_unix": 1793147566.4310038,
+              "bytes_read": 17825809,
+              "backend_pid": 873
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "86c7d5b3-2572-47ff-b96e-fb77d99a7583",
+              "pid": 33,
+              "time_unix": 1793147566.4321592,
+              "outcome": "ready"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "86c7d5b3-2572-47ff-b96e-fb77d99a7583",
+              "pid": 8,
+              "time_unix": 1793147471.2873268,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "5c48c94e-c90d-4222-9299-ed47b6c40b27"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "86c7d5b3-2572-47ff-b96e-fb77d99a7583",
+              "pid": 33,
+              "time_unix": 1793147472.431356,
+              "retries": 0,
+              "redelivered": true,
+              "task_id": "5c48c94e-c90d-4222-9299-ed47b6c40b27"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "86c7d5b3-2572-47ff-b96e-fb77d99a7583",
+              "pid": 33,
+              "time_unix": 1793147566.2911406,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "1c9d5732-cd81-46e6-b585-59870d834ec3"
+            }
+          ],
+          "publication_count": 2,
+          "stream_attempts": 2,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 99.575503
+        },
+        {
+          "id": "R19",
+          "title": "PostgreSQL unavailable during worker result transaction",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:32:47Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "10964ce6f2e837f86bb58480cc10b69c68af0b5dc7273d3dc0decce0c73ef6a0"
+          },
+          "fault_proof": {
+            "mechanism": "real_postgresql_container_outage",
+            "checkpoint": {
+              "checkpoint": "worker_result",
+              "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+              "pid": 33,
+              "time_unix": 1793147571.3022234,
+              "bytes_read": 17825809,
+              "backend_pid": 873
+            },
+            "failed_attempt": {
+              "checkpoint": "worker_failed",
+              "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+              "pid": 33,
+              "time_unix": 1793147571.7048898,
+              "error_type": "OperationalError"
+            },
+            "streamed_bytes": 17825809
+          },
+          "events": [
+            {
+              "action": "container_stopped",
+              "service": "postgres",
+              "container": "c9fcf77380a59fae66c7249e504233db4c1ee5182645ffa326fa93fe4f3c050e",
+              "exit_code": 0,
+              "elapsed_s": 4.249137
+            }
+          ],
+          "environment": {
+            "compose_project": "clouddrive-ci-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "334167d011c0",
+                "service": "api"
+              },
+              {
+                "id": "faafb1ccd27f",
+                "service": "beat"
+              },
+              {
+                "id": "e8c8cab381af",
+                "service": "minio"
+              },
+              {
+                "id": "c9fcf77380a5",
+                "service": "postgres"
+              },
+              {
+                "id": "9971f628b9ce",
+                "service": "redis"
+              },
+              {
+                "id": "2e715252f78a",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "restoration_requested_elapsed_s": 4.449745,
+          "restoration_sequence_finished_elapsed_s": 4.868678,
+          "ready_observed_elapsed_s": 99.093047,
+          "recovery_s": 94.643302,
+          "post_restoration_sequence_ready_observation_s": 94.224369,
+          "recovery_clock_definition": "Restoration request (before Docker start or HTTP completion retry) to API READY observation; R18 begins after confirmed worker death and includes the natural lease wait. The separately labelled post-restoration sequence observation excludes startup/readiness probes.",
+          "download": {
+            "bytes": 17825809,
+            "sha256": "10964ce6f2e837f86bb58480cc10b69c68af0b5dc7273d3dc0decce0c73ef6a0"
+          },
+          "worker": {
+            "bytes": 17825809,
+            "sha256": "10964ce6f2e837f86bb58480cc10b69c68af0b5dc7273d3dc0decce0c73ef6a0"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 1,
+          "part_puts": [
+            1,
+            2,
+            3
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+              "pid": 1,
+              "time_unix": 1793147567.7016616
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+              "pid": 1,
+              "time_unix": 1793147567.7066307
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+              "pid": 1,
+              "time_unix": 1793147567.7087266
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+              "pid": 1,
+              "time_unix": 1793147567.709566
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+              "pid": 33,
+              "time_unix": 1793147571.2856786
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+              "pid": 33,
+              "time_unix": 1793147571.287541,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "4b2207f3-baf6-4bb9-a8c5-a526c501d8cc"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+              "pid": 33,
+              "time_unix": 1793147571.2919102,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+              "pid": 33,
+              "time_unix": 1793147571.3022234,
+              "bytes_read": 17825809,
+              "backend_pid": 873
+            },
+            {
+              "checkpoint": "worker_failed",
+              "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+              "pid": 33,
+              "time_unix": 1793147571.7048898,
+              "error_type": "OperationalError"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+              "pid": 33,
+              "time_unix": 1793147572.74022,
+              "retries": 1,
+              "redelivered": false,
+              "task_id": "4b2207f3-baf6-4bb9-a8c5-a526c501d8cc"
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+              "pid": 33,
+              "time_unix": 1793147666.28581
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+              "pid": 33,
+              "time_unix": 1793147666.287482,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "2f24fdd6-e3a4-42af-ab51-84f12651ba33"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+              "pid": 33,
+              "time_unix": 1793147666.2926257,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+              "pid": 33,
+              "time_unix": 1793147666.3038208,
+              "bytes_read": 17825809,
+              "backend_pid": 34
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+              "pid": 33,
+              "time_unix": 1793147666.304638,
+              "outcome": "ready"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+              "pid": 33,
+              "time_unix": 1793147571.287541,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "4b2207f3-baf6-4bb9-a8c5-a526c501d8cc"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+              "pid": 33,
+              "time_unix": 1793147572.74022,
+              "retries": 1,
+              "redelivered": false,
+              "task_id": "4b2207f3-baf6-4bb9-a8c5-a526c501d8cc"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "66aa18c9-92d2-494a-9cf9-41a9c5106852",
+              "pid": 33,
+              "time_unix": 1793147666.287482,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "2f24fdd6-e3a4-42af-ab51-84f12651ba33"
+            }
+          ],
+          "publication_count": 2,
+          "stream_attempts": 2,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 99.187943
+        },
+        {
+          "id": "R20",
+          "title": "MinIO disconnected during an active worker stream",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:34:27Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 67108881,
+            "sha256": "2b3f0ede80b9983ac65137fde10a5a5146955ebc4617dc32932385ac209e59e9"
+          },
+          "fault_proof": {
+            "mechanism": "real_minio_container_disconnect_during_stream",
+            "checkpoint": {
+              "checkpoint": "worker_streaming",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147671.291377,
+              "bytes_read": 1048576
+            },
+            "failed_attempt": {
+              "checkpoint": "worker_failed",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147701.7743776,
+              "error_type": "ReadTimeoutError"
+            },
+            "source_bytes": 67108881
+          },
+          "events": [
+            {
+              "action": "container_stopped",
+              "service": "minio",
+              "container": "e8c8cab381afa7cd2e21f7a57ce04ea1b52ab0a014c5e59056436f3fd475850b",
+              "exit_code": 0,
+              "elapsed_s": 4.802457
+            }
+          ],
+          "environment": {
+            "compose_project": "clouddrive-ci-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "334167d011c0",
+                "service": "api"
+              },
+              {
+                "id": "faafb1ccd27f",
+                "service": "beat"
+              },
+              {
+                "id": "e8c8cab381af",
+                "service": "minio"
+              },
+              {
+                "id": "c9fcf77380a5",
+                "service": "postgres"
+              },
+              {
+                "id": "9971f628b9ce",
+                "service": "redis"
+              },
+              {
+                "id": "2e715252f78a",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "restoration_requested_elapsed_s": 35.038561,
+          "restoration_sequence_finished_elapsed_s": 35.876474,
+          "ready_observed_elapsed_s": 37.397746,
+          "recovery_s": 2.359185,
+          "post_restoration_sequence_ready_observation_s": 1.521272,
+          "recovery_clock_definition": "Restoration request (before Docker start or HTTP completion retry) to API READY observation; R18 begins after confirmed worker death and includes the natural lease wait. The separately labelled post-restoration sequence observation excludes startup/readiness probes.",
+          "download": {
+            "bytes": 67108881,
+            "sha256": "2b3f0ede80b9983ac65137fde10a5a5146955ebc4617dc32932385ac209e59e9"
+          },
+          "worker": {
+            "bytes": 67108881,
+            "sha256": "2b3f0ede80b9983ac65137fde10a5a5146955ebc4617dc32932385ac209e59e9"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 1,
+          "part_puts": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 1,
+              "time_unix": 1793147667.8187768
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 1,
+              "time_unix": 1793147667.8274493
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 1,
+              "time_unix": 1793147667.8306298
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 1,
+              "time_unix": 1793147667.8325577
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147671.2858
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147671.2874343,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "4ff66dc6-6a52-4b79-819c-fd9402addd55"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147671.291377,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_failed",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147701.7743776,
+              "error_type": "ReadTimeoutError"
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147701.7830827
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147701.7862337
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147701.7904277
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147701.793301
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147701.805195
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147701.8085577
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147701.8103316,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "3fe9ca9b-cfac-4f52-a167-e9f40ef9f7f9"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147703.8726685,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147703.9119928,
+              "bytes_read": 67108881,
+              "backend_pid": 34
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147703.9134614,
+              "outcome": "ready"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147703.9145477,
+              "retries": 1,
+              "redelivered": false,
+              "task_id": "4ff66dc6-6a52-4b79-819c-fd9402addd55"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147703.9302566,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "b5edeb49-8439-4804-96bc-2f9714f39be1"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147703.9319456,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "125b23c9-821a-4d0b-80e2-6e4d987b3db8"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147703.9456615,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "c6bdc82a-c1f7-4575-9152-973e2470eaf8"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147703.961031,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "c3b0108c-beb4-4519-88f0-bd8d8e18d11e"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147703.9629145,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "34f28c8c-72ae-41b7-be9a-01a8f0ec6e58"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147671.2874343,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "4ff66dc6-6a52-4b79-819c-fd9402addd55"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147701.8103316,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "3fe9ca9b-cfac-4f52-a167-e9f40ef9f7f9"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147703.9145477,
+              "retries": 1,
+              "redelivered": false,
+              "task_id": "4ff66dc6-6a52-4b79-819c-fd9402addd55"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147703.9302566,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "b5edeb49-8439-4804-96bc-2f9714f39be1"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147703.9319456,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "125b23c9-821a-4d0b-80e2-6e4d987b3db8"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147703.9456615,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "c6bdc82a-c1f7-4575-9152-973e2470eaf8"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147703.961031,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "c3b0108c-beb4-4519-88f0-bd8d8e18d11e"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "9216f719-e068-4a08-85b9-9f0fcbbf34a8",
+              "pid": 33,
+              "time_unix": 1793147703.9629145,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "34f28c8c-72ae-41b7-be9a-01a8f0ec6e58"
+            }
+          ],
+          "publication_count": 7,
+          "stream_attempts": 2,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 37.517009
+        }
+      ],
+      "status": "passed",
+      "finished_at": "2026-10-28T00:35:04.541Z"
+    }
+  ],
+  "sources_unchanged_during_run": true,
+  "changed_sources": [],
+  "passed_attempts": 20,
+  "attempted_cases": 20,
+  "distinct_cases": 20,
+  "release_gate_passed": false,
+  "finished_at": "2026-10-28T00:35:04.553Z"
+}

@@ -1,0 +1,3 @@
+verify	Unit and integration tests	2026-10-28T00:27:36.5348523Z 89 passed, 1 warning in 7.79s
+verify	Browser tests with actual Celery worker and scheduler	2026-10-28T00:30:05.8088081Z   20 passed (2.1m)
+verify	Browser regressions against the packaged API and workers	2026-10-28T00:32:28.0378377Z   20 passed (2.0m)

@@ -19,6 +19,10 @@ A private file workspace with resumable multipart uploads, direct object-storage
 
 A local packaged-browser run uploaded **5,000,000,000 bytes**, paused/reloaded after three acknowledged parts, resumed without resending those parts, and verified all **597 parts** plus the full downloaded SHA-256. Active transfer windows totaled **111.11 s**; the full fixture-to-cleanup runner took **350.73 s**, including both browser prehashes and the download check. This was **one file, one attempt, on local MinIO**; it does not establish live AWS behavior or ten-upload concurrency. [Exact scope, environment, commands, timings, and evidence](docs/sprint-2.md).
 
+## Measured recovery
+
+The versioned recovery matrix passed **20/20 named cases in each of three complete local passes (60/60 attempts)**, with matching source/worker/download bytes and SHA-256, one logical result/object, and no multipart leaks. Coverage includes browser interruptions, actual process kills, broker-message loss, dependency outages, and explicitly labelled boundary exceptions. This used small deterministic fixtures on local MinIO; Linux CI separately passed 20/20 once. [Fault definitions, timing, exact scope, commands, and permanent evidence](docs/sprint-3.md).
+
 ## Run locally
 
 Requires Docker with Compose v2. All application ports bind to the loopback interface.
@@ -138,9 +142,9 @@ docker compose -f compose.test.yaml down
 
 Activate the virtual environment first. On a machine with Google Chrome installed, `PLAYWRIGHT_CHANNEL=chrome npm run test:browser` uses that browser instead. The browser test runner starts and stops its own API, Celery worker, and scheduler against the isolated services; keep port 8090 available. `PLAYWRIGHT_EXTERNAL_SERVER=1` runs the same browser tests against an already running application. The expiry browser test uses `scripts/expire-test-upload.py`, which refuses databases/buckets without the test suffixes. Use the dedicated packaged verification configuration and environment overrides in [verification notes](docs/verification.md).
 
-Coverage includes multipart checksums, resumed uploads, duplicate initiation/completion, cross-workspace isolation, corrupt-content rejection, private downloads, deletion, broker publish failure, expired worker claims, and recovery after S3 completion followed by a failed database update. Browser tests exercise real Celery processing, byte-identical downloads, safe text previews, access-key transfer, mobile layout, and pause/resume across reloads. CI runs the browser suite against both host processes and a separately built packaged Docker stack, then uploads test artifacts. Recovery coverage includes a real SIGKILL after object deletion, forced PostgreSQL row-lock races, expired multipart restart, stale workers, all file operations under another workspace key, and an upgrade from populated baseline metadata. These test counts are not a 20-case recovery benchmark.
+Coverage includes multipart checksums, resumed uploads, duplicate initiation/completion, cross-workspace isolation, corrupt-content rejection, private downloads, deletion, broker publish failure, expired worker claims, and recovery after S3 completion followed by a failed database update. Browser tests exercise real Celery processing, byte-identical downloads, safe text previews, access-key transfer, mobile layout, and pause/resume across reloads. CI runs the browser suite against both host processes and a separately built packaged Docker stack, then uploads test artifacts. Recovery coverage includes a real SIGKILL after object deletion, forced PostgreSQL row-lock races, expired multipart restart, stale workers, all file operations under another workspace key, and an upgrade from populated baseline metadata. These regression counts are separate from the named recovery matrix.
 
-Sprint 1 changes and evidence are recorded in [the Sprint 1 report](docs/sprint-1.md). The remaining large-file, recovery-matrix, concurrency, and operations work is tracked in [the completion plan](docs/completion-plan.md).
+Completed work and evidence are recorded in the [Sprint 1](docs/sprint-1.md), [Sprint 2](docs/sprint-2.md), and [Sprint 3](docs/sprint-3.md) reports. Remaining concurrency and operations work is tracked in [the completion plan](docs/completion-plan.md).
 
 ## Operating scope
 

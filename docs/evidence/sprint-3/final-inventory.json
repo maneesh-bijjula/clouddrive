@@ -1,0 +1,13 @@
+{
+  "scope": "Read-only final inventory of disposable clouddrive-sprint3-recovery after all60 case cleanups",
+  "file_status_counts": [
+    {
+      "status": "DELETED",
+      "count": 60
+    }
+  ],
+  "outbox_rows": 0,
+  "active_claims": 0,
+  "stored_objects": 0,
+  "multipart_uploads": 0
+}
