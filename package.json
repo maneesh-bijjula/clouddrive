@@ -8,7 +8,8 @@
     "build": "tsc --noEmit && vite build frontend --outDir ../dist --emptyOutDir",
     "test:browser": "playwright test",
     "format": "prettier --write frontend tests-browser *.json *.ts .github README.md compose.yaml",
-    "bench:upload": "node scripts/benchmark-upload.mjs"
+    "bench:upload": "node scripts/benchmark-upload.mjs",
+    "test:recovery": "node scripts/recovery-matrix.mjs"
   },
   "dependencies": {
     "@noble/hashes": "2.4.0",

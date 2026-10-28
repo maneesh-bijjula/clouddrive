@@ -1,0 +1,2292 @@
+{
+  "schema_version": 1,
+  "suite": "clouddrive-recovery-20",
+  "started_at": "2026-10-28T00:11:17.081Z",
+  "run_id": "2657fa70-7910-43b0-8640-359465ad6a4e",
+  "status": "passed",
+  "scope": "Packaged local MinIO/PostgreSQL/Redis/Celery recovery; small deterministic fixtures; no live AWS, concurrency or large-file measurement",
+  "manifest_sha256": "b8702e7ef99b509046dc36bb50e32c13103fbf313fd5354ab1cf2754b2b6856e",
+  "selected_cases": [
+    "R10",
+    "R11",
+    "R12",
+    "R13",
+    "R14",
+    "R15",
+    "R16",
+    "R17",
+    "R18",
+    "R19",
+    "R20"
+  ],
+  "full_matrix": false,
+  "requested_full_passes": 1,
+  "expected_attempts": 11,
+  "environment": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "node": "v26.3.0",
+    "host_cpu": "Apple M3",
+    "host_logical_cpus": 8,
+    "host_memory_bytes": 8589934592,
+    "compose_project": "clouddrive-sprint3-recovery",
+    "git_sha": "b4b9081fc38fdfaeb6b31e2173a11cfa05c490f7",
+    "git_dirty": true,
+    "images": [
+      {
+        "service": "api",
+        "image_id": "sha256:6b8dbb16ab6a42e1e49d3dae1e59c81314c0b4240b2fcc312a14f831f9089d07"
+      },
+      {
+        "service": "beat",
+        "image_id": "sha256:6b8dbb16ab6a42e1e49d3dae1e59c81314c0b4240b2fcc312a14f831f9089d07"
+      },
+      {
+        "service": "minio",
+        "image_id": "sha256:9c48c56d15710de71060d2bfc9689515a089c708043897cdf72c34680868c304"
+      },
+      {
+        "service": "postgres",
+        "image_id": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24"
+      },
+      {
+        "service": "redis",
+        "image_id": "sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499"
+      },
+      {
+        "service": "worker",
+        "image_id": "sha256:6b8dbb16ab6a42e1e49d3dae1e59c81314c0b4240b2fcc312a14f831f9089d07"
+      }
+    ],
+    "other_running_container_count": 9,
+    "source_sha256": {
+      "clouddrive/__init__.py": "bc50749c7527c8869db75c23b477b100459807d9b37f030007e99e5babac9779",
+      "clouddrive/api.py": "590bf12b515a14d78b46a3585f1b832dc4cc752621a024f4b756e82fcc06961f",
+      "clouddrive/config.py": "45135623c42881c6a47d17546a4359ce3b058fc92430a4637508ecc86e611932",
+      "clouddrive/db.py": "e413b085ddeaeae257b0b7965d9f5b892759f3ede7e441f636451836e143f06b",
+      "clouddrive/models.py": "ad6eeabadb6cc63bd3ae032262f52ed30b7eea1239059db666d46feb14af9fb3",
+      "clouddrive/recovery_faults.py": "d5933deee21b83d9ba7a8dbb70b00520b89bc3b80e201cdc6eefbf121a81a899",
+      "clouddrive/service.py": "6d452d42f85692fa02503f7e273de5c2a7b4db528a68039259443385e4e2f629",
+      "clouddrive/storage.py": "5e3539c250497518c976d58096a3c0e43c1261d4140a752aac5c7afc075722e5",
+      "clouddrive/worker.py": "871a68920f5b9e405bd625039c2d9cb6639e82bf39bc72f2c70df8f3a5e350e9",
+      "scripts/recovery-inspect.py": "89ed857bb21e9446ca24ec7d31a96f3b0716d65db9065ef24c1418ebf89eca12",
+      "scripts/recovery-matrix.mjs": "5871e4fb0a421aa0ddb0890217833d7e93b39e3a567bd03d1a2cfda23736f8e2",
+      "scripts/recovery-upload.mjs": "aa376a2fa3a4ded8a1510b1a7af295820350135b2ed8475cef46201f3271794a",
+      "scripts/recovery_backend.py": "633905afd53b88a6ff4d4916edc3e8835677b92236fea5a895722fd2cb81e69f",
+      "compose.recovery.yaml": "a456b65e679407d01d6ea2f6138ee80eea663c2257a7101eba2bd73030be70fb",
+      "frontend/src/main.ts": "0c433e14a9c085a0e8f4f6123b55590f023e26e14cb4539ca3b517be37e66cb8",
+      "frontend/src/hash-worker.ts": "5ee4090dfd1a207a2b48214295927cf086e26441ee624041760bd94efaa53d7e"
+    },
+    "packaged_python_source_matches": true
+  },
+  "passes": [
+    {
+      "pass": 1,
+      "started_at": "2026-10-28T00:11:20.617Z",
+      "cases": [
+        {
+          "id": "R10",
+          "title": "API killed during incomplete multipart upload",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:11:21Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "424c4740802b721a3bd67f99f9d0766c049803f4f75480f038442c6e63da4210"
+          },
+          "fault_proof": {
+            "api_exit_code": 137,
+            "acknowledged_part_survived": 1,
+            "mechanism": "real_api_SIGKILL"
+          },
+          "events": [],
+          "environment": {
+            "compose_project": "clouddrive-sprint3-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "a55a4f668793",
+                "service": "api"
+              },
+              {
+                "id": "4f4740fa351d",
+                "service": "beat"
+              },
+              {
+                "id": "edaae10d9383",
+                "service": "minio"
+              },
+              {
+                "id": "5690e33babcb",
+                "service": "postgres"
+              },
+              {
+                "id": "9f4153fd412b",
+                "service": "redis"
+              },
+              {
+                "id": "bce8561fabf3",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "c64bd335-45c7-4c49-836b-9044f2f0bd36",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "recovery_s": 9.803143,
+          "download": {
+            "bytes": 17825809,
+            "sha256": "424c4740802b721a3bd67f99f9d0766c049803f4f75480f038442c6e63da4210"
+          },
+          "worker": {
+            "bytes": 17825809,
+            "sha256": "424c4740802b721a3bd67f99f9d0766c049803f4f75480f038442c6e63da4210"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 1,
+          "part_puts": [
+            1,
+            2,
+            3
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "c64bd335-45c7-4c49-836b-9044f2f0bd36",
+              "pid": 1,
+              "time_unix": 1793146312.948036
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "c64bd335-45c7-4c49-836b-9044f2f0bd36",
+              "pid": 1,
+              "time_unix": 1793146313.163915
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "c64bd335-45c7-4c49-836b-9044f2f0bd36",
+              "pid": 1,
+              "time_unix": 1793146313.2043931
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "c64bd335-45c7-4c49-836b-9044f2f0bd36",
+              "pid": 1,
+              "time_unix": 1793146313.2384956
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "c64bd335-45c7-4c49-836b-9044f2f0bd36",
+              "pid": 8,
+              "time_unix": 1793146316.5312257
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "c64bd335-45c7-4c49-836b-9044f2f0bd36",
+              "pid": 8,
+              "time_unix": 1793146316.5700612,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "2d735861-12b4-432a-b4c6-a9dbe1b5594e"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "c64bd335-45c7-4c49-836b-9044f2f0bd36",
+              "pid": 8,
+              "time_unix": 1793146316.799082,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "c64bd335-45c7-4c49-836b-9044f2f0bd36",
+              "pid": 8,
+              "time_unix": 1793146316.9895477,
+              "bytes_read": 17825809,
+              "backend_pid": 125
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "c64bd335-45c7-4c49-836b-9044f2f0bd36",
+              "pid": 8,
+              "time_unix": 1793146316.9965668,
+              "outcome": "ready"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "c64bd335-45c7-4c49-836b-9044f2f0bd36",
+              "pid": 8,
+              "time_unix": 1793146316.5700612,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "2d735861-12b4-432a-b4c6-a9dbe1b5594e"
+            }
+          ],
+          "publication_count": 1,
+          "stream_attempts": 1,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 37.79385
+        },
+        {
+          "id": "R11",
+          "title": "API killed after durable FINALIZING intent",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:12:00Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "08f904652c2776f064f7bb235ef8a85c09f14ce0345a529feb92b8ae4b3da164"
+          },
+          "fault_proof": {
+            "api_exit_code": 137,
+            "request_connection_lost": true,
+            "checkpoint": {
+              "checkpoint": "finalizing_committed",
+              "file_id": "b668bc2b-24fa-4005-9d2a-31715184ef03",
+              "pid": 1,
+              "time_unix": 1793146326.5152507
+            },
+            "durable_status": "FINALIZING",
+            "mechanism": "real_api_SIGKILL"
+          },
+          "events": [],
+          "environment": {
+            "compose_project": "clouddrive-sprint3-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "a55a4f668793",
+                "service": "api"
+              },
+              {
+                "id": "4f4740fa351d",
+                "service": "beat"
+              },
+              {
+                "id": "edaae10d9383",
+                "service": "minio"
+              },
+              {
+                "id": "5690e33babcb",
+                "service": "postgres"
+              },
+              {
+                "id": "9f4153fd412b",
+                "service": "redis"
+              },
+              {
+                "id": "bce8561fabf3",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "b668bc2b-24fa-4005-9d2a-31715184ef03",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "recovery_s": 10.806852,
+          "download": {
+            "bytes": 17825809,
+            "sha256": "08f904652c2776f064f7bb235ef8a85c09f14ce0345a529feb92b8ae4b3da164"
+          },
+          "worker": {
+            "bytes": 17825809,
+            "sha256": "08f904652c2776f064f7bb235ef8a85c09f14ce0345a529feb92b8ae4b3da164"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 1,
+          "part_puts": [
+            1,
+            2,
+            3
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "b668bc2b-24fa-4005-9d2a-31715184ef03",
+              "pid": 1,
+              "time_unix": 1793146326.5152507
+            },
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "b668bc2b-24fa-4005-9d2a-31715184ef03",
+              "pid": 8,
+              "time_unix": 1793146356.6630707
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "b668bc2b-24fa-4005-9d2a-31715184ef03",
+              "pid": 8,
+              "time_unix": 1793146357.0534592
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "b668bc2b-24fa-4005-9d2a-31715184ef03",
+              "pid": 8,
+              "time_unix": 1793146357.1041927
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "b668bc2b-24fa-4005-9d2a-31715184ef03",
+              "pid": 8,
+              "time_unix": 1793146357.1466708
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "b668bc2b-24fa-4005-9d2a-31715184ef03",
+              "pid": 8,
+              "time_unix": 1793146357.1895094,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "37af26a5-5691-4d2e-b114-1a41ef3e56e6"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "b668bc2b-24fa-4005-9d2a-31715184ef03",
+              "pid": 8,
+              "time_unix": 1793146357.2550807,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "b668bc2b-24fa-4005-9d2a-31715184ef03",
+              "pid": 8,
+              "time_unix": 1793146357.6007717,
+              "bytes_read": 17825809,
+              "backend_pid": 125
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "b668bc2b-24fa-4005-9d2a-31715184ef03",
+              "pid": 8,
+              "time_unix": 1793146357.6365774,
+              "outcome": "ready"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "b668bc2b-24fa-4005-9d2a-31715184ef03",
+              "pid": 8,
+              "time_unix": 1793146357.1895094,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "37af26a5-5691-4d2e-b114-1a41ef3e56e6"
+            }
+          ],
+          "publication_count": 1,
+          "stream_attempts": 1,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 39.605539
+        },
+        {
+          "id": "R12",
+          "title": "Storage completion reply lost at the client boundary",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:12:41Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "2093bc3fb2ebb16279aac3d35c6ade0cd8c69fcbe5573075d2f574a1596854fb"
+          },
+          "fault_proof": {
+            "checkpoint": {
+              "checkpoint": "storage_completed",
+              "file_id": "4175875f-3cf7-457b-b195-20105618703a",
+              "pid": 1,
+              "time_unix": 1793146366.890384
+            },
+            "mechanism": "function_boundary_exception_injection",
+            "request_status": 503,
+            "durable_status": "FINALIZING",
+            "committed_outbox_rows": 0,
+            "completed_storage_object_present": true
+          },
+          "events": [],
+          "environment": {
+            "compose_project": "clouddrive-sprint3-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "a55a4f668793",
+                "service": "api"
+              },
+              {
+                "id": "4f4740fa351d",
+                "service": "beat"
+              },
+              {
+                "id": "edaae10d9383",
+                "service": "minio"
+              },
+              {
+                "id": "5690e33babcb",
+                "service": "postgres"
+              },
+              {
+                "id": "9f4153fd412b",
+                "service": "redis"
+              },
+              {
+                "id": "bce8561fabf3",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "4175875f-3cf7-457b-b195-20105618703a",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "recovery_s": 4.532843,
+          "download": {
+            "bytes": 17825809,
+            "sha256": "2093bc3fb2ebb16279aac3d35c6ade0cd8c69fcbe5573075d2f574a1596854fb"
+          },
+          "worker": {
+            "bytes": 17825809,
+            "sha256": "2093bc3fb2ebb16279aac3d35c6ade0cd8c69fcbe5573075d2f574a1596854fb"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 2,
+          "part_puts": [
+            1,
+            2,
+            3
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "4175875f-3cf7-457b-b195-20105618703a",
+              "pid": 1,
+              "time_unix": 1793146366.833933
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "4175875f-3cf7-457b-b195-20105618703a",
+              "pid": 1,
+              "time_unix": 1793146366.890384
+            },
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "4175875f-3cf7-457b-b195-20105618703a",
+              "pid": 1,
+              "time_unix": 1793146367.3716614
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "4175875f-3cf7-457b-b195-20105618703a",
+              "pid": 1,
+              "time_unix": 1793146367.404378
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "4175875f-3cf7-457b-b195-20105618703a",
+              "pid": 1,
+              "time_unix": 1793146367.4086986
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "4175875f-3cf7-457b-b195-20105618703a",
+              "pid": 8,
+              "time_unix": 1793146371.6800268
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "4175875f-3cf7-457b-b195-20105618703a",
+              "pid": 8,
+              "time_unix": 1793146371.6934905,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "68e67d71-6be1-4deb-b499-1ab11853097c"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "4175875f-3cf7-457b-b195-20105618703a",
+              "pid": 8,
+              "time_unix": 1793146371.7391026,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "4175875f-3cf7-457b-b195-20105618703a",
+              "pid": 8,
+              "time_unix": 1793146371.8154223,
+              "bytes_read": 17825809,
+              "backend_pid": 125
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "4175875f-3cf7-457b-b195-20105618703a",
+              "pid": 8,
+              "time_unix": 1793146371.8219104,
+              "outcome": "ready"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "4175875f-3cf7-457b-b195-20105618703a",
+              "pid": 8,
+              "time_unix": 1793146371.6934905,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "68e67d71-6be1-4deb-b499-1ab11853097c"
+            }
+          ],
+          "publication_count": 1,
+          "stream_attempts": 1,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 10.856322
+        },
+        {
+          "id": "R13",
+          "title": "Completion database transaction rolls back after storage completion",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:12:53Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "19f8f4f8a58456f4d6bd4a64917536dcd861a3dc0173796931c796f6a9f0b0c2"
+          },
+          "fault_proof": {
+            "checkpoint": {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "8b0fab0d-ce06-416a-89e2-a6a54f6774a9",
+              "pid": 1,
+              "time_unix": 1793146374.9057953
+            },
+            "mechanism": "function_boundary_exception_injection",
+            "request_status": 503,
+            "durable_status": "FINALIZING",
+            "committed_outbox_rows": 0,
+            "completed_storage_object_present": true
+          },
+          "events": [],
+          "environment": {
+            "compose_project": "clouddrive-sprint3-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "a55a4f668793",
+                "service": "api"
+              },
+              {
+                "id": "4f4740fa351d",
+                "service": "beat"
+              },
+              {
+                "id": "edaae10d9383",
+                "service": "minio"
+              },
+              {
+                "id": "5690e33babcb",
+                "service": "postgres"
+              },
+              {
+                "id": "9f4153fd412b",
+                "service": "redis"
+              },
+              {
+                "id": "bce8561fabf3",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "8b0fab0d-ce06-416a-89e2-a6a54f6774a9",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "recovery_s": 1.663796,
+          "download": {
+            "bytes": 17825809,
+            "sha256": "19f8f4f8a58456f4d6bd4a64917536dcd861a3dc0173796931c796f6a9f0b0c2"
+          },
+          "worker": {
+            "bytes": 17825809,
+            "sha256": "19f8f4f8a58456f4d6bd4a64917536dcd861a3dc0173796931c796f6a9f0b0c2"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 2,
+          "part_puts": [
+            1,
+            2,
+            3
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "8b0fab0d-ce06-416a-89e2-a6a54f6774a9",
+              "pid": 1,
+              "time_unix": 1793146374.823398
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "8b0fab0d-ce06-416a-89e2-a6a54f6774a9",
+              "pid": 1,
+              "time_unix": 1793146374.8648305
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "8b0fab0d-ce06-416a-89e2-a6a54f6774a9",
+              "pid": 1,
+              "time_unix": 1793146374.9057953
+            },
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "8b0fab0d-ce06-416a-89e2-a6a54f6774a9",
+              "pid": 1,
+              "time_unix": 1793146375.2266703
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "8b0fab0d-ce06-416a-89e2-a6a54f6774a9",
+              "pid": 1,
+              "time_unix": 1793146375.2485864
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "8b0fab0d-ce06-416a-89e2-a6a54f6774a9",
+              "pid": 1,
+              "time_unix": 1793146375.2532635
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "8b0fab0d-ce06-416a-89e2-a6a54f6774a9",
+              "pid": 8,
+              "time_unix": 1793146376.6536596
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "8b0fab0d-ce06-416a-89e2-a6a54f6774a9",
+              "pid": 8,
+              "time_unix": 1793146376.6645465,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "d6124613-c448-4ee3-b48a-3277cf71c724"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "8b0fab0d-ce06-416a-89e2-a6a54f6774a9",
+              "pid": 8,
+              "time_unix": 1793146376.6938143,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "8b0fab0d-ce06-416a-89e2-a6a54f6774a9",
+              "pid": 8,
+              "time_unix": 1793146376.7264268,
+              "bytes_read": 17825809,
+              "backend_pid": 125
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "8b0fab0d-ce06-416a-89e2-a6a54f6774a9",
+              "pid": 8,
+              "time_unix": 1793146376.7281547,
+              "outcome": "ready"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "8b0fab0d-ce06-416a-89e2-a6a54f6774a9",
+              "pid": 8,
+              "time_unix": 1793146376.6645465,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "d6124613-c448-4ee3-b48a-3277cf71c724"
+            }
+          ],
+          "publication_count": 1,
+          "stream_attempts": 1,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 3.968814
+        },
+        {
+          "id": "R14",
+          "title": "Completion commits then API dies before replying",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:12:57Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "7299aa5ce7e4c1e9a4c97467ed7869d0821376e4edcb68ebc0d0e15e9e2b42c7"
+          },
+          "fault_proof": {
+            "committed_outbox_rows_before_kill": 1,
+            "api_exit_code": 137,
+            "request_connection_lost": true,
+            "checkpoint": {
+              "checkpoint": "completion_committed",
+              "file_id": "e0c7908d-88f8-447d-89c6-909166eeffc4",
+              "pid": 1,
+              "time_unix": 1793146380.8178782
+            },
+            "durable_status": "PROCESSING",
+            "mechanism": "real_api_SIGKILL"
+          },
+          "events": [
+            {
+              "action": "container_stopped",
+              "service": "beat",
+              "container": "4f4740fa351de0767b3497f2ad804848a7dcd49e3efb37f0425f475d85d47e45",
+              "exit_code": 0,
+              "elapsed_s": 3.176016
+            },
+            {
+              "action": "container_stopped",
+              "service": "worker",
+              "container": "bce8561fabf392d9435716a107a87cfdb81e7d95c21b0d3cf2d8eccd65202ba3",
+              "exit_code": 137,
+              "elapsed_s": 3.349951
+            }
+          ],
+          "environment": {
+            "compose_project": "clouddrive-sprint3-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "a55a4f668793",
+                "service": "api"
+              },
+              {
+                "id": "4f4740fa351d",
+                "service": "beat"
+              },
+              {
+                "id": "edaae10d9383",
+                "service": "minio"
+              },
+              {
+                "id": "5690e33babcb",
+                "service": "postgres"
+              },
+              {
+                "id": "9f4153fd412b",
+                "service": "redis"
+              },
+              {
+                "id": "bce8561fabf3",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "e0c7908d-88f8-447d-89c6-909166eeffc4",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "recovery_s": 5.026599,
+          "download": {
+            "bytes": 17825809,
+            "sha256": "7299aa5ce7e4c1e9a4c97467ed7869d0821376e4edcb68ebc0d0e15e9e2b42c7"
+          },
+          "worker": {
+            "bytes": 17825809,
+            "sha256": "7299aa5ce7e4c1e9a4c97467ed7869d0821376e4edcb68ebc0d0e15e9e2b42c7"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 2,
+          "part_puts": [
+            1,
+            2,
+            3
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "e0c7908d-88f8-447d-89c6-909166eeffc4",
+              "pid": 1,
+              "time_unix": 1793146380.7771225
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "e0c7908d-88f8-447d-89c6-909166eeffc4",
+              "pid": 1,
+              "time_unix": 1793146380.8076422
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "e0c7908d-88f8-447d-89c6-909166eeffc4",
+              "pid": 1,
+              "time_unix": 1793146380.8157074
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "e0c7908d-88f8-447d-89c6-909166eeffc4",
+              "pid": 1,
+              "time_unix": 1793146380.8178782
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "e0c7908d-88f8-447d-89c6-909166eeffc4",
+              "pid": 1,
+              "time_unix": 1793146384.0567539
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "e0c7908d-88f8-447d-89c6-909166eeffc4",
+              "pid": 7,
+              "time_unix": 1793146390.4603238
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "e0c7908d-88f8-447d-89c6-909166eeffc4",
+              "pid": 7,
+              "time_unix": 1793146390.4643927,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "d6240d6d-7efc-4a69-9aba-aeda4c0d5767"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "e0c7908d-88f8-447d-89c6-909166eeffc4",
+              "pid": 7,
+              "time_unix": 1793146390.6036167,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "e0c7908d-88f8-447d-89c6-909166eeffc4",
+              "pid": 7,
+              "time_unix": 1793146390.651674,
+              "bytes_read": 17825809,
+              "backend_pid": 1125
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "e0c7908d-88f8-447d-89c6-909166eeffc4",
+              "pid": 7,
+              "time_unix": 1793146390.6553097,
+              "outcome": "ready"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "e0c7908d-88f8-447d-89c6-909166eeffc4",
+              "pid": 7,
+              "time_unix": 1793146390.4643927,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "d6240d6d-7efc-4a69-9aba-aeda4c0d5767"
+            }
+          ],
+          "publication_count": 1,
+          "stream_attempts": 1,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 14.052755
+        },
+        {
+          "id": "R15",
+          "title": "Redis unavailable before publication",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:13:11Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "3db322f38148869cf882cb1e2d4a0c02072b254bb8570061dbd84cdb6bb08b7c"
+          },
+          "fault_proof": {
+            "mechanism": "real_redis_container_outage",
+            "publication_error": "OperationalError",
+            "durable_outbox_rows": 1
+          },
+          "events": [
+            {
+              "action": "container_stopped",
+              "service": "redis",
+              "container": "9f4153fd412b75ac00a5b17f8b31a20f7af0f6b94e410d8c17dbd333ccf1e6f6",
+              "exit_code": 0,
+              "elapsed_s": 1.581015
+            }
+          ],
+          "environment": {
+            "compose_project": "clouddrive-sprint3-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "a55a4f668793",
+                "service": "api"
+              },
+              {
+                "id": "4f4740fa351d",
+                "service": "beat"
+              },
+              {
+                "id": "edaae10d9383",
+                "service": "minio"
+              },
+              {
+                "id": "5690e33babcb",
+                "service": "postgres"
+              },
+              {
+                "id": "9f4153fd412b",
+                "service": "redis"
+              },
+              {
+                "id": "bce8561fabf3",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "f7dc05ea-75b6-47a1-bcaa-084dda2fe010",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "recovery_s": 4.706116,
+          "download": {
+            "bytes": 17825809,
+            "sha256": "3db322f38148869cf882cb1e2d4a0c02072b254bb8570061dbd84cdb6bb08b7c"
+          },
+          "worker": {
+            "bytes": 17825809,
+            "sha256": "3db322f38148869cf882cb1e2d4a0c02072b254bb8570061dbd84cdb6bb08b7c"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 1,
+          "part_puts": [
+            1,
+            2,
+            3
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "f7dc05ea-75b6-47a1-bcaa-084dda2fe010",
+              "pid": 1,
+              "time_unix": 1793146393.5874324
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "f7dc05ea-75b6-47a1-bcaa-084dda2fe010",
+              "pid": 1,
+              "time_unix": 1793146393.6359704
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "f7dc05ea-75b6-47a1-bcaa-084dda2fe010",
+              "pid": 1,
+              "time_unix": 1793146393.6479876
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "f7dc05ea-75b6-47a1-bcaa-084dda2fe010",
+              "pid": 1,
+              "time_unix": 1793146393.652575
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "f7dc05ea-75b6-47a1-bcaa-084dda2fe010",
+              "pid": 7,
+              "time_unix": 1793146406.29024
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "f7dc05ea-75b6-47a1-bcaa-084dda2fe010",
+              "pid": 7,
+              "time_unix": 1793146406.2967856,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "aa88a1c1-3ce9-491f-a58c-b4d8d2b7d9f7"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "f7dc05ea-75b6-47a1-bcaa-084dda2fe010",
+              "pid": 7,
+              "time_unix": 1793146406.3260438,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "f7dc05ea-75b6-47a1-bcaa-084dda2fe010",
+              "pid": 7,
+              "time_unix": 1793146406.3573282,
+              "bytes_read": 17825809,
+              "backend_pid": 1125
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "f7dc05ea-75b6-47a1-bcaa-084dda2fe010",
+              "pid": 7,
+              "time_unix": 1793146406.3590796,
+              "outcome": "ready"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "f7dc05ea-75b6-47a1-bcaa-084dda2fe010",
+              "pid": 7,
+              "time_unix": 1793146406.2967856,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "aa88a1c1-3ce9-491f-a58c-b4d8d2b7d9f7"
+            }
+          ],
+          "publication_count": 1,
+          "stream_attempts": 1,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 15.065045
+        },
+        {
+          "id": "R16",
+          "title": "Dispatcher SIGKILL after publication before outbox commit",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:13:27Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "3e41ca1e9fb9b629941a3400b657c1728ecfbb8ee2746316745bff65d18ba14c"
+          },
+          "fault_proof": {
+            "mechanism": "real_packaged_dispatcher_SIGKILL",
+            "checkpoint": {
+              "checkpoint": "outbox_published",
+              "file_id": "b8699a72-798b-421b-8c88-b54fb7f30994",
+              "pid": 1,
+              "time_unix": 1793146412.394852
+            },
+            "dispatcher_exit_code": 137,
+            "queue_messages": 1,
+            "durable_outbox_rows": 1
+          },
+          "events": [
+            {
+              "action": "container_stopped",
+              "service": "beat",
+              "container": "4f4740fa351de0767b3497f2ad804848a7dcd49e3efb37f0425f475d85d47e45",
+              "exit_code": 0,
+              "elapsed_s": 2.919384
+            },
+            {
+              "action": "container_stopped",
+              "service": "worker",
+              "container": "bce8561fabf392d9435716a107a87cfdb81e7d95c21b0d3cf2d8eccd65202ba3",
+              "exit_code": 0,
+              "elapsed_s": 3.000999
+            }
+          ],
+          "environment": {
+            "compose_project": "clouddrive-sprint3-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "a55a4f668793",
+                "service": "api"
+              },
+              {
+                "id": "4f4740fa351d",
+                "service": "beat"
+              },
+              {
+                "id": "edaae10d9383",
+                "service": "minio"
+              },
+              {
+                "id": "5690e33babcb",
+                "service": "postgres"
+              },
+              {
+                "id": "9f4153fd412b",
+                "service": "redis"
+              },
+              {
+                "id": "bce8561fabf3",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "b8699a72-798b-421b-8c88-b54fb7f30994",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "recovery_s": 2.733998,
+          "download": {
+            "bytes": 17825809,
+            "sha256": "3e41ca1e9fb9b629941a3400b657c1728ecfbb8ee2746316745bff65d18ba14c"
+          },
+          "worker": {
+            "bytes": 17825809,
+            "sha256": "3e41ca1e9fb9b629941a3400b657c1728ecfbb8ee2746316745bff65d18ba14c"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 1,
+          "part_puts": [
+            1,
+            2,
+            3
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "b8699a72-798b-421b-8c88-b54fb7f30994",
+              "pid": 1,
+              "time_unix": 1793146410.7853887
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "b8699a72-798b-421b-8c88-b54fb7f30994",
+              "pid": 1,
+              "time_unix": 1793146410.807416
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "b8699a72-798b-421b-8c88-b54fb7f30994",
+              "pid": 1,
+              "time_unix": 1793146410.8113956
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "b8699a72-798b-421b-8c88-b54fb7f30994",
+              "pid": 1,
+              "time_unix": 1793146410.812938
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "b8699a72-798b-421b-8c88-b54fb7f30994",
+              "pid": 1,
+              "time_unix": 1793146412.394852
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "b8699a72-798b-421b-8c88-b54fb7f30994",
+              "pid": 8,
+              "time_unix": 1793146416.5694618,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "687ffb5a-dda4-4929-ba1b-18686545ab6d"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "b8699a72-798b-421b-8c88-b54fb7f30994",
+              "pid": 8,
+              "time_unix": 1793146416.8577664,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "b8699a72-798b-421b-8c88-b54fb7f30994",
+              "pid": 8,
+              "time_unix": 1793146416.904604,
+              "bytes_read": 17825809,
+              "backend_pid": 1216
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "b8699a72-798b-421b-8c88-b54fb7f30994",
+              "pid": 8,
+              "time_unix": 1793146416.9089208,
+              "outcome": "ready"
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "b8699a72-798b-421b-8c88-b54fb7f30994",
+              "pid": 8,
+              "time_unix": 1793146416.9328837
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "b8699a72-798b-421b-8c88-b54fb7f30994",
+              "pid": 8,
+              "time_unix": 1793146416.9379454,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "f6b12da8-c6d8-4aa0-aec2-c446191a0955"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "b8699a72-798b-421b-8c88-b54fb7f30994",
+              "pid": 8,
+              "time_unix": 1793146416.5694618,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "687ffb5a-dda4-4929-ba1b-18686545ab6d"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "b8699a72-798b-421b-8c88-b54fb7f30994",
+              "pid": 8,
+              "time_unix": 1793146416.9379454,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "f6b12da8-c6d8-4aa0-aec2-c446191a0955"
+            }
+          ],
+          "publication_count": 2,
+          "stream_attempts": 1,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 10.393049
+        },
+        {
+          "id": "R17",
+          "title": "Published broker message removed before worker delivery",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:13:38Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "630e44dcccd7f3252904dd5853f28ca00b7aa988b02d4ad9794779f1e41227c7"
+          },
+          "fault_proof": {
+            "mechanism": "real_broker_message_removal",
+            "checkpoint": {
+              "checkpoint": "outbox_published",
+              "file_id": "5300673a-f9c9-43f8-ad16-3c77ab32ed09",
+              "pid": 1,
+              "time_unix": 1793146424.893941
+            },
+            "removed_task": "clouddrive.process",
+            "outbox_rows_after_publish": 0,
+            "queue_before": 1,
+            "queue_after": 0
+          },
+          "events": [
+            {
+              "action": "container_stopped",
+              "service": "beat",
+              "container": "4f4740fa351de0767b3497f2ad804848a7dcd49e3efb37f0425f475d85d47e45",
+              "exit_code": 0,
+              "elapsed_s": 3.803685
+            },
+            {
+              "action": "container_stopped",
+              "service": "worker",
+              "container": "bce8561fabf392d9435716a107a87cfdb81e7d95c21b0d3cf2d8eccd65202ba3",
+              "exit_code": 137,
+              "elapsed_s": 4.095796
+            }
+          ],
+          "environment": {
+            "compose_project": "clouddrive-sprint3-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "a55a4f668793",
+                "service": "api"
+              },
+              {
+                "id": "4f4740fa351d",
+                "service": "beat"
+              },
+              {
+                "id": "edaae10d9383",
+                "service": "minio"
+              },
+              {
+                "id": "5690e33babcb",
+                "service": "postgres"
+              },
+              {
+                "id": "9f4153fd412b",
+                "service": "redis"
+              },
+              {
+                "id": "bce8561fabf3",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "5300673a-f9c9-43f8-ad16-3c77ab32ed09",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "recovery_s": 27.599328,
+          "download": {
+            "bytes": 17825809,
+            "sha256": "630e44dcccd7f3252904dd5853f28ca00b7aa988b02d4ad9794779f1e41227c7"
+          },
+          "worker": {
+            "bytes": 17825809,
+            "sha256": "630e44dcccd7f3252904dd5853f28ca00b7aa988b02d4ad9794779f1e41227c7"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 1,
+          "part_puts": [
+            1,
+            2,
+            3
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "5300673a-f9c9-43f8-ad16-3c77ab32ed09",
+              "pid": 1,
+              "time_unix": 1793146423.3503413
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "5300673a-f9c9-43f8-ad16-3c77ab32ed09",
+              "pid": 1,
+              "time_unix": 1793146423.423678
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "5300673a-f9c9-43f8-ad16-3c77ab32ed09",
+              "pid": 1,
+              "time_unix": 1793146423.4337718
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "5300673a-f9c9-43f8-ad16-3c77ab32ed09",
+              "pid": 1,
+              "time_unix": 1793146423.4354095
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "5300673a-f9c9-43f8-ad16-3c77ab32ed09",
+              "pid": 1,
+              "time_unix": 1793146424.893941
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "5300673a-f9c9-43f8-ad16-3c77ab32ed09",
+              "pid": 8,
+              "time_unix": 1793146454.6543067
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "5300673a-f9c9-43f8-ad16-3c77ab32ed09",
+              "pid": 8,
+              "time_unix": 1793146454.6636038,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "d53f2fdc-d3ac-481f-83ad-93da63448a0f"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "5300673a-f9c9-43f8-ad16-3c77ab32ed09",
+              "pid": 8,
+              "time_unix": 1793146454.8678901,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "5300673a-f9c9-43f8-ad16-3c77ab32ed09",
+              "pid": 8,
+              "time_unix": 1793146454.9735775,
+              "bytes_read": 17825809,
+              "backend_pid": 1268
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "5300673a-f9c9-43f8-ad16-3c77ab32ed09",
+              "pid": 8,
+              "time_unix": 1793146454.9885736,
+              "outcome": "ready"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "5300673a-f9c9-43f8-ad16-3c77ab32ed09",
+              "pid": 8,
+              "time_unix": 1793146454.6636038,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "d53f2fdc-d3ac-481f-83ad-93da63448a0f"
+            }
+          ],
+          "publication_count": 2,
+          "stream_attempts": 1,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 36.878616
+        },
+        {
+          "id": "R18",
+          "title": "Worker child SIGKILL during streaming verification",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:14:16Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "46f967ec14a2044cb931c1abe9319faaed54d6788185e4c4b528ef36cc18511a"
+          },
+          "fault_proof": {
+            "mechanism": "real_worker_pool_child_SIGKILL",
+            "checkpoint": {
+              "checkpoint": "worker_streaming",
+              "file_id": "25d172ff-6fea-4c4c-81e9-5e5893d3805c",
+              "pid": 8,
+              "time_unix": 1793146459.7046754,
+              "bytes_read": 1048576
+            },
+            "persisted_claim": "8734a70f-4dbc-497d-8a9d-55485ca4821e",
+            "lease_until": "2026-10-28T00:15:49.672968+00:00"
+          },
+          "events": [],
+          "environment": {
+            "compose_project": "clouddrive-sprint3-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "a55a4f668793",
+                "service": "api"
+              },
+              {
+                "id": "4f4740fa351d",
+                "service": "beat"
+              },
+              {
+                "id": "edaae10d9383",
+                "service": "minio"
+              },
+              {
+                "id": "5690e33babcb",
+                "service": "postgres"
+              },
+              {
+                "id": "9f4153fd412b",
+                "service": "redis"
+              },
+              {
+                "id": "bce8561fabf3",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "25d172ff-6fea-4c4c-81e9-5e5893d3805c",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "recovery_s": 92.655117,
+          "download": {
+            "bytes": 17825809,
+            "sha256": "46f967ec14a2044cb931c1abe9319faaed54d6788185e4c4b528ef36cc18511a"
+          },
+          "worker": {
+            "bytes": 17825809,
+            "sha256": "46f967ec14a2044cb931c1abe9319faaed54d6788185e4c4b528ef36cc18511a"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 1,
+          "part_puts": [
+            1,
+            2,
+            3
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "25d172ff-6fea-4c4c-81e9-5e5893d3805c",
+              "pid": 1,
+              "time_unix": 1793146456.6841028
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "25d172ff-6fea-4c4c-81e9-5e5893d3805c",
+              "pid": 1,
+              "time_unix": 1793146456.6907728
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "25d172ff-6fea-4c4c-81e9-5e5893d3805c",
+              "pid": 1,
+              "time_unix": 1793146456.6998892
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "25d172ff-6fea-4c4c-81e9-5e5893d3805c",
+              "pid": 1,
+              "time_unix": 1793146456.7010334
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "25d172ff-6fea-4c4c-81e9-5e5893d3805c",
+              "pid": 8,
+              "time_unix": 1793146459.66076
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "25d172ff-6fea-4c4c-81e9-5e5893d3805c",
+              "pid": 8,
+              "time_unix": 1793146459.6719024,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "6bf66dbf-d3a6-426c-b06d-f39043e37bfe"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "25d172ff-6fea-4c4c-81e9-5e5893d3805c",
+              "pid": 8,
+              "time_unix": 1793146459.7046754,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "25d172ff-6fea-4c4c-81e9-5e5893d3805c",
+              "pid": 15,
+              "time_unix": 1793146462.424212,
+              "retries": 0,
+              "redelivered": true,
+              "task_id": "6bf66dbf-d3a6-426c-b06d-f39043e37bfe"
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "25d172ff-6fea-4c4c-81e9-5e5893d3805c",
+              "pid": 15,
+              "time_unix": 1793146554.6852384
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "25d172ff-6fea-4c4c-81e9-5e5893d3805c",
+              "pid": 15,
+              "time_unix": 1793146554.6978004,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "533a3d1f-6a67-49e0-add4-f0997c79a0a7"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "25d172ff-6fea-4c4c-81e9-5e5893d3805c",
+              "pid": 15,
+              "time_unix": 1793146554.8765292,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "25d172ff-6fea-4c4c-81e9-5e5893d3805c",
+              "pid": 15,
+              "time_unix": 1793146554.9407978,
+              "bytes_read": 17825809,
+              "backend_pid": 1385
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "25d172ff-6fea-4c4c-81e9-5e5893d3805c",
+              "pid": 15,
+              "time_unix": 1793146554.9430912,
+              "outcome": "ready"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "25d172ff-6fea-4c4c-81e9-5e5893d3805c",
+              "pid": 8,
+              "time_unix": 1793146459.6719024,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "6bf66dbf-d3a6-426c-b06d-f39043e37bfe"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "25d172ff-6fea-4c4c-81e9-5e5893d3805c",
+              "pid": 15,
+              "time_unix": 1793146462.424212,
+              "retries": 0,
+              "redelivered": true,
+              "task_id": "6bf66dbf-d3a6-426c-b06d-f39043e37bfe"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "25d172ff-6fea-4c4c-81e9-5e5893d3805c",
+              "pid": 15,
+              "time_unix": 1793146554.6978004,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "533a3d1f-6a67-49e0-add4-f0997c79a0a7"
+            }
+          ],
+          "publication_count": 2,
+          "stream_attempts": 2,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 99.511569
+        },
+        {
+          "id": "R19",
+          "title": "PostgreSQL unavailable during worker result transaction",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:15:56Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "10964ce6f2e837f86bb58480cc10b69c68af0b5dc7273d3dc0decce0c73ef6a0"
+          },
+          "fault_proof": {
+            "mechanism": "real_postgresql_container_outage",
+            "checkpoint": {
+              "checkpoint": "worker_result",
+              "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+              "pid": 15,
+              "time_unix": 1793146559.7345831,
+              "bytes_read": 17825809,
+              "backend_pid": 1385
+            },
+            "failed_attempt": {
+              "checkpoint": "worker_failed",
+              "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+              "pid": 15,
+              "time_unix": 1793146560.6386316,
+              "error_type": "OperationalError"
+            },
+            "streamed_bytes": 17825809
+          },
+          "events": [
+            {
+              "action": "container_stopped",
+              "service": "postgres",
+              "container": "5690e33babcb3a3b64243b76abc5144a38c3b82b5dce660aabc62ea7223a9169",
+              "exit_code": 0,
+              "elapsed_s": 4.509665
+            }
+          ],
+          "environment": {
+            "compose_project": "clouddrive-sprint3-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "a55a4f668793",
+                "service": "api"
+              },
+              {
+                "id": "4f4740fa351d",
+                "service": "beat"
+              },
+              {
+                "id": "edaae10d9383",
+                "service": "minio"
+              },
+              {
+                "id": "5690e33babcb",
+                "service": "postgres"
+              },
+              {
+                "id": "9f4153fd412b",
+                "service": "redis"
+              },
+              {
+                "id": "bce8561fabf3",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "recovery_s": 89.229364,
+          "download": {
+            "bytes": 17825809,
+            "sha256": "10964ce6f2e837f86bb58480cc10b69c68af0b5dc7273d3dc0decce0c73ef6a0"
+          },
+          "worker": {
+            "bytes": 17825809,
+            "sha256": "10964ce6f2e837f86bb58480cc10b69c68af0b5dc7273d3dc0decce0c73ef6a0"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 1,
+          "part_puts": [
+            1,
+            2,
+            3
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+              "pid": 1,
+              "time_unix": 1793146556.8045871
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+              "pid": 1,
+              "time_unix": 1793146556.8125918
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+              "pid": 1,
+              "time_unix": 1793146556.8168116
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+              "pid": 1,
+              "time_unix": 1793146556.8192453
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+              "pid": 15,
+              "time_unix": 1793146559.6674685
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+              "pid": 15,
+              "time_unix": 1793146559.673977,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "e6baf218-3572-4659-9808-12cb888c6489"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+              "pid": 15,
+              "time_unix": 1793146559.6984046,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+              "pid": 15,
+              "time_unix": 1793146559.7345831,
+              "bytes_read": 17825809,
+              "backend_pid": 1385
+            },
+            {
+              "checkpoint": "worker_failed",
+              "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+              "pid": 15,
+              "time_unix": 1793146560.6386316,
+              "error_type": "OperationalError"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+              "pid": 15,
+              "time_unix": 1793146561.663922,
+              "retries": 1,
+              "redelivered": false,
+              "task_id": "e6baf218-3572-4659-9808-12cb888c6489"
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+              "pid": 15,
+              "time_unix": 1793146649.8319094
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+              "pid": 15,
+              "time_unix": 1793146649.8466225,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "9e39f869-79a9-41dc-ada7-75f056f91d6a"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+              "pid": 15,
+              "time_unix": 1793146649.9361453,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+              "pid": 15,
+              "time_unix": 1793146650.0176678,
+              "bytes_read": 17825809,
+              "backend_pid": 34
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+              "pid": 15,
+              "time_unix": 1793146650.0211031,
+              "outcome": "ready"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+              "pid": 15,
+              "time_unix": 1793146559.673977,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "e6baf218-3572-4659-9808-12cb888c6489"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+              "pid": 15,
+              "time_unix": 1793146561.663922,
+              "retries": 1,
+              "redelivered": false,
+              "task_id": "e6baf218-3572-4659-9808-12cb888c6489"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "8d45ecf4-d955-478f-afee-fd8cdf60526c",
+              "pid": 15,
+              "time_unix": 1793146649.8466225,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "9e39f869-79a9-41dc-ada7-75f056f91d6a"
+            }
+          ],
+          "publication_count": 2,
+          "stream_attempts": 2,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 94.795259
+        },
+        {
+          "id": "R20",
+          "title": "MinIO disconnected during an active worker stream",
+          "status": "passed",
+          "fault_observed": true,
+          "started_at": "2026-10-28T00:17:31Z",
+          "deadline_after_restoration_s": 180,
+          "source": {
+            "bytes": 67108881,
+            "sha256": "2b3f0ede80b9983ac65137fde10a5a5146955ebc4617dc32932385ac209e59e9"
+          },
+          "fault_proof": {
+            "mechanism": "real_minio_container_disconnect_during_stream",
+            "checkpoint": {
+              "checkpoint": "worker_streaming",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146654.9869637,
+              "bytes_read": 1048576
+            },
+            "failed_attempt": {
+              "checkpoint": "worker_failed",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146685.8441794,
+              "error_type": "ReadTimeoutError"
+            },
+            "source_bytes": 67108881
+          },
+          "events": [
+            {
+              "action": "container_stopped",
+              "service": "minio",
+              "container": "edaae10d9383edf4a19844de116640570ed0103da4d6328cd5e7de41f156a9a1",
+              "exit_code": 0,
+              "elapsed_s": 4.492177
+            }
+          ],
+          "environment": {
+            "compose_project": "clouddrive-sprint3-recovery",
+            "database": "clouddrive_recovery_test",
+            "bucket": "clouddrive-recovery-test",
+            "containers": [
+              {
+                "id": "a55a4f668793",
+                "service": "api"
+              },
+              {
+                "id": "4f4740fa351d",
+                "service": "beat"
+              },
+              {
+                "id": "edaae10d9383",
+                "service": "minio"
+              },
+              {
+                "id": "5690e33babcb",
+                "service": "postgres"
+              },
+              {
+                "id": "9f4153fd412b",
+                "service": "redis"
+              },
+              {
+                "id": "bce8561fabf3",
+                "service": "worker"
+              }
+            ]
+          },
+          "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+          "part_size": 8388608,
+          "preverification_download_blocked": true,
+          "wrong_workspace_download_blocked": true,
+          "recovery_s": 0.019697,
+          "download": {
+            "bytes": 67108881,
+            "sha256": "2b3f0ede80b9983ac65137fde10a5a5146955ebc4617dc32932385ac209e59e9"
+          },
+          "worker": {
+            "bytes": 67108881,
+            "sha256": "2b3f0ede80b9983ac65137fde10a5a5146955ebc4617dc32932385ac209e59e9"
+          },
+          "final_status": "READY",
+          "metadata_count": 1,
+          "object_count": 1,
+          "multipart_count": 0,
+          "committed_result_count": 1,
+          "completion_requests": 1,
+          "part_puts": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "retried_parts": {},
+          "hook_events": [
+            {
+              "checkpoint": "finalizing_committed",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 1,
+              "time_unix": 1793146652.54665
+            },
+            {
+              "checkpoint": "storage_completed",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 1,
+              "time_unix": 1793146652.555083
+            },
+            {
+              "checkpoint": "outbox_before_commit",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 1,
+              "time_unix": 1793146652.5580251
+            },
+            {
+              "checkpoint": "completion_committed",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 1,
+              "time_unix": 1793146652.5593085
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146654.92962
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146654.9386232,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "566d8db4-c76a-4aea-89b2-0a6e9d564fb5"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146654.9869637,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_failed",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146685.8441794,
+              "error_type": "ReadTimeoutError"
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146685.902269
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146685.9072282
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146685.9100566
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146685.912395
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146685.9154058
+            },
+            {
+              "checkpoint": "outbox_published",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146685.918264
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146685.9245842,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "1719219a-c5d3-4d2f-80d1-8c61888a22ff"
+            },
+            {
+              "checkpoint": "worker_failed",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146688.3326764,
+              "error_type": "EndpointConnectionError"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146688.3973536,
+              "retries": 1,
+              "redelivered": false,
+              "task_id": "566d8db4-c76a-4aea-89b2-0a6e9d564fb5"
+            },
+            {
+              "checkpoint": "worker_streaming",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146689.1153712,
+              "bytes_read": 1048576
+            },
+            {
+              "checkpoint": "worker_result",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146689.2420673,
+              "bytes_read": 67108881,
+              "backend_pid": 34
+            },
+            {
+              "checkpoint": "worker_result_committed",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146689.2436252,
+              "outcome": "ready"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146689.2532573,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "9b9bee41-4747-4072-83c9-dd3b723611fb"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146689.2571542,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "8ecc14d4-4544-4d8f-a9e3-a39ff31bfde2"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146689.2595992,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "e4d02f99-7c86-45ec-97ed-a7b20969a6b6"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146689.261449,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "23ac37e0-3b1d-436f-86b8-3474853ba6ee"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146689.2633154,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "7d37ad43-94af-479c-9ca4-a2e51e86aaba"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146689.3488448,
+              "retries": 1,
+              "redelivered": false,
+              "task_id": "1719219a-c5d3-4d2f-80d1-8c61888a22ff"
+            }
+          ],
+          "task_attempts": [
+            {
+              "checkpoint": "task_received",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146654.9386232,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "566d8db4-c76a-4aea-89b2-0a6e9d564fb5"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146685.9245842,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "1719219a-c5d3-4d2f-80d1-8c61888a22ff"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146688.3973536,
+              "retries": 1,
+              "redelivered": false,
+              "task_id": "566d8db4-c76a-4aea-89b2-0a6e9d564fb5"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146689.2532573,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "9b9bee41-4747-4072-83c9-dd3b723611fb"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146689.2571542,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "8ecc14d4-4544-4d8f-a9e3-a39ff31bfde2"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146689.2595992,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "e4d02f99-7c86-45ec-97ed-a7b20969a6b6"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146689.261449,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "23ac37e0-3b1d-436f-86b8-3474853ba6ee"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146689.2633154,
+              "retries": 0,
+              "redelivered": false,
+              "task_id": "7d37ad43-94af-479c-9ca4-a2e51e86aaba"
+            },
+            {
+              "checkpoint": "task_received",
+              "file_id": "a160e3e7-76ff-47a4-b93b-06864c21f75e",
+              "pid": 15,
+              "time_unix": 1793146689.3488448,
+              "retries": 1,
+              "redelivered": false,
+              "task_id": "1719219a-c5d3-4d2f-80d1-8c61888a22ff"
+            }
+          ],
+          "publication_count": 7,
+          "stream_attempts": 2,
+          "cleanup_delete_status": 204,
+          "elapsed_s": 38.631155
+        }
+      ],
+      "status": "passed",
+      "finished_at": "2026-10-28T00:18:10.045Z"
+    }
+  ],
+  "passed_attempts": 11,
+  "attempted_cases": 11,
+  "distinct_cases": 11,
+  "release_gate_passed": false,
+  "finished_at": "2026-10-28T00:18:10.053Z"
+}

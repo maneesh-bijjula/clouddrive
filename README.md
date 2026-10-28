@@ -115,7 +115,9 @@ Configuration uses `CLOUDDRIVE_` environment variables; see [.env.example](.env.
 
 ## Tests
 
-The implementation passes **28 unit tests, 50 real-service integration tests, and 20 browser workflows**. The browser workflows also pass against the packaged Docker stack. See [verification notes](docs/verification.md) for the tested failure cases and a repeatable broker-outage check.
+The separate [named recovery matrix](docs/sprint-3.md) exercises 20 distinct recoverable faults with explicit injection proof and source/download integrity checks. Its three-pass release denominator is 60 attempts; development rehearsals and ordinary test counts are reported separately.
+
+The implementation passes **39 unit tests, 50 real-service integration tests, and 20 browser workflows**. The browser workflows also pass against the packaged Docker stack. See [verification notes](docs/verification.md) for the tested failure cases and a repeatable broker-outage check.
 
 Unit tests run without infrastructure:
 

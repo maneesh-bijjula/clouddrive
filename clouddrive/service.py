@@ -11,6 +11,7 @@ from sqlalchemy import text
 from .config import settings
 from .db import engine
 from .models import part_count, part_length
+from .recovery_faults import checkpoint
 from .storage import head, missing, remote_part, s3
 
 
@@ -309,6 +310,7 @@ def finalize(workspace_id, id):
             if count != part_count(file["size"], file["part_size"]):
                 raise HTTPException(409, "Every part must be uploaded and acknowledged first")
             query(conn, "UPDATE files SET status='FINALIZING',updated_at=now() WHERE id=:id", id=id)
+    checkpoint("finalizing_committed", id)
     with upload_transaction(workspace_id, id) as (conn, file):
         if file["status"] != "FINALIZING":
             return describe(conn, file)
@@ -327,6 +329,7 @@ def finalize(workspace_id, id):
                     UploadId=file["upload_id"],
                     MultipartUpload={"Parts": manifest},
                 )
+                checkpoint("storage_completed", id)
             except ClientError as exc:
                 if not missing(exc) or not head(file["object_key"]):
                     raise
@@ -347,6 +350,7 @@ def finalize(workspace_id, id):
             "INSERT INTO processing_outbox(file_id) VALUES (:id) ON CONFLICT DO NOTHING",
             id=id,
         )
+        checkpoint("outbox_before_commit", id)
         return describe(conn, get_file(conn, workspace_id, id))
 
 

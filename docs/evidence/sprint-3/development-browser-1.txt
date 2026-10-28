@@ -1,0 +1,10 @@
+{"pass":1,"case":"R01","status":"passed","recovery_s":8.528285}
+{"pass":1,"case":"R02","status":"passed","recovery_s":8.675219}
+{"pass":1,"case":"R03","status":"passed","recovery_s":5.547915}
+{"pass":1,"case":"R04","status":"passed","recovery_s":2.930872}
+{"pass":1,"case":"R05","status":"passed","recovery_s":5.023416}
+{"pass":1,"case":"R06","status":"passed","recovery_s":5.384922}
+{"pass":1,"case":"R07","status":"passed","recovery_s":14.003529}
+{"pass":1,"case":"R08","status":"passed","recovery_s":12.491164}
+{"pass":1,"case":"R09","status":"passed","recovery_s":1.072976}
+{"status":"passed","passed_attempts":9,"expected_attempts":9,"release_gate_passed":false,"output":"/Users/maneeshbijjula/Documents/New project/clouddrive/test-results/sprint3-dev/browser-1.json"}

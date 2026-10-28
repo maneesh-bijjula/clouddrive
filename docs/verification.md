@@ -1,8 +1,12 @@
 # Verification
 
+## Sprint 3 implementation verification
+
+The recovery harness has passed separate development batches of nine browser cases and eleven backend cases. Those partial batches do not constitute a complete 20-case pass or the 60-attempt release gate. Regression verification passed **89 Python cases (39 unit + 50 integration)** and **20 packaged browser workflows**, without local browser retries. The [Sprint 3 report](sprint-3.md) and [versioned manifest](recovery-matrix.json) define fault proof, timing, isolation, and the pending three-pass release procedure.
+
 ## Sprint 2 verification
 
-The default cap is decimal 5 GB. Current regression coverage is 28 unit cases, 50 integration cases, and 20 browser workflows; this browser count is unrelated to the planned 20-case recovery matrix. Reuse the isolated small-fixture commands below for regressions. [Sprint 2](sprint-2.md) documents the separate disk-backed profile, bounded retry behavior, and opt-in target-size runner. The [one-file 5,000,000,000-byte run](evidence/sprint-2/5gb-run-1.json) passed with matching source/worker/download hashes and no confirmed-part resends after reload, on clean implementation revision `b82831e`. The [report](sprint-2.md) defines exact timings, denominator, sampled memory, and limitations. This is separate from ordinary CI.
+The default cap is decimal 5 GB. Sprint 2 regression coverage was 28 unit cases, 50 integration cases, and 20 browser workflows; this browser count is unrelated to the planned 20-case recovery matrix. Reuse the isolated small-fixture commands below for regressions. [Sprint 2](sprint-2.md) documents the separate disk-backed profile, bounded retry behavior, and opt-in target-size runner. The [one-file 5,000,000,000-byte run](evidence/sprint-2/5gb-run-1.json) passed with matching source/worker/download hashes and no confirmed-part resends after reload, on clean implementation revision `b82831e`. The [report](sprint-2.md) defines exact timings, denominator, sampled memory, and limitations. This is separate from ordinary CI.
 
 ## Sprint 1
 

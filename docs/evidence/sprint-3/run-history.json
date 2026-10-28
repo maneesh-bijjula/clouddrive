@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "release_requirement": {
+    "distinct_cases": 20,
+    "complete_passes": 3,
+    "attempts": 60
+  },
+  "development_note": "Development source was dirty. Harness assertions and reporting were refined between partial rehearsals and, for backend assertions, between cases. The reports retain original source digests; neither partial run is a scored release pass. Timing was subsequently strengthened to include restoration startup/readiness.",
+  "runs": [
+    {
+      "artifact": "development-browser-1.json",
+      "kind": "partial development rehearsal",
+      "status": "passed",
+      "distinct_cases": 9,
+      "attempts": 9,
+      "counts_toward_release": false,
+      "git_dirty": true
+    },
+    {
+      "artifact": "development-backend-1.json",
+      "kind": "partial development rehearsal",
+      "status": "passed",
+      "distinct_cases": 11,
+      "attempts": 11,
+      "counts_toward_release": false,
+      "git_dirty": true
+    }
+  ]
+}

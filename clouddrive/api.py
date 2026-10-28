@@ -17,6 +17,7 @@ from . import service
 from .config import settings
 from .db import engine, migrate
 from .models import NewUpload, PartChecksum, PartReceipt
+from .recovery_faults import checkpoint
 from .storage import bootstrap, s3
 
 logger = logging.getLogger(__name__)
@@ -160,7 +161,9 @@ def acknowledge(id: UUID, number: int, data: PartReceipt, ws: Workspace):
 
 @app.post("/api/uploads/{id}/complete", status_code=202)
 def complete(id: UUID, ws: Workspace):
-    return service.finalize(ws["id"], id)
+    result = service.finalize(ws["id"], id)
+    checkpoint("completion_committed", id)
+    return result
 
 
 @app.delete("/api/files/{id}", status_code=204)

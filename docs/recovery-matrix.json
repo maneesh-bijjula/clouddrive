@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "suite": "clouddrive-recovery-20",
+  "distinct_case_count": 20,
+  "release_full_passes": 3,
+  "release_attempt_denominator": 60,
+  "size_units": {
+    "MB": 1000000,
+    "GB": 1000000000,
+    "MiB": 1048576
+  },
+  "deadline_definition": "Backend recovery starts immediately before restoration is requested and includes startup/readiness; R18 starts after confirmed worker death and includes natural lease expiry. Browser recovery starts at the observed transport fault, or resume request for R07/R08; R09 starts at the first actual expired-URL 403. A timed out, skipped, missing, or individually rerun case fails its full pass.",
+  "default_recovery_deadline_seconds": 180,
+  "common_invariants": [
+    "Intended fault is directly observed, not inferred solely from READY.",
+    "Recovered status is READY with exact source/worker/download byte count and SHA-256.",
+    "One logical file and one final storage object; no leaked multipart session.",
+    "Download access is denied before verification and for a different workspace.",
+    "Fault control and cleanup affect only this disposable test project."
+  ],
+  "cases": [
+    {
+      "id": "R01",
+      "name": "Lost upload initiation reply",
+      "injection_kind": "browser_transport",
+      "fault_boundary": "After initiation commits, before browser receives reply",
+      "expected_recovery": "Reselecting the original file reuses the same request ID and logical upload.",
+      "recovery_deadline_seconds": 120
+    },
+    {
+      "id": "R02",
+      "name": "Lost part-signing reply",
+      "injection_kind": "browser_transport",
+      "fault_boundary": "After signing transaction commits, before browser receives reply",
+      "expected_recovery": "Re-signing retains the checksum and multipart session.",
+      "recovery_deadline_seconds": 120
+    },
+    {
+      "id": "R03",
+      "name": "Interrupted part PUT before acceptance",
+      "injection_kind": "truncated_tcp_and_browser_transport",
+      "fault_boundary": "Browser storage PUT is interrupted before the complete part is accepted",
+      "expected_recovery": "Only the interrupted part needs transfer; acknowledged parts remain confirmed.",
+      "recovery_deadline_seconds": 120
+    },
+    {
+      "id": "R04",
+      "name": "Lost accepted PUT reply",
+      "injection_kind": "browser_transport",
+      "fault_boundary": "Storage accepts a complete PUT, then its reply is discarded",
+      "expected_recovery": "Re-signing reconciles accepted bytes without another PUT for that part.",
+      "recovery_deadline_seconds": 120
+    },
+    {
+      "id": "R05",
+      "name": "Lost acknowledgement request",
+      "injection_kind": "browser_transport",
+      "fault_boundary": "Part PUT succeeds; acknowledgement is discarded before reaching API",
+      "expected_recovery": "Re-signing discovers the accepted storage part and continues.",
+      "recovery_deadline_seconds": 120
+    },
+    {
+      "id": "R06",
+      "name": "Lost committed acknowledgement reply",
+      "injection_kind": "browser_transport",
+      "fault_boundary": "Acknowledgement commits, then its reply is discarded",
+      "expected_recovery": "Retry/resume preserves the confirmed receipt without resending bytes.",
+      "recovery_deadline_seconds": 120
+    },
+    {
+      "id": "R07",
+      "name": "Browser reload after confirmed parts",
+      "injection_kind": "browser_reload",
+      "fault_boundary": "Several parts are acknowledged before browser reload",
+      "expected_recovery": "Same-file reselection sends only missing parts.",
+      "recovery_deadline_seconds": 120
+    },
+    {
+      "id": "R08",
+      "name": "Pause while parts are in flight",
+      "injection_kind": "browser_pause",
+      "fault_boundary": "A storage PUT is active when the user pauses",
+      "expected_recovery": "Resume reconciles accepted parts and safely transfers missing bytes.",
+      "recovery_deadline_seconds": 120
+    },
+    {
+      "id": "R09",
+      "name": "Expired signed part URL",
+      "injection_kind": "real_expired_signature",
+      "fault_boundary": "A genuinely expired S3-compatible signature is used before PUT",
+      "expected_recovery": "Storage rejects the expired URL; a fresh signature continues the same multipart session.",
+      "recovery_deadline_seconds": 120
+    },
+    {
+      "id": "R10",
+      "name": "API hard kill during upload",
+      "injection_kind": "process_sigkill",
+      "fault_boundary": "API process is killed during an incomplete multipart session",
+      "expected_recovery": "Restarted API retains session and acknowledged receipts.",
+      "recovery_deadline_seconds": 180
+    },
+    {
+      "id": "R11",
+      "name": "API hard kill after completion intent",
+      "injection_kind": "process_sigkill",
+      "fault_boundary": "Durable FINALIZING intent commits before storage completion",
+      "expected_recovery": "Reconciler completes the stored manifest.",
+      "recovery_deadline_seconds": 180
+    },
+    {
+      "id": "R12",
+      "name": "Lost storage completion reply",
+      "injection_kind": "boundary_injection",
+      "fault_boundary": "Storage accepts multipart completion but its response is lost",
+      "expected_recovery": "Recovery validates existing object identity/length and reaches processing.",
+      "recovery_deadline_seconds": 180
+    },
+    {
+      "id": "R13",
+      "name": "Database transaction failure after storage completion",
+      "injection_kind": "boundary_injection",
+      "fault_boundary": "Storage completed; processing/outbox transaction fails before commit",
+      "expected_recovery": "Retry uses existing object and durably records outbox work.",
+      "recovery_deadline_seconds": 180
+    },
+    {
+      "id": "R14",
+      "name": "Lost committed completion reply",
+      "injection_kind": "process_sigkill",
+      "fault_boundary": "PROCESSING and outbox commit before API reply is lost",
+      "expected_recovery": "Repeated completion returns existing state without duplicate logical effects.",
+      "recovery_deadline_seconds": 180
+    },
+    {
+      "id": "R15",
+      "name": "Redis outage before publication",
+      "injection_kind": "service_outage",
+      "fault_boundary": "Redis is unavailable before dispatcher publishes durable outbox work",
+      "expected_recovery": "Outbox survives and processing resumes after Redis restoration.",
+      "recovery_deadline_seconds": 180
+    },
+    {
+      "id": "R16",
+      "name": "Dispatcher hard kill after publication",
+      "injection_kind": "process_sigkill",
+      "fault_boundary": "Actual broker publication succeeds before outbox deletion commits",
+      "expected_recovery": "Uncommitted outbox survives; duplicate delivery is harmless.",
+      "recovery_deadline_seconds": 180
+    },
+    {
+      "id": "R17",
+      "name": "Lost published broker message",
+      "injection_kind": "broker_message_loss",
+      "fault_boundary": "A published broker message is removed before worker delivery",
+      "expected_recovery": "Database reconciliation republishes missing processing work.",
+      "recovery_deadline_seconds": 180
+    },
+    {
+      "id": "R18",
+      "name": "Worker hard kill during verification",
+      "injection_kind": "process_sigkill",
+      "fault_boundary": "Worker is killed after streaming some source bytes while holding a live claim",
+      "expected_recovery": "Natural lease expiration permits a new worker to stream and verify the original object.",
+      "recovery_deadline_seconds": 180
+    },
+    {
+      "id": "R19",
+      "name": "PostgreSQL outage at worker final transaction",
+      "injection_kind": "service_outage",
+      "fault_boundary": "PostgreSQL is unavailable when worker writes the verification result",
+      "expected_recovery": "Durable processing survives; recovery eventually commits the correct result.",
+      "recovery_deadline_seconds": 180
+    },
+    {
+      "id": "R20",
+      "name": "Storage disconnect during worker streaming",
+      "injection_kind": "service_outage",
+      "fault_boundary": "Storage becomes unavailable after worker consumes some source bytes",
+      "expected_recovery": "Retry opens a new complete source stream and verifies all bytes.",
+      "recovery_deadline_seconds": 180
+    }
+  ]
+}

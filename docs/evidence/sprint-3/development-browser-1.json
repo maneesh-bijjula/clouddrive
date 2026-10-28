@@ -1,0 +1,1704 @@
+{
+  "schema_version": 1,
+  "suite": "clouddrive-recovery-20",
+  "started_at": "2026-10-28T00:07:56.695Z",
+  "run_id": "33825bbe-6e30-4c07-8b8f-3854469f8cf4",
+  "status": "passed",
+  "scope": "Packaged local MinIO/PostgreSQL/Redis/Celery recovery; small deterministic fixtures; no live AWS, concurrency or large-file measurement",
+  "manifest_sha256": "b8702e7ef99b509046dc36bb50e32c13103fbf313fd5354ab1cf2754b2b6856e",
+  "selected_cases": [
+    "R01",
+    "R02",
+    "R03",
+    "R04",
+    "R05",
+    "R06",
+    "R07",
+    "R08",
+    "R09"
+  ],
+  "full_matrix": false,
+  "requested_full_passes": 1,
+  "expected_attempts": 9,
+  "environment": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "node": "v26.3.0",
+    "host_cpu": "Apple M3",
+    "host_logical_cpus": 8,
+    "host_memory_bytes": 8589934592,
+    "compose_project": "clouddrive-sprint3-recovery",
+    "git_sha": "b4b9081fc38fdfaeb6b31e2173a11cfa05c490f7",
+    "git_dirty": true,
+    "images": [
+      {
+        "service": "api",
+        "image_id": "sha256:6b8dbb16ab6a42e1e49d3dae1e59c81314c0b4240b2fcc312a14f831f9089d07"
+      },
+      {
+        "service": "beat",
+        "image_id": "sha256:6b8dbb16ab6a42e1e49d3dae1e59c81314c0b4240b2fcc312a14f831f9089d07"
+      },
+      {
+        "service": "minio",
+        "image_id": "sha256:9c48c56d15710de71060d2bfc9689515a089c708043897cdf72c34680868c304"
+      },
+      {
+        "service": "postgres",
+        "image_id": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24"
+      },
+      {
+        "service": "redis",
+        "image_id": "sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499"
+      },
+      {
+        "service": "worker",
+        "image_id": "sha256:6b8dbb16ab6a42e1e49d3dae1e59c81314c0b4240b2fcc312a14f831f9089d07"
+      }
+    ],
+    "other_running_container_count": 9,
+    "source_sha256": {
+      "clouddrive/__init__.py": "bc50749c7527c8869db75c23b477b100459807d9b37f030007e99e5babac9779",
+      "clouddrive/api.py": "590bf12b515a14d78b46a3585f1b832dc4cc752621a024f4b756e82fcc06961f",
+      "clouddrive/config.py": "45135623c42881c6a47d17546a4359ce3b058fc92430a4637508ecc86e611932",
+      "clouddrive/db.py": "e413b085ddeaeae257b0b7965d9f5b892759f3ede7e441f636451836e143f06b",
+      "clouddrive/models.py": "ad6eeabadb6cc63bd3ae032262f52ed30b7eea1239059db666d46feb14af9fb3",
+      "clouddrive/recovery_faults.py": "d5933deee21b83d9ba7a8dbb70b00520b89bc3b80e201cdc6eefbf121a81a899",
+      "clouddrive/service.py": "6d452d42f85692fa02503f7e273de5c2a7b4db528a68039259443385e4e2f629",
+      "clouddrive/storage.py": "5e3539c250497518c976d58096a3c0e43c1261d4140a752aac5c7afc075722e5",
+      "clouddrive/worker.py": "871a68920f5b9e405bd625039c2d9cb6639e82bf39bc72f2c70df8f3a5e350e9",
+      "scripts/recovery-inspect.py": "89ed857bb21e9446ca24ec7d31a96f3b0716d65db9065ef24c1418ebf89eca12",
+      "scripts/recovery-matrix.mjs": "678ae53e86b2f6eefc528627cd62aef291d702d309e37e92c3f7276007056775",
+      "scripts/recovery-upload.mjs": "aa376a2fa3a4ded8a1510b1a7af295820350135b2ed8475cef46201f3271794a",
+      "scripts/recovery_backend.py": "df084fca07bc7a3221d93e0974eb723dc0a6ede65c64bc827d52a2018320a160",
+      "compose.recovery.yaml": "a456b65e679407d01d6ea2f6138ee80eea663c2257a7101eba2bd73030be70fb",
+      "frontend/src/main.ts": "0c433e14a9c085a0e8f4f6123b55590f023e26e14cb4539ca3b517be37e66cb8",
+      "frontend/src/hash-worker.ts": "5ee4090dfd1a207a2b48214295927cf086e26441ee624041760bd94efaa53d7e"
+    }
+  },
+  "passes": [
+    {
+      "pass": 1,
+      "started_at": "2026-10-28T00:07:57.689Z",
+      "cases": [
+        {
+          "id": "R01",
+          "name": "Upload initiation commits, response is lost",
+          "status": "passed",
+          "fault_observed": true,
+          "source": {
+            "bytes": 262161,
+            "sha256": "3e8d2c4f901a429a061164185a2e491d8334a27f199995045a28e7b5f88f4e81"
+          },
+          "deadline_s": 120,
+          "fault": {
+            "kind": "browser transport interception",
+            "committed_response_status": 201,
+            "delivered_to_browser": false,
+            "same_request_id_same_upload": true
+          },
+          "pre_ready_download_status": 409,
+          "cross_workspace_download_status": 404,
+          "download": {
+            "bytes": 262161,
+            "sha256": "3e8d2c4f901a429a061164185a2e491d8334a27f199995045a28e7b5f88f4e81"
+          },
+          "file_id": "207673ba-eac3-4ccd-91d3-9db2a14339db",
+          "final": {
+            "file_id": "207673ba-eac3-4ccd-91d3-9db2a14339db",
+            "workspace_id": "157de415-6875-40dc-8f2d-c7f4e725b04c",
+            "status": "READY",
+            "size": 262161,
+            "sha256": "3e8d2c4f901a429a061164185a2e491d8334a27f199995045a28e7b5f88f4e81",
+            "bytes_verified": 262161,
+            "metadata_count": 1,
+            "object_count": 1,
+            "object_bytes": 262161,
+            "multipart_count": 0,
+            "result_count": 1,
+            "outbox_count": 0,
+            "claim_active": false,
+            "confirmed_parts": [
+              1
+            ],
+            "remote_parts": [],
+            "remote_part_sizes": []
+          },
+          "events": {
+            "storage_puts": [
+              1
+            ],
+            "signs": [
+              1
+            ],
+            "acknowledgements": [
+              1
+            ]
+          },
+          "recovery_s": 8.528285,
+          "cleanup": [
+            {
+              "file_id": "207673ba-eac3-4ccd-91d3-9db2a14339db",
+              "status": 204
+            }
+          ],
+          "elapsed_s": 19.798203
+        },
+        {
+          "id": "R02",
+          "name": "Part-signing transaction commits, response is lost",
+          "status": "passed",
+          "fault_observed": true,
+          "source": {
+            "bytes": 262161,
+            "sha256": "73fcc5e70f77a47f0d255cfb1316555b756b611d5fe8602e8bcbb218e82adcb3"
+          },
+          "deadline_s": 120,
+          "fault": {
+            "kind": "browser transport interception",
+            "committed_response_status": 200,
+            "delivered_to_browser": false
+          },
+          "pre_ready_download_status": 409,
+          "cross_workspace_download_status": 404,
+          "download": {
+            "bytes": 262161,
+            "sha256": "73fcc5e70f77a47f0d255cfb1316555b756b611d5fe8602e8bcbb218e82adcb3"
+          },
+          "file_id": "7e92e1f3-a617-4e09-94ba-683ff2c17c7f",
+          "final": {
+            "file_id": "7e92e1f3-a617-4e09-94ba-683ff2c17c7f",
+            "workspace_id": "c7f89dd2-3534-4d30-9a48-3a229d561dc4",
+            "status": "READY",
+            "size": 262161,
+            "sha256": "73fcc5e70f77a47f0d255cfb1316555b756b611d5fe8602e8bcbb218e82adcb3",
+            "bytes_verified": 262161,
+            "metadata_count": 1,
+            "object_count": 1,
+            "object_bytes": 262161,
+            "multipart_count": 0,
+            "result_count": 1,
+            "outbox_count": 0,
+            "claim_active": false,
+            "confirmed_parts": [
+              1
+            ],
+            "remote_parts": [],
+            "remote_part_sizes": []
+          },
+          "events": {
+            "storage_puts": [
+              1
+            ],
+            "signs": [
+              1,
+              1
+            ],
+            "acknowledgements": [
+              1
+            ]
+          },
+          "recovery_s": 8.675219,
+          "cleanup": [
+            {
+              "file_id": "7e92e1f3-a617-4e09-94ba-683ff2c17c7f",
+              "status": 204
+            }
+          ],
+          "elapsed_s": 15.443628
+        },
+        {
+          "id": "R03",
+          "name": "Storage PUT interrupted before accepting the complete part",
+          "status": "passed",
+          "fault_observed": true,
+          "source": {
+            "bytes": 17825809,
+            "sha256": "7c0ec58ad77f6502f28bb5f568440141685ed0d8d890844b3ea384c81ad16fe7"
+          },
+          "deadline_s": 120,
+          "fault": {
+            "kind": "real truncated storage PUT plus browser transport failure",
+            "transmitted_prefix_bytes": 65536,
+            "declared_bytes": 8388608,
+            "remote_parts_after_interruption": [
+              1
+            ],
+            "confirmed_parts_preserved": [
+              1
+            ],
+            "interrupted_part": 2
+          },
+          "pre_ready_download_status": 409,
+          "cross_workspace_download_status": 404,
+          "download": {
+            "bytes": 17825809,
+            "sha256": "7c0ec58ad77f6502f28bb5f568440141685ed0d8d890844b3ea384c81ad16fe7"
+          },
+          "file_id": "396938de-efd8-44c3-b0e8-38ccdab02104",
+          "final": {
+            "file_id": "396938de-efd8-44c3-b0e8-38ccdab02104",
+            "workspace_id": "fde1ac3b-5113-418c-adc8-fdc95da2d2e3",
+            "status": "READY",
+            "size": 17825809,
+            "sha256": "7c0ec58ad77f6502f28bb5f568440141685ed0d8d890844b3ea384c81ad16fe7",
+            "bytes_verified": 17825809,
+            "metadata_count": 1,
+            "object_count": 1,
+            "object_bytes": 17825809,
+            "multipart_count": 0,
+            "result_count": 1,
+            "outbox_count": 0,
+            "claim_active": false,
+            "confirmed_parts": [
+              1,
+              2,
+              3
+            ],
+            "remote_parts": [],
+            "remote_part_sizes": []
+          },
+          "events": {
+            "storage_puts": [
+              3,
+              1,
+              2,
+              2
+            ],
+            "signs": [
+              3,
+              1,
+              2,
+              2
+            ],
+            "acknowledgements": [
+              1,
+              3,
+              2
+            ]
+          },
+          "recovery_s": 5.547915,
+          "cleanup": [
+            {
+              "file_id": "396938de-efd8-44c3-b0e8-38ccdab02104",
+              "status": 204
+            }
+          ],
+          "elapsed_s": 18.981189
+        },
+        {
+          "id": "R04",
+          "name": "Storage accepts PUT, its response is lost",
+          "status": "passed",
+          "fault_observed": true,
+          "source": {
+            "bytes": 262161,
+            "sha256": "cb2152f3a273e80fc4ed57f3462c2f6ca90132b08cc8874acaaf92575a1f9c16"
+          },
+          "deadline_s": 120,
+          "fault": {
+            "kind": "browser transport interception",
+            "upstream_response_status": 200,
+            "delivered_to_browser": false
+          },
+          "pre_ready_download_status": 409,
+          "cross_workspace_download_status": 404,
+          "download": {
+            "bytes": 262161,
+            "sha256": "cb2152f3a273e80fc4ed57f3462c2f6ca90132b08cc8874acaaf92575a1f9c16"
+          },
+          "file_id": "2171907b-98f9-40b6-a1fa-18b1946ff5e4",
+          "final": {
+            "file_id": "2171907b-98f9-40b6-a1fa-18b1946ff5e4",
+            "workspace_id": "7d45579b-4b66-4fa0-b2f1-26c38843de92",
+            "status": "READY",
+            "size": 262161,
+            "sha256": "cb2152f3a273e80fc4ed57f3462c2f6ca90132b08cc8874acaaf92575a1f9c16",
+            "bytes_verified": 262161,
+            "metadata_count": 1,
+            "object_count": 1,
+            "object_bytes": 262161,
+            "multipart_count": 0,
+            "result_count": 1,
+            "outbox_count": 0,
+            "claim_active": false,
+            "confirmed_parts": [
+              1
+            ],
+            "remote_parts": [],
+            "remote_part_sizes": []
+          },
+          "events": {
+            "storage_puts": [
+              1
+            ],
+            "signs": [
+              1,
+              1
+            ],
+            "acknowledgements": []
+          },
+          "recovery_s": 2.930872,
+          "cleanup": [
+            {
+              "file_id": "2171907b-98f9-40b6-a1fa-18b1946ff5e4",
+              "status": 204
+            }
+          ],
+          "elapsed_s": 8.801524
+        },
+        {
+          "id": "R05",
+          "name": "Acknowledgement request is lost before reaching API",
+          "status": "passed",
+          "fault_observed": true,
+          "source": {
+            "bytes": 262161,
+            "sha256": "2195ed80016f8f3e858e4b6a5348bcb2d30f0529aa2ce53617ef8a4a4b82951b"
+          },
+          "deadline_s": 120,
+          "fault": {
+            "kind": "browser transport interception",
+            "reached_api": false,
+            "remote_parts": [
+              1
+            ],
+            "confirmed_parts": []
+          },
+          "pre_ready_download_status": 409,
+          "cross_workspace_download_status": 404,
+          "download": {
+            "bytes": 262161,
+            "sha256": "2195ed80016f8f3e858e4b6a5348bcb2d30f0529aa2ce53617ef8a4a4b82951b"
+          },
+          "file_id": "97981b1d-e0c5-49a8-b2bf-1643a7259073",
+          "final": {
+            "file_id": "97981b1d-e0c5-49a8-b2bf-1643a7259073",
+            "workspace_id": "c046402f-876b-46ff-aa02-221a7dfae718",
+            "status": "READY",
+            "size": 262161,
+            "sha256": "2195ed80016f8f3e858e4b6a5348bcb2d30f0529aa2ce53617ef8a4a4b82951b",
+            "bytes_verified": 262161,
+            "metadata_count": 1,
+            "object_count": 1,
+            "object_bytes": 262161,
+            "multipart_count": 0,
+            "result_count": 1,
+            "outbox_count": 0,
+            "claim_active": false,
+            "confirmed_parts": [
+              1
+            ],
+            "remote_parts": [],
+            "remote_part_sizes": []
+          },
+          "events": {
+            "storage_puts": [
+              1
+            ],
+            "signs": [
+              1,
+              1
+            ],
+            "acknowledgements": [
+              1
+            ]
+          },
+          "recovery_s": 5.023416,
+          "cleanup": [
+            {
+              "file_id": "97981b1d-e0c5-49a8-b2bf-1643a7259073",
+              "status": 204
+            }
+          ],
+          "elapsed_s": 13.543276
+        },
+        {
+          "id": "R06",
+          "name": "Acknowledgement commits, its response is lost",
+          "status": "passed",
+          "fault_observed": true,
+          "source": {
+            "bytes": 262161,
+            "sha256": "abedaaa4191dee5654221538d7b532797fb259ec5b0685c0281fb43b08271dd6"
+          },
+          "deadline_s": 120,
+          "fault": {
+            "kind": "browser transport interception",
+            "upstream_response_status": 200,
+            "delivered_to_browser": false
+          },
+          "pre_ready_download_status": 409,
+          "cross_workspace_download_status": 404,
+          "download": {
+            "bytes": 262161,
+            "sha256": "abedaaa4191dee5654221538d7b532797fb259ec5b0685c0281fb43b08271dd6"
+          },
+          "file_id": "e48c4017-bc15-4998-8d70-4389752d8f4e",
+          "final": {
+            "file_id": "e48c4017-bc15-4998-8d70-4389752d8f4e",
+            "workspace_id": "365a5cb0-cfb8-4aa3-8dc2-c96fbb443b19",
+            "status": "READY",
+            "size": 262161,
+            "sha256": "abedaaa4191dee5654221538d7b532797fb259ec5b0685c0281fb43b08271dd6",
+            "bytes_verified": 262161,
+            "metadata_count": 1,
+            "object_count": 1,
+            "object_bytes": 262161,
+            "multipart_count": 0,
+            "result_count": 1,
+            "outbox_count": 0,
+            "claim_active": false,
+            "confirmed_parts": [
+              1
+            ],
+            "remote_parts": [],
+            "remote_part_sizes": []
+          },
+          "events": {
+            "storage_puts": [
+              1
+            ],
+            "signs": [
+              1,
+              1
+            ],
+            "acknowledgements": [
+              1
+            ]
+          },
+          "recovery_s": 5.384922,
+          "cleanup": [
+            {
+              "file_id": "e48c4017-bc15-4998-8d70-4389752d8f4e",
+              "status": 204
+            }
+          ],
+          "elapsed_s": 11.565637
+        },
+        {
+          "id": "R07",
+          "name": "Browser reload after several acknowledged parts",
+          "status": "passed",
+          "fault_observed": true,
+          "source": {
+            "bytes": 25165824,
+            "sha256": "b7cdbf9b495a3175a892e961f0fe45cfeb66791f59f0f38abc8692f2ce6a5b4b"
+          },
+          "deadline_s": 120,
+          "fault": {
+            "kind": "real browser reload after durable acknowledgements",
+            "acknowledged_before_fault": [
+              1,
+              2
+            ],
+            "held_inflight_parts": [
+              3
+            ],
+            "confirmed_after_interruption": [
+              1,
+              2
+            ],
+            "browser_reloaded": true
+          },
+          "puts_before_resume": [
+            1,
+            2,
+            3
+          ],
+          "must_not_resend": [
+            1,
+            2
+          ],
+          "pre_ready_download_status": 409,
+          "cross_workspace_download_status": 404,
+          "download": {
+            "bytes": 25165824,
+            "sha256": "b7cdbf9b495a3175a892e961f0fe45cfeb66791f59f0f38abc8692f2ce6a5b4b"
+          },
+          "file_id": "e7b03bd4-809c-4f2c-bfed-abf3c3d4ff75",
+          "final": {
+            "file_id": "e7b03bd4-809c-4f2c-bfed-abf3c3d4ff75",
+            "workspace_id": "6770e4e5-d70c-4885-81ad-8baacfafec13",
+            "status": "READY",
+            "size": 25165824,
+            "sha256": "b7cdbf9b495a3175a892e961f0fe45cfeb66791f59f0f38abc8692f2ce6a5b4b",
+            "bytes_verified": 25165824,
+            "metadata_count": 1,
+            "object_count": 1,
+            "object_bytes": 25165824,
+            "multipart_count": 0,
+            "result_count": 1,
+            "outbox_count": 0,
+            "claim_active": false,
+            "confirmed_parts": [
+              1,
+              2,
+              3
+            ],
+            "remote_parts": [],
+            "remote_part_sizes": []
+          },
+          "events": {
+            "storage_puts": [
+              3
+            ],
+            "signs": [
+              1,
+              2,
+              3,
+              3
+            ],
+            "acknowledgements": [
+              1,
+              2,
+              3
+            ]
+          },
+          "recovery_s": 14.003529,
+          "cleanup": [
+            {
+              "file_id": "e7b03bd4-809c-4f2c-bfed-abf3c3d4ff75",
+              "status": 204
+            }
+          ],
+          "elapsed_s": 31.083415
+        },
+        {
+          "id": "R08",
+          "name": "User pause while parts are in flight",
+          "status": "passed",
+          "fault_observed": true,
+          "source": {
+            "bytes": 25165824,
+            "sha256": "b0c23952fe7de97caffc57e9c9b48859df13fe720c35ded58cab401f2ff8a08f"
+          },
+          "deadline_s": 120,
+          "fault": {
+            "kind": "user pause during real storage PUTs throttled by Chrome DevTools",
+            "acknowledged_before_fault": [
+              1
+            ],
+            "held_inflight_parts": [
+              2,
+              3
+            ],
+            "confirmed_after_interruption": [
+              1
+            ],
+            "upload_throughput_bytes_s": 524288,
+            "xhr_events": [
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 65536,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 114688,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 163840,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 212992,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 262144,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 327680,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 376832,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 425984,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 475136,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 540672,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 589824,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 638976,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 688128,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 753664,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 802816,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 851968,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 901120,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 966656,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1015808,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1064960,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1114112,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1179648,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1228800,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1277952,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1327104,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1392640,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1441792,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1490944,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1540096,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1605632,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1654784,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1703936,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1753088,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1818624,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1867776,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1916928,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 1982464,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2031616,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2080768,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2129920,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2195456,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2244608,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2293760,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2342912,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2408448,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2457600,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2506752,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2555904,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2621440,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2670592,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2719744,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2768896,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2818048,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2883584,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2932736,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 2981888,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3047424,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3096576,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3145728,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3194880,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3244032,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3293184,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3358720,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3407872,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3457024,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3522560,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3571712,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3620864,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3670016,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3735552,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3784704,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3833856,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3883008,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3948544,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 3997696,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4046848,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4096000,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4161536,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4210688,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4259840,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4308992,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4358144,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4423680,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4472832,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4521984,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4587520,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4636672,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4685824,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4734976,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4800512,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4849664,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4898816,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4947968,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 4997120,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5062656,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5111808,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5160960,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5210112,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5275648,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5324800,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5373952,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5423104,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5488640,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5537792,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5586944,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5652480,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5701632,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5750784,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5799936,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5865472,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5914624,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 5963776,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6012928,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6062080,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6127616,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6176768,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6225920,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6291456,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6340608,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6389760,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6438912,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6504448,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6553600,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6602752,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6651904,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6717440,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6766592,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6815744,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6864896,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6930432,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 6979584,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7028736,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7077888,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7143424,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7192576,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7241728,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7290880,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7356416,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7405568,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7454720,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7503872,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7569408,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7618560,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7667712,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7716864,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7766016,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7831552,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7880704,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7929856,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 7979008,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 8044544,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 8093696,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 8142848,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 8192000,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 8257536,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 8306688,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 8355840,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 1,
+                "loaded": 8388608,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 2,
+                "loaded": 32768,
+                "total": 8388608
+              },
+              {
+                "type": "progress",
+                "part": 3,
+                "loaded": 32768,
+                "total": 8388608
+              },
+              {
+                "type": "abort",
+                "part": 2
+              },
+              {
+                "type": "abort",
+                "part": 3
+              }
+            ]
+          },
+          "puts_before_resume": [
+            1,
+            2,
+            3
+          ],
+          "must_not_resend": [
+            1
+          ],
+          "pre_ready_download_status": 409,
+          "cross_workspace_download_status": 404,
+          "download": {
+            "bytes": 25165824,
+            "sha256": "b0c23952fe7de97caffc57e9c9b48859df13fe720c35ded58cab401f2ff8a08f"
+          },
+          "file_id": "20d51105-e3b4-41ba-a091-7a81b2e285fb",
+          "final": {
+            "file_id": "20d51105-e3b4-41ba-a091-7a81b2e285fb",
+            "workspace_id": "0a49f76a-093f-48aa-95ba-ec2e50fd12bc",
+            "status": "READY",
+            "size": 25165824,
+            "sha256": "b0c23952fe7de97caffc57e9c9b48859df13fe720c35ded58cab401f2ff8a08f",
+            "bytes_verified": 25165824,
+            "metadata_count": 1,
+            "object_count": 1,
+            "object_bytes": 25165824,
+            "multipart_count": 0,
+            "result_count": 1,
+            "outbox_count": 0,
+            "claim_active": false,
+            "confirmed_parts": [
+              1,
+              2,
+              3
+            ],
+            "remote_parts": [],
+            "remote_part_sizes": []
+          },
+          "events": {
+            "storage_puts": [
+              2,
+              3
+            ],
+            "signs": [
+              1,
+              2,
+              3,
+              2,
+              3
+            ],
+            "acknowledgements": [
+              1,
+              2,
+              3
+            ]
+          },
+          "recovery_s": 12.491164,
+          "cleanup": [
+            {
+              "file_id": "20d51105-e3b4-41ba-a091-7a81b2e285fb",
+              "status": 204
+            }
+          ],
+          "elapsed_s": 45.386939
+        },
+        {
+          "id": "R09",
+          "name": "Part URL expires before PUT",
+          "status": "passed",
+          "fault_observed": true,
+          "source": {
+            "bytes": 262161,
+            "sha256": "49d131d54cefe42db27fa2c453044498bcb76dcfbb8a6fdace4d5f67c38f57ad"
+          },
+          "deadline_s": 120,
+          "fault": {
+            "kind": "genuinely expired signed URL rejected by MinIO",
+            "rejected_status": 403,
+            "storage_statuses": [
+              403,
+              200
+            ],
+            "expired_signature_seconds": 60,
+            "signature_age_hours": 2
+          },
+          "pre_ready_download_status": 409,
+          "cross_workspace_download_status": 404,
+          "download": {
+            "bytes": 262161,
+            "sha256": "49d131d54cefe42db27fa2c453044498bcb76dcfbb8a6fdace4d5f67c38f57ad"
+          },
+          "file_id": "fc8b5412-c7db-44a9-8b08-4904ac1d5bb4",
+          "final": {
+            "file_id": "fc8b5412-c7db-44a9-8b08-4904ac1d5bb4",
+            "workspace_id": "e88678fc-9d27-450e-919b-ced89a027467",
+            "status": "READY",
+            "size": 262161,
+            "sha256": "49d131d54cefe42db27fa2c453044498bcb76dcfbb8a6fdace4d5f67c38f57ad",
+            "bytes_verified": 262161,
+            "metadata_count": 1,
+            "object_count": 1,
+            "object_bytes": 262161,
+            "multipart_count": 0,
+            "result_count": 1,
+            "outbox_count": 0,
+            "claim_active": false,
+            "confirmed_parts": [
+              1
+            ],
+            "remote_parts": [],
+            "remote_part_sizes": []
+          },
+          "events": {
+            "storage_puts": [
+              1,
+              1
+            ],
+            "signs": [
+              1,
+              1
+            ],
+            "acknowledgements": [
+              1
+            ]
+          },
+          "recovery_s": 1.072976,
+          "cleanup": [
+            {
+              "file_id": "fc8b5412-c7db-44a9-8b08-4904ac1d5bb4",
+              "status": 204
+            }
+          ],
+          "elapsed_s": 7.725445
+        }
+      ],
+      "status": "passed",
+      "finished_at": "2026-10-28T00:10:54.067Z"
+    }
+  ],
+  "passed_attempts": 9,
+  "attempted_cases": 9,
+  "distinct_cases": 9,
+  "release_gate_passed": false,
+  "finished_at": "2026-10-28T00:10:54.082Z"
+}

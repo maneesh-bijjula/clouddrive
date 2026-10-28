@@ -11,6 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from .config import settings
 from .db import engine, migrate
+from .recovery_faults import checkpoint
 from .service import finalize, finish_delete, query
 from .storage import s3
 
@@ -64,6 +65,8 @@ def process_file(id):
             for chunk in response["Body"].iter_chunks(chunk_size=1024 * 1024):
                 digest.update(chunk)
                 size += len(chunk)
+                if size == len(chunk):
+                    checkpoint("worker_streaming", id, bytes_read=size)
                 if len(preview) < 65536:
                     preview.extend(chunk[: 65536 - len(preview)])
                 if time.monotonic() - last_heartbeat > 10:
@@ -98,6 +101,7 @@ def process_file(id):
             except UnicodeDecodeError:
                 pass
         with engine().begin() as conn:
+            checkpoint("worker_result", id, connection=conn, bytes_read=size)
             changed = query(
                 conn,
                 """UPDATE files SET status=:status,sha256=:sha,result=CAST(:result AS jsonb),error=:error,
@@ -113,10 +117,14 @@ def process_file(id):
                     else "File integrity check failed: size or SHA-256 differs from the upload."
                 ),
             )
-            return ("ready" if matches else "failed") if changed.rowcount else "skipped"
+            outcome = ("ready" if matches else "failed") if changed.rowcount else "skipped"
+        if outcome != "skipped":
+            checkpoint("worker_result_committed", id, outcome=outcome)
+        return outcome
     except ClaimLost:
         return "skipped"
-    except Exception:
+    except Exception as exc:
+        checkpoint("worker_failed", id, error_type=type(exc).__name__)
         with engine().begin() as conn:
             query(
                 conn,
@@ -129,6 +137,13 @@ def process_file(id):
 
 @celery.task(name="clouddrive.process", bind=True, max_retries=5)
 def process(self, id):
+    checkpoint(
+        "task_received",
+        id,
+        retries=self.request.retries,
+        redelivered=bool((self.request.delivery_info or {}).get("redelivered")),
+        task_id=self.request.id or "",
+    )
     try:
         return process_file(UUID(id))
     except (ClientError, BotoCoreError, SQLAlchemyError, OSError) as exc:
@@ -165,6 +180,7 @@ def dispatch_pending(publish=None):
         )
         for id in rows:
             publish(id)
+            checkpoint("outbox_published", id)
             query(conn, "DELETE FROM processing_outbox WHERE file_id=:id", id=id)
     return len(rows)
 

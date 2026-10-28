@@ -1,0 +1,12 @@
+{"pass":1,"case":"R10","status":"passed","recovery_s":9.803143}
+{"pass":1,"case":"R11","status":"passed","recovery_s":10.806852}
+{"pass":1,"case":"R12","status":"passed","recovery_s":4.532843}
+{"pass":1,"case":"R13","status":"passed","recovery_s":1.663796}
+{"pass":1,"case":"R14","status":"passed","recovery_s":5.026599}
+{"pass":1,"case":"R15","status":"passed","recovery_s":4.706116}
+{"pass":1,"case":"R16","status":"passed","recovery_s":2.733998}
+{"pass":1,"case":"R17","status":"passed","recovery_s":27.599328}
+{"pass":1,"case":"R18","status":"passed","recovery_s":92.655117}
+{"pass":1,"case":"R19","status":"passed","recovery_s":89.229364}
+{"pass":1,"case":"R20","status":"passed","recovery_s":0.019697}
+{"status":"passed","passed_attempts":11,"expected_attempts":11,"release_gate_passed":false,"output":"/Users/maneeshbijjula/Documents/New project/clouddrive/test-results/sprint3-dev/backend-1.json"}
