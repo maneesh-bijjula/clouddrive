@@ -1,0 +1,8 @@
+{
+  "independent_artifact_validation": "passed",
+  "raw_sha256": "e42153123a8cd745a4858315889e14f5ce69167ed2f6d2cfd47465e87b00b18c",
+  "file_outcomes": 30,
+  "cohorts": 3,
+  "fixtures_match_previous_attempt": true,
+  "source_files_match_measured_commit": true
+}

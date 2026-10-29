@@ -23,6 +23,10 @@ A local packaged-browser run uploaded **5,000,000,000 bytes**, paused/reloaded a
 
 The versioned recovery matrix passed **20/20 named cases in each of three complete local passes (60/60 attempts)**, with matching source/worker/download bytes and SHA-256, one logical result/object, and no multipart leaks. Coverage includes browser interruptions, actual process kills, broker-message loss, dependency outages, and explicitly labelled boundary exceptions. This used small deterministic fixtures on local MinIO; Linux CI separately passed 20/20 once. [Fault definitions, timing, exact scope, commands, and permanent evidence](docs/sprint-3.md).
 
+## Measured concurrent uploads
+
+Three complete hosted runs passed **10 × 500 MB uploads each (30/30 file outcomes)**, where each file is exactly **500,000,000 bytes**. All source, worker and downloaded SHA-256 values matched. Each run proved ten overlapping byte transfers; aggregate transfer-window rates were **46.31–46.64 MB/s**, with all ten READY in **172.91–173.71 s**. This used GitHub-hosted Ubuntu/Chromium and container-local MinIO through a TLS/HTTP2 gateway with a declared brief shaping probe. It does not establish live AWS, default HTTP/1 or laptop capacity. [Budgets, clocks, exact environment, failed-attempt history and JSON/CSV evidence](docs/sprint-4.md).
+
 ## Run locally
 
 Requires Docker with Compose v2. All application ports bind to the loopback interface.
@@ -121,7 +125,7 @@ Configuration uses `CLOUDDRIVE_` environment variables; see [.env.example](.env.
 
 The separate [named recovery matrix](docs/sprint-3.md) exercises 20 distinct recoverable faults with explicit injection proof and source/download integrity checks. Its three-pass release denominator is 60 attempts; development rehearsals and ordinary test counts are reported separately.
 
-The implementation passes **41 unit tests, 67 real-service integration tests, 26 browser workflows, and two pure scheduler checks**. The browser workflows also pass against the packaged Docker stack. See [verification notes](docs/verification.md) for the tested failure cases and a repeatable broker-outage check.
+The implementation passes **41 unit tests, 67 real-service integration tests, 26 browser workflows, two pure scheduler checks, and nine lightweight benchmark-helper tests**. The browser workflows also pass against the packaged Docker stack. See [verification notes](docs/verification.md) for the tested failure cases and a repeatable broker-outage check.
 
 Unit tests run without infrastructure:
 

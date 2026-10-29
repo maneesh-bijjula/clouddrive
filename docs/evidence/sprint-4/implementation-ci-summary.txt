@@ -1,0 +1,5 @@
+verify	Formatting and frontend build	2026-10-29T19:06:48.5174867Z ℹ tests 9
+verify	Unit and integration tests	2026-10-29T19:09:32.9279092Z 108 passed, 1 warning in 13.27s
+verify	Browser tests with actual Celery worker and scheduler	2026-10-29T19:12:55.9912021Z   28 passed (3.0m)
+verify	Browser regressions against the packaged API and workers	2026-10-29T19:16:30.3444704Z   28 passed (3.1m)
+verify	Ten-file concurrency smoke (small fixtures; not 500 MB evidence)	2026-10-29T19:17:11.7003344Z {"status":"passed","release_gate_passed":false,"passed_files":10,"output":"/home/runner/work/clouddrive/clouddrive/test-results/load/smoke.json"}

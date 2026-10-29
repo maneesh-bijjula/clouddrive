@@ -108,6 +108,24 @@
       "scope": "Cohort1passed;cohort2verified10downloadsbutfailedNodeRSSbudget;cohort3rejectedbeforeuploadsbypriorglobalbudgetfailures. Thisbatchdoesnotsatisfy30/30 release gate.",
       "reason": "Benchmark Node RSS sampled peak538.1MiB exceeded unchanged512MiB ceiling during download/hash. Noobservertransporterrors.",
       "report": "hosted-40934084550/results.json"
+    },
+    {
+      "id": "hosted-40937036466",
+      "status": "passed",
+      "implementation": "20f9dbf0a63b9e0b27624dcbfc518ed7556bf64d",
+      "workflow_url": "https://github.com/maneesh-bijjula/clouddrive/actions/runs/40937036466",
+      "method_revision": 3,
+      "file_bytes": 500000000,
+      "requested_cohorts": 3,
+      "completed_cohorts": 3,
+      "passed_cohorts": 3,
+      "accepted_file_outcomes": "30/30",
+      "independently_verified_downloads": 30,
+      "release_gate_passed": true,
+      "fixture_hashes_match_failed_hosted_attempt": true,
+      "budget_manifest_unchanged": true,
+      "scope": "GitHub-hostedUbuntu24.04/Chromium;container-localMinIOviaTLS/HTTP2gatewaywithdeclaredshapingprobe;notliveAWSorlaptopcapacity.",
+      "report": "hosted-40937036466/results.json"
     }
   ]
 }

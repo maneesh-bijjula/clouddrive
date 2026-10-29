@@ -2,7 +2,7 @@
 
 ## Sprint 4 regression verification
 
-The bounded scheduler/admission/observability implementation passed **108 Python cases (41 unit + 67 integration)** and **28 packaged Playwright cases (26 browser workflows + 2 pure scheduler checks)**, with browser retries disabled. A separate complete **20/20** named recovery regression passed against the same application source. The target-size concurrency run remains a separate gate; small ten-file rehearsals do not establish 500 MB capacity. See [Sprint 4](sprint-4.md) for commands, budget manifest, transport profile, raw results and precise measurement status.
+The bounded scheduler/admission/observability implementation passed **108 Python cases (41 unit + 67 integration)** and **28 packaged Playwright cases (26 browser workflows + 2 pure scheduler checks)**, with browser retries disabled. A separate complete **20/20** named recovery regression passed against the same application source. The separate hosted target-size run passed **three complete ten-file cohorts (30/30)** on `20f9dbf`, with matching source/worker/download hashes, 1,800 successful HTTP/2 PUTs, unchanged budgets, and clean final inventory. Nine lightweight Node observer/hash-helper tests also passed. Small ten-file rehearsals remain a separate denominator. See [Sprint 4](sprint-4.md) for commands, budget manifest, transport profile, raw results and precise measurement status.
 
 ## Sprint 3 implementation verification
 

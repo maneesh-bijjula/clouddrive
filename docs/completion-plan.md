@@ -2,9 +2,9 @@
 
 Audit date: October 24, 2026 (America/Los_Angeles). Baseline: `6f439d97b62d25b16ef22d9ab91208955bc97983` on `main`.
 
-**Progress: Sprints 1-3 are complete; Sprint 4 measures ten concurrent uploads next.** Extend the existing service. The core architecture works; the remaining work is closing specific failure gaps, enabling and measuring the resume targets, and adding operational recovery evidence.
+**Progress: Sprints 1-4 are complete; Sprint 5 backup/restore and release operations remains.** The three scoped resume targets now have published evidence. Remaining work covers backup/restore, operational runbooks and cleanup, pagination, and the Sprint 5 release checks.
 
-This document preserves the baseline audit and proposed sprint sequence. Sprints 1-3 were subsequently authorized for direct delivery to `main`; see [the Sprint 1 report](sprint-1.md) for implementation and current verification. See [Sprint 2](sprint-2.md) for the large-file implementation and measurement procedure, and [Sprint 3](sprint-3.md) for the completed recovery matrix. Baseline fault probes assert the original defects and apply only to baseline `6f439d9`, not to the corrected implementation. The resume and other projects remain outside the implementation scope.
+This document preserves the baseline audit and proposed sprint sequence. Sprints 1-4 were subsequently authorized for direct delivery to `main`; see [the Sprint 1 report](sprint-1.md) for implementation and current verification. See [Sprint 2](sprint-2.md) for the large-file implementation and measurement procedure, and [Sprint 3](sprint-3.md) for the completed recovery matrix, and [Sprint 4](sprint-4.md) for three complete hosted concurrency cohorts (30/30). Baseline fault probes assert the original defects and apply only to baseline `6f439d9`, not to the corrected implementation. The resume and other projects remain outside the implementation scope.
 
 ## Evidence and current status
 
@@ -137,7 +137,7 @@ Use distinct clocks for browser hashing, actual upload network intervals, multip
 
 Ordinary CI should run bounded correctness/recovery cases and packaged smoke workflows. Target-size, repeated full recovery, and load runs should have explicit opt-in/manual jobs with artifact retention long enough for review. Benchmark results on this shared laptop must list shared workload conditions; ordinary shared GitHub runners are not a stable performance baseline.
 
-README highlights must link to the exact run artifact, command, file-size definition, denominator, environment, provider, and limitations. Until those gates pass, retain the current honest statement that 5 GB and concurrency performance are unverified. Do not claim production readiness or live AWS behavior from local MinIO tests.
+README highlights must link to the exact run artifact, command, file-size definition, denominator, environment, provider, and limitations. Those gates now have the scoped [Sprint 2](sprint-2.md) and [Sprint 4](sprint-4.md) measurements; retain their exact provider/environment/denominator limits when describing them. Do not claim production readiness or live AWS behavior from local MinIO tests.
 
 ## Historical baseline isolation and reproduction
 
@@ -172,4 +172,4 @@ Use the existing smoke script's `--base-url http://localhost:18090` override and
 
 Audit cleanup: the disposable audit Compose project was stopped and removed after verification. Existing CloudDrive, Projects 1 and 2 containers and data were left as found.
 
-All future sprint gates include preserving existing data, scoped test cleanup, packaged browser/API verification, documentation, commit/push, and checking GitHub CI against the exact pushed SHA. Sprints 1-3 were authorized and completed; Sprint 3 passed 20/20 named cases across three full local passes (60/60 attempts), with separate 20/20 Linux CI verification. See [Sprint 3](sprint-3.md). Later sprints begin when the user chooses them.
+All future sprint gates include preserving existing data, scoped test cleanup, packaged browser/API verification, documentation, commit/push, and checking GitHub CI against the exact pushed SHA. Sprints 1-4 were authorized and completed; Sprint 4 passed three full hosted ten-file cohorts (30/30) with the unchanged declared budgets (see [Sprint 4](sprint-4.md)). Sprint 3 passed 20/20 named cases across three full local passes (60/60 attempts), with separate 20/20 Linux CI verification. See [Sprint 3](sprint-3.md). Later sprints begin when the user chooses them.

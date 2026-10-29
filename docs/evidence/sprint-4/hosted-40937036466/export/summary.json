@@ -1,0 +1,1777 @@
+{
+  "schema_version": 1,
+  "exporter_sha256": "4667c5ed27b2fc937c2852ce83dc2acf235ce9b09a80aabe03696c81673cd348",
+  "raw_evidence_sha256": "e42153123a8cd745a4858315889e14f5ce69167ed2f6d2cfd47465e87b00b18c",
+  "run_id": "c7353025-a3d2-4a73-a028-d218798f6c85",
+  "status": "passed",
+  "error": null,
+  "scope": "One browser, ten selected files per cohort, local TLS/HTTP2 gateway to MinIO; declared overlap probe shaping; not live AWS or default HTTP/1 capacity",
+  "started_at": "2026-10-29T19:09:52.779Z",
+  "finished_at": "2026-10-29T19:20:56.375Z",
+  "units": {
+    "MB": 1000000,
+    "GB": 1000000000,
+    "MiB": 1048576,
+    "GiB": 1073741824
+  },
+  "missing_value_policy": "Unknown or incomplete measurements are JSON null / CSV blank; no fixture contents are read.",
+  "denominators": {
+    "requested_cohorts": 3,
+    "recorded_cohorts": 3,
+    "files_per_cohort": 10,
+    "file_bytes": 500000000,
+    "expected_file_outcomes": 30,
+    "recorded_file_outcomes": 30,
+    "attempted_file_outcomes": 30,
+    "accepted_cohorts": 3,
+    "accepted_file_outcomes": 30,
+    "independently_verified_file_outcomes": 30,
+    "passed_cohorts": 3,
+    "release_gate_passed": true,
+    "target_size": true,
+    "definition": "A file can pass integrity in a failed cohort. Only passed complete cohorts count toward the concurrency release gate; small fixtures do not establish 500 MB outcomes."
+  },
+  "method_revision": 3,
+  "environment": {
+    "platform": "linux",
+    "release": "7.0.0-1017-azure",
+    "architecture": "x64",
+    "host_cpu": "AMD EPYC 7763 64-Core Processor",
+    "host_logical_cpus": 4,
+    "host_memory_bytes": 16760336384,
+    "node": "v24.22.1",
+    "node_exec_argv": [
+      "--max-old-space-size=192",
+      "--max-semi-space-size=8"
+    ],
+    "node_heap_size_limit_bytes": 226492416,
+    "node_memory_at_startup": {
+      "rss": 145076224,
+      "heapTotal": 67366912,
+      "heapUsed": 49076512,
+      "external": 4345893,
+      "arrayBuffers": 155171
+    },
+    "compose_project": "clouddrive-ci-load",
+    "execution": {
+      "kind": "github_actions",
+      "repository": "maneesh-bijjula/clouddrive",
+      "run_id": "40937036466",
+      "run_attempt": "1",
+      "source_sha": "20f9dbf0a63b9e0b27624dcbfc518ed7556bf64d",
+      "runner_environment": "github-hosted",
+      "runner_os": "Linux",
+      "runner_arch": "X64"
+    },
+    "effective_api_settings": {
+      "max_active_uploads_per_workspace": 10,
+      "max_active_uploads_global": 100,
+      "max_api_inflight": 64,
+      "db_pool_size": 8,
+      "db_max_overflow": 8,
+      "db_pool_timeout_seconds": 10,
+      "admission_lock_timeout_seconds": 5,
+      "browser_active_files": 10,
+      "browser_hash_workers": 2,
+      "browser_global_parts": 10,
+      "browser_parts_per_file": 3
+    },
+    "minio_version": "minio version DEVELOPMENT.GOGET (commit-id=DEVELOPMENT.GOGET)\nRuntime: go1.26.10 linux/amd64\nLicense: GNU AGPLv3 - https://www.gnu.org/licenses/agpl-3.0.html\nCopyright: 2015-0000 MinIO, Inc.",
+    "gateway_version": "v2.11.7 h1:yj0Y4fYZGPkSvibBJ1sTWE33xC0fxztVyXEW5iIdUT4=",
+    "images": [
+      {
+        "service": "api",
+        "image_id": "sha256:0350105265d015b46760b07bad3940a4469f23c202a7ebacdbb190de6de830d7"
+      },
+      {
+        "service": "beat",
+        "image_id": "sha256:0350105265d015b46760b07bad3940a4469f23c202a7ebacdbb190de6de830d7"
+      },
+      {
+        "service": "gateway",
+        "image_id": "sha256:3067cc4e02c091399edbd5d65f85a3ff4d511574aecadb47f280c3761e68852e"
+      },
+      {
+        "service": "minio",
+        "image_id": "sha256:e93f70a490c5877966f0b4b73be3105c64b77b654733347234a67d5f9340bd56"
+      },
+      {
+        "service": "postgres",
+        "image_id": "sha256:ab20e934b27ba3ff927c1b4c9ff8cf6c32f315f743efe68dd3441182a87fb085"
+      },
+      {
+        "service": "redis",
+        "image_id": "sha256:98c6ca8f397f86e469be752c3e7ed5eb8b17f2479840cb69a2e413037038e9f4"
+      },
+      {
+        "service": "worker",
+        "image_id": "sha256:0350105265d015b46760b07bad3940a4469f23c202a7ebacdbb190de6de830d7"
+      }
+    ],
+    "docker": {
+      "cpus": 4,
+      "memory_bytes": 16760336384,
+      "version": "28.0.4"
+    },
+    "git_sha": "20f9dbf0a63b9e0b27624dcbfc518ed7556bf64d",
+    "git_dirty": false,
+    "source_sha256": {
+      "compose.load.yaml": "dbd7f71bfe83b1cee0af3a928d3c52ce85ab23a87557b23adc22e4e76899d3ac",
+      "Caddyfile.load": "a56161f2be3a9ddccd17f6fd021d0677fe0ef20968df2e688a4c6951de863f1d",
+      "Dockerfile": "369bbb3c7d57225d99b5dfadf26bfdea3eb0f11b69d1acad95e389831ba0dbed",
+      "Dockerfile.minio": "cde2ca1ae71806dab340b22ee337930d9c769f4cc7d5cca83a282c25f10ba5b3",
+      "package.json": "85df4b0519dbf1f02866cfbedcbc6b3e3c1a66ce7c5e1e45561c85f4afffe0e4",
+      "package-lock.json": "3926a8ed0520525ed8494bca1a6fb67f193f9e539be4a86da0558f50c802dc51",
+      "requirements.txt": "7a96f3426ebee4676ec20d494d0ed2e9513f2a3ef78f35a0aa2fd46480cf7ab0",
+      "tsconfig.json": "59cf60422227becd628b7481b7c296f91c47e04f1b8db2759f04030e48f0ae4d",
+      "frontend/index.html": "94ca97aea878dc3322d7c949fb617bf7c677bdc7628ee42073b0418f812ea323",
+      "frontend/vite.config.ts": "6eadaac9aa0ffbcd15cda240391f50568a23b6b625f20ed6c7ec6888f238fe60",
+      "frontend/src/style.css": "066baa6c985988582a82578642c68faddefc61e60d72c5f6cc2797e8d3009f77",
+      "frontend/public/favicon.svg": "75f5aeb4a8d65b6c3b58d89e2bce7f6e21f83c39a3d7211eb4547f6a9a20814a",
+      "docs/load-budgets.json": "6f569bfdadd524c30d371bf3e1211024c55dec633355233f19f610a68e4d8e26",
+      "clouddrive/__init__.py": "bc50749c7527c8869db75c23b477b100459807d9b37f030007e99e5babac9779",
+      "clouddrive/api.py": "8db0ba8c252b5302ee8aec53eed2b52a750074b1d12aa569605de521272101f6",
+      "clouddrive/config.py": "18b3c0f966a8de0690f2ba564e520e156d5ae477c5e2fb7219fd15f51ccfc4d9",
+      "clouddrive/db.py": "ffa1152439f480c9aca04393a6d7f33dd41b582f58032578824c9f35c8da7923",
+      "clouddrive/models.py": "ad6eeabadb6cc63bd3ae032262f52ed30b7eea1239059db666d46feb14af9fb3",
+      "clouddrive/observability.py": "2a488df17884149c9f51823b68336b1a1f34cba586593878d84fcb28b51ea395",
+      "clouddrive/recovery_faults.py": "d5933deee21b83d9ba7a8dbb70b00520b89bc3b80e201cdc6eefbf121a81a899",
+      "clouddrive/service.py": "0a576e821e84634467c4215160714bff405221a70266c0adf7a72a0894c8d4b3",
+      "clouddrive/storage.py": "5e3539c250497518c976d58096a3c0e43c1261d4140a752aac5c7afc075722e5",
+      "clouddrive/worker.py": "fc1138efcb72ef0aff6e58e01f0ac3874ac86c5310f8a0a2c4eee7fe96603018",
+      "frontend/src/hash-worker.ts": "5ee4090dfd1a207a2b48214295927cf086e26441ee624041760bd94efaa53d7e",
+      "frontend/src/main.ts": "55d6fdc15e7415a9b28178143f584442603405c7193417a482ab1281b68c81bf",
+      "frontend/src/scheduler.ts": "e4099a91676faf27f803c989c5733af1f186e7529a6cc3a0cd77823b1c6dd9fc",
+      "frontend/src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5",
+      "scripts/benchmark-concurrent.mjs": "befc2713a1d6af011aac8523c7e27bf91ee038b1c147759abeaf2c54d459b50d",
+      "scripts/load-file-hash.mjs": "4aff9d02791a13d99fe8627430017770c9c4522e13d0cbb5b12664402e1a1efd",
+      "scripts/load-observer.mjs": "e42f9440e6c09d102071b9dab3fe8d278b4258d375a33f3140e1e2d0d162e22e",
+      "scripts/load-state.py": "e38d8fcd4b9d71f0bb95ba816cdc27a585013dc758c915b07c9f37305bc83a88",
+      "scripts/summarize-load.py": "4667c5ed27b2fc937c2852ce83dc2acf235ce9b09a80aabe03696c81673cd348"
+    },
+    "packaged_asset_sha256": {
+      "dist/favicon.svg": "75f5aeb4a8d65b6c3b58d89e2bce7f6e21f83c39a3d7211eb4547f6a9a20814a",
+      "dist/index.html": "7cab311ed0ac5c22e88c8d17579f983ea5724d959fe7b1f21fdf0c5cbbeabeb6",
+      "dist/assets/hash-worker-_1eHXO8U.js": "bcf99a6c0d9d419f2d58fdd3cd29d49e75e03292bde082bb2309a00e9649e80c",
+      "dist/assets/index-z3zbsC4R.css": "3469b5c5587c6b768d0ed30a38e1b0e578704370c11c1dcc72584e171eacd369",
+      "dist/assets/index-CMeMWQwx.js": "a00edc426242d522abd6657f75625bf087603dfa03ef0669974c724d4cfc591a"
+    },
+    "other_running_containers": 0,
+    "host_free_bytes": 89596313600,
+    "storage_free_bytes": 89596313600,
+    "certificate": {
+      "fingerprint256": "9F:FE:14:25:65:0B:A8:9F:B8:2D:39:66:B6:ED:22:08:41:97:4A:9B:A7:99:80:A8:89:27:40:02:0E:EC:7E:95",
+      "subject": {},
+      "issuer": {
+        "CN": "Caddy Local Authority - ECC Intermediate"
+      },
+      "negotiated_protocol": "h2",
+      "scope": "Local test CA; no host trust store changes"
+    },
+    "browser": "156.0.8078.4",
+    "cgroup_checks": [
+      {
+        "id": "a24780ad8e232e4eb013cb835950d4607101558d72b5ec392cacc9fa60526ff3",
+        "service": "api",
+        "oom_start": {
+          "rss_sum_bytes": 111304704,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 135020544,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "id": "6a0c087623db1680ab6d82ca7c337672cb5d309fa83d706e59ddbe649791388a",
+        "service": "beat",
+        "oom_start": {
+          "rss_sum_bytes": 91516928,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 91471872,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "id": "175392e5ffbbd95a55c6b74668a9580d19c8b7fefbe25cf7e7989b7ef15a45bd",
+        "service": "gateway",
+        "oom_start": {
+          "rss_sum_bytes": 53288960,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 56393728,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "id": "14d932dd42c326015edc86aca3bbde28c394b70005b522ade018c4f0e49e7c09",
+        "service": "minio",
+        "oom_start": {
+          "rss_sum_bytes": 120803328,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 445632512,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "id": "0608bf416e1dac79d7da5914bb442d6fc81d582531d03b0e7e49550fe9b3e0e6",
+        "service": "postgres",
+        "oom_start": {
+          "rss_sum_bytes": 110706688,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 287096832,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "id": "cbb0b3ac57ff29a023c04d13c7bfa8cbc5af1a9643003545aa70f9e7751b15e1",
+        "service": "redis",
+        "oom_start": {
+          "rss_sum_bytes": 10387456,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 10424320,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "id": "af5430995ba732f1b8b9e6f475868451bd2a68a2914ce20c4ad92cc748a1222e",
+        "service": "worker",
+        "oom_start": {
+          "rss_sum_bytes": 266641408,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 319438848,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      }
+    ]
+  },
+  "observer_api": {
+    "transport": "Native Node HTTP client, new socket per request, Connection: close, absolute15s deadline, no retries; excluded from native browser API latency population",
+    "requests": 1131,
+    "status_counts": {
+      "200": 1008,
+      "201": 3,
+      "204": 30,
+      "404": 60,
+      "409": 30
+    },
+    "transport_failures": []
+  },
+  "final_global_inventory": {
+    "broker": {
+      "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+      "queued_messages": 0,
+      "unacked_messages": 0,
+      "unacked_index": 0
+    },
+    "connections": {
+      "total": 10,
+      "active": 1,
+      "lock_waiting": 0,
+      "idle_in_transaction": 0
+    },
+    "ungranted_locks": 0,
+    "database": {
+      "xact_commit": 15102,
+      "xact_rollback": 6682,
+      "deadlocks": 0,
+      "temp_bytes": 0,
+      "blks_read": 331,
+      "blks_hit": 157908
+    },
+    "work": {
+      "processing": 0,
+      "active_claims": 0,
+      "expired_claims": 0
+    },
+    "outbox": {
+      "count": 0,
+      "oldest_age_seconds": 0
+    },
+    "object_count": 0,
+    "object_bytes": 0,
+    "multipart_count": 0
+  },
+  "budget_sha256": "6f569bfdadd524c30d371bf3e1211024c55dec633355233f19f610a68e4d8e26",
+  "budgets": {
+    "schema_version": 1,
+    "benchmark": "clouddrive-ten-concurrent-uploads-v1",
+    "status": "declared_before_scored_measurement",
+    "units": {
+      "MB": 1000000,
+      "GB": 1000000000,
+      "MiB": 1048576,
+      "GiB": 1073741824
+    },
+    "release_requirement": {
+      "complete_runs": 3,
+      "files_per_run": 10,
+      "file_bytes": 500000000,
+      "source_bytes_per_run": 5000000000,
+      "file_outcome_denominator": 30,
+      "distinct_fixture_contents": 10,
+      "fresh_workspace_and_file_ids_per_run": true,
+      "fixture_reuse_across_runs_allowed": true
+    },
+    "resource_budgets": {
+      "containers": {
+        "api": {
+          "memory_hard_limit_bytes": 402653184,
+          "cpu_limit_cores": 1
+        },
+        "worker": {
+          "memory_hard_limit_bytes": 536870912,
+          "cpu_limit_cores": 2
+        },
+        "beat": {
+          "memory_hard_limit_bytes": 134217728,
+          "cpu_limit_cores": 0.25
+        },
+        "minio": {
+          "memory_hard_limit_bytes": 805306368,
+          "cpu_limit_cores": 2
+        },
+        "postgres": {
+          "memory_hard_limit_bytes": 402653184,
+          "cpu_limit_cores": 1
+        },
+        "redis": {
+          "memory_hard_limit_bytes": 134217728,
+          "cpu_limit_cores": 0.5
+        },
+        "gateway": {
+          "memory_hard_limit_bytes": 134217728,
+          "cpu_limit_cores": 1
+        }
+      },
+      "container_memory_limit_sum_bytes": 2550136832,
+      "container_cpu_limit_sum_cores": 7.75,
+      "worker_process_concurrency": 2,
+      "browser_sampled_rss_sum_ceiling_bytes": 1610612736,
+      "runner_sampled_rss_ceiling_bytes": 536870912,
+      "sample_interval_ms": 1000,
+      "sampling_error_budget": 0,
+      "memory_accounting": "Container cgroup hard limits are enforced by Docker. Chrome memory is the sum of process RSS and can double-count shared pages; Chrome/runner ceilings are sampled acceptance thresholds, not enforced process memory caps or instantaneous maxima. Record actual timestamps; skipped overlapping collections must be explicit.",
+      "oom_policy": "Fail on any own-service container OOM or increase in cgroup oom/oom_kill counters, including a killed worker pool child."
+    },
+    "disk_budget": {
+      "minimum_host_free_before_fixture_generation_bytes": 25000000000,
+      "recommended_host_free_bytes": 30000000000,
+      "minimum_storage_free_before_scored_run_bytes": 12000000000,
+      "cleanup_policy": "Keep only ten source fixtures; create a fresh ten-file workspace per run; download/hash files sequentially and delete the completed run before the next run."
+    },
+    "time_budget": {
+      "per_cohort_ready_deadline_seconds": 600,
+      "definition": "Starts when the ten-file cohort is selected; includes browser hashing, scheduling, uploads, completion, queueing, and verification. This is a bounded harness deadline, not a latency SLO.",
+      "whole_cohort_deadline_seconds": 900,
+      "whole_cohort_definition": "Bound for the complete cohort, including download integrity checks and scoped cleanup; shared fixture generation is recorded separately."
+    },
+    "success_invariants": [
+      "Ten actual storage PUT byte-transfer intervals have a nonempty common intersection, with positive per-file upload progress and no completed file counted as active.",
+      "All ten files reach READY; each worker and independent streamed download matches source bytes and SHA-256.",
+      "Thirty fresh file IDs across three full runs; no skipped or silently rerun failed cohorts/files.",
+      "One logical file, object, and result per source; no multipart leaks, forbidden cross-workspace downloads, OOMs, unhandled5xx responses, or budget breaches.",
+      "Resource/admission settings, hardware, provider/image identities, source/manifest digests and clocks are recorded; measured source and budgets remain unchanged during scored runs.",
+      "Every attempted run remains in history. An adjusted budget requires a new manifest revision and a fresh complete scored run, with prior failures retained."
+    ],
+    "metrics_required": [
+      "Browser hash time, active transfer windows, multipart completion, source selection to READY, download/hash durations, and total cohort time.",
+      "Aggregate actual-transfer throughput and end-to-end throughput with explicit denominators; per-file latency; API p50/p95 grouped by route template and measured request population.",
+      "Browser/runner RSS and per-service CPU/memory samples; actual sample timestamps; cgroup OOM counters.",
+      "Database pool/checkouts, lock/wait metrics, processing outbox backlog, active/expired claims, publications, delivery/verification attempts, and queue/backlog observations.",
+      "Network/storage errors, application retries, admission rejections, forbidden-access controls, and final scoped inventory."
+    ],
+    "non_claims": [
+      "No throughput or API latency SLO is imposed; report observed values.",
+      "Local MinIO results do not establish live AWS capacity, WAN behavior, or production availability.",
+      "Ten file upload intervals alone or a start barrier do not establish simultaneous byte transfers."
+    ],
+    "scheduler_and_admission": {
+      "browser_active_files": 10,
+      "browser_hash_workers": 2,
+      "browser_global_part_slots": 10,
+      "browser_parts_per_file": 3,
+      "browser_part_fairness": "Reserve one global slot for each admitted active owner before granting spare slots, so ten first PUTs cannot deadlock behind greedily admitted extra part loops.",
+      "workspace_active_upload_limit": 10,
+      "global_active_upload_limit": 100,
+      "active_upload_statuses": [
+        "UPLOADING",
+        "FINALIZING",
+        "PROCESSING"
+      ],
+      "api_max_inflight_requests": 64,
+      "database_pool_size": 8,
+      "database_max_overflow": 8,
+      "database_pool_timeout_seconds": 10
+    },
+    "network_profile": {
+      "browser_to_storage_protocol": "HTTP/2 over TLS through the dedicated test gateway; record negotiated protocol for actual PUTs.",
+      "gateway_to_minio_protocol": "Streamed HTTP reverse proxy; retain the original signed Host and query.",
+      "certificate_scope": "Locally generated test certificate; browser ignores trust errors only for this isolated test context; record certificate fingerprint, never private key.",
+      "default_profile_limitation": "A single-origin HTTP/1 browser may restrict simultaneously active connections; this measured ten-stream result must not be generalized to that default profile.",
+      "overlap_probe": {
+        "permitted": true,
+        "method": "Temporary declared upload shaping only until all ten first PUTs show positive partial progress; remove shaping before any first PUT completes.",
+        "upload_cap_bytes_per_second": 8388608,
+        "evidence_required": [
+          "Shaping start/end timestamps and configured cap.",
+          "Ten distinct files with positive partial upload progress and common active transfer interval.",
+          "HTTP/2 negotiation on actual storage requests."
+        ],
+        "throughput_policy": "All shaping-probe time remains inside reported transfer windows. Do not call the resulting throughput unshaped provider capacity."
+      }
+    }
+  },
+  "sources_unchanged_during_run": true,
+  "fixture_generation_and_independent_hash_s": 8.005128,
+  "total_runner_s": 663.599042,
+  "cohorts": [
+    {
+      "run": 1,
+      "status": "passed",
+      "file_denominator": 10,
+      "recorded_files": 10,
+      "file_integrity_passed": 10,
+      "cohort_accepted_file_outcomes": 10,
+      "overlap_s": 0.9725,
+      "source_bytes": 5000000000,
+      "transfer_window_s": 107.47459999999998,
+      "transfer_MB_per_s": 46.52262022840746,
+      "selection_to_ready_s": 173.120038,
+      "selection_to_ready_MB_per_s": 28.88169421497008,
+      "full_cohort_s": 214.705895,
+      "api_count": 1319,
+      "api_p50_ms": 41.282,
+      "api_p95_ms": 124.947,
+      "outbox_publications": 10,
+      "error": null,
+      "cleanup_error": null
+    },
+    {
+      "run": 2,
+      "status": "passed",
+      "file_denominator": 10,
+      "recorded_files": 10,
+      "file_integrity_passed": 10,
+      "cohort_accepted_file_outcomes": 10,
+      "overlap_s": 0.8435,
+      "source_bytes": 5000000000,
+      "transfer_window_s": 107.21189999999997,
+      "transfer_MB_per_s": 46.636614032584085,
+      "selection_to_ready_s": 173.70887,
+      "selection_to_ready_MB_per_s": 28.783792099965883,
+      "full_cohort_s": 218.130329,
+      "api_count": 1320,
+      "api_p50_ms": 41.265,
+      "api_p95_ms": 118.07,
+      "outbox_publications": 10,
+      "error": null,
+      "cleanup_error": null
+    },
+    {
+      "run": 3,
+      "status": "passed",
+      "file_denominator": 10,
+      "recorded_files": 10,
+      "file_integrity_passed": 10,
+      "cohort_accepted_file_outcomes": 10,
+      "overlap_s": 0.9514000000000233,
+      "source_bytes": 5000000000,
+      "transfer_window_s": 107.95869999999995,
+      "transfer_MB_per_s": 46.31400711568408,
+      "selection_to_ready_s": 172.91466100000002,
+      "selection_to_ready_MB_per_s": 28.915998048308925,
+      "full_cohort_s": 215.58440199999995,
+      "api_count": 1317,
+      "api_p50_ms": 42.298,
+      "api_p95_ms": 138.943,
+      "outbox_publications": 10,
+      "error": null,
+      "cleanup_error": null
+    }
+  ],
+  "observed_peaks": {
+    "browser_rss_sum_bytes": 760287232,
+    "browser_cpu_percent": 233.94622828007175,
+    "node_rss_bytes": 415424512,
+    "node_cpu_percent": 88.31672507306341,
+    "node_heap_used_bytes": 122083568,
+    "node_heap_total_bytes": 136433664,
+    "node_external_bytes": 109464169,
+    "node_array_buffers_bytes": 105314613,
+    "api_inflight": 4,
+    "api_pool_size": 8,
+    "api_pool_checked_out": 3,
+    "api_pool_overflow": 0,
+    "api_pool_capacity": 16,
+    "pg_connections": 10,
+    "pg_active_connections": 2,
+    "pg_lock_waiting": 0,
+    "pg_idle_in_transaction": 4,
+    "pg_ungranted_locks": 0,
+    "pg_deadlocks": 0,
+    "outbox_count": 10,
+    "outbox_oldest_age_s": 4.412667,
+    "redis_queued": 8,
+    "redis_unacked": 2,
+    "redis_unacked_index": 2,
+    "processing": 10,
+    "active_claims": 2,
+    "expired_claims": 0,
+    "scheduler_active_files": 10,
+    "scheduler_hash_workers": 2,
+    "scheduler_global_parts": 10
+  },
+  "service_observed_peaks": {
+    "api": {
+      "service_cpu_percent": 65.15,
+      "service_memory_usage_bytes": 106954752,
+      "service_rss_sum_bytes": 143642624,
+      "service_oom": 0,
+      "service_oom_kill": 0
+    },
+    "beat": {
+      "service_cpu_percent": 5.4,
+      "service_memory_usage_bytes": 74700554,
+      "service_rss_sum_bytes": 91676672,
+      "service_oom": 0,
+      "service_oom_kill": 0
+    },
+    "gateway": {
+      "service_cpu_percent": 100.47,
+      "service_memory_usage_bytes": 57807995,
+      "service_rss_sum_bytes": 59375616,
+      "service_oom": 0,
+      "service_oom_kill": 0
+    },
+    "minio": {
+      "service_cpu_percent": 76.02,
+      "service_memory_usage_bytes": 444386509,
+      "service_rss_sum_bytes": 504233984,
+      "service_oom": 0,
+      "service_oom_kill": 0
+    },
+    "postgres": {
+      "service_cpu_percent": 15.18,
+      "service_memory_usage_bytes": 59758346,
+      "service_rss_sum_bytes": 297177088,
+      "service_oom": 0,
+      "service_oom_kill": 0
+    },
+    "redis": {
+      "service_cpu_percent": 8.91,
+      "service_memory_usage_bytes": 7941915,
+      "service_rss_sum_bytes": 22028288,
+      "service_oom": 0,
+      "service_oom_kill": 0
+    },
+    "worker": {
+      "service_cpu_percent": 47.6,
+      "service_memory_usage_bytes": 204682035,
+      "service_rss_sum_bytes": 319647744,
+      "service_oom": 0,
+      "service_oom_kill": 0
+    }
+  },
+  "sampling": {
+    "sample_count": 240,
+    "nominal_interval_ms": 1000,
+    "sample_errors": 0,
+    "skipped_overlapping_collections": 405,
+    "definition": "Actual timestamps are authoritative. Chrome RSS sums may double-count shared pages. Container memory usage is Docker accounting; process RSS sums may also double-count shared pages. Docker CPU percentages use 100% per CPU core. Samples are observations, not instantaneous maxima.",
+    "scope": "PG connection counts include the read-only observer. API pool metrics describe the API process only. CPU/RSS maxima are sampled; service RSS sums may double-count shared pages. OOM fields are counters, not inferred process outcomes."
+  },
+  "api": {
+    "status_counts": {
+      "200": 3893,
+      "201": 33,
+      "202": 30
+    },
+    "admission_429_count": 0,
+    "unhandled_5xx_count": 0,
+    "latency_by_cohort": [
+      {
+        "run": 1,
+        "all_routes": {
+          "count": 1319,
+          "p50_ms": 41.282,
+          "p95_ms": 124.947,
+          "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+        },
+        "by_route": {
+          "/api/workspaces": {
+            "count": 1,
+            "p50_ms": 8.381,
+            "p95_ms": 8.381,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/workspace": {
+            "count": 1,
+            "p50_ms": 14.734,
+            "p95_ms": 14.734,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/files": {
+            "count": 87,
+            "p50_ms": 25.807,
+            "p95_ms": 103.812,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/uploads": {
+            "count": 10,
+            "p50_ms": 28.316,
+            "p95_ms": 304.727,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/uploads/:id/parts/:number/sign": {
+            "count": 600,
+            "p50_ms": 24.777,
+            "p95_ms": 74.712,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/uploads/:id/parts/:number": {
+            "count": 600,
+            "p50_ms": 63.422,
+            "p95_ms": 139.027,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/uploads/:id/complete": {
+            "count": 10,
+            "p50_ms": 108.671,
+            "p95_ms": 176.576,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/files/:id/download": {
+            "count": 10,
+            "p50_ms": 6.254,
+            "p95_ms": 9.308,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          }
+        }
+      },
+      {
+        "run": 2,
+        "all_routes": {
+          "count": 1320,
+          "p50_ms": 41.265,
+          "p95_ms": 118.07,
+          "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+        },
+        "by_route": {
+          "/api/workspaces": {
+            "count": 1,
+            "p50_ms": 5.227,
+            "p95_ms": 5.227,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/workspace": {
+            "count": 1,
+            "p50_ms": 8.63,
+            "p95_ms": 8.63,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/files": {
+            "count": 88,
+            "p50_ms": 26.969,
+            "p95_ms": 118.764,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/uploads": {
+            "count": 10,
+            "p50_ms": 26.682,
+            "p95_ms": 244.619,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/uploads/:id/parts/:number/sign": {
+            "count": 600,
+            "p50_ms": 25.554,
+            "p95_ms": 74.553,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/uploads/:id/parts/:number": {
+            "count": 600,
+            "p50_ms": 62.605,
+            "p95_ms": 126.313,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/uploads/:id/complete": {
+            "count": 10,
+            "p50_ms": 96.413,
+            "p95_ms": 185.677,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/files/:id/download": {
+            "count": 10,
+            "p50_ms": 6.682,
+            "p95_ms": 8.915,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          }
+        }
+      },
+      {
+        "run": 3,
+        "all_routes": {
+          "count": 1317,
+          "p50_ms": 42.298,
+          "p95_ms": 138.943,
+          "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+        },
+        "by_route": {
+          "/api/workspaces": {
+            "count": 1,
+            "p50_ms": 4.858,
+            "p95_ms": 4.858,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/workspace": {
+            "count": 1,
+            "p50_ms": 6.366,
+            "p95_ms": 6.366,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/files": {
+            "count": 85,
+            "p50_ms": 24.662,
+            "p95_ms": 137.25,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/uploads": {
+            "count": 10,
+            "p50_ms": 32.286,
+            "p95_ms": 320.102,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/uploads/:id/parts/:number/sign": {
+            "count": 600,
+            "p50_ms": 25.877,
+            "p95_ms": 71.045,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/uploads/:id/parts/:number": {
+            "count": 600,
+            "p50_ms": 64.02,
+            "p95_ms": 162.28,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/uploads/:id/complete": {
+            "count": 10,
+            "p50_ms": 170.969,
+            "p95_ms": 247.545,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/files/:id/download": {
+            "count": 10,
+            "p50_ms": 6.742,
+            "p95_ms": 12.942,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          }
+        }
+      }
+    ],
+    "transport_failure_count": 0,
+    "population": "Native browser application API requests, excluding observer probes; exact latency populations are retained per cohort. Missing optional failure lists remain unknown."
+  },
+  "storage": {
+    "status_counts": {
+      "200": 1800
+    },
+    "protocol_counts": {
+      "h2": 1800
+    },
+    "part_put_count": 1800,
+    "retried_parts": 0
+  },
+  "workers": {
+    "task_attempts": 30,
+    "reported_task_retry_ordinals_sum": 0,
+    "outbox_publications": 30,
+    "scope": "Task attempts are correlated by exact file ID. Celery retries are recorded attempt retry ordinals, not independently counted redeliveries. Outbox publications cover the dedicated worker's cohort time window."
+  },
+  "final_scoped_inventory_by_cohort": [
+    {
+      "run": 1,
+      "before_cleanup": {
+        "broker": {
+          "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+          "queued_messages": 0,
+          "unacked_messages": 0,
+          "unacked_index": 0
+        },
+        "connections": {
+          "total": 10,
+          "active": 1,
+          "lock_waiting": 0,
+          "idle_in_transaction": 0
+        },
+        "ungranted_locks": 0,
+        "database": {
+          "xact_commit": 4833,
+          "xact_rollback": 2099,
+          "deadlocks": 0,
+          "temp_bytes": 0,
+          "blks_read": 325,
+          "blks_hit": 43870
+        },
+        "work": {
+          "processing": 0,
+          "active_claims": 0,
+          "expired_claims": 0
+        },
+        "outbox": {
+          "count": 0,
+          "oldest_age_seconds": 0
+        },
+        "files": [
+          {
+            "id": "649f4007-8bd0-416b-a1a4-e55e58f1aabf",
+            "name": "load-01.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "13e48d68af7585629c7dc7d24b8fe1ec5bbdedece3779173a2869fd925280fe2",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "45cb1659-6b7a-4ffe-b4cd-9b67e35ca5d0",
+            "name": "load-02.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "ceba3a2295abecbb7af9557b94a190c4a79c1e67b0e85824adcf4dd530e9cb95",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "c440ff42-bc7c-4163-ad4b-16706873cb33",
+            "name": "load-03.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "10e6ed27800c7a3a9eaf5f6ce694f5e7c7256f0cc5c0c2a8e97d1edbea1fe5c2",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "3e261d83-168e-430d-8607-5a8d22daefea",
+            "name": "load-04.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "5aa2042b2627862d9cf7ea2d2c53a03f604dd34aba831b1179f05b03d25d5ef1",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "0fadee96-f0a4-4610-8cab-f2520f9ffa7b",
+            "name": "load-05.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "8b415f59518aa96f1f0ec2fe067724c891cde3543596226784cefc8f5053676e",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "417f7b2d-e29f-4b8d-9b7e-6c5c03ced89d",
+            "name": "load-06.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "fc47fa0d041f1d3b47ebf681fc201b8a1521c44efbacc92915f9abee7400f3c3",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "98fdec6c-ed33-4b62-947c-651b30a30058",
+            "name": "load-07.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "6fde7c7a43e11685af8452020416cb9c8bfe10e9f013eb896fcf3bf6bfa60649",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "24d3f753-8f98-4366-beb2-c72ddbddb0e5",
+            "name": "load-08.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "94b466e7e11076a56f17e6bfe8a7493899a6ffce21349449513bb8d74af5457f",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "db99b06a-f138-4203-ac86-c078775ac43c",
+            "name": "load-09.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "c87f144b74d783f505f72ff1c05deab4e65956af0efac3ea0566884ee3f2efb1",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "87f580c8-4b7a-48d8-b1aa-a8b7fbeb2c0f",
+            "name": "load-10.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "33f69f4ab5272d99ab60143842c41bdafffaa22d28b73c4a9fc5320918581b4e",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          }
+        ],
+        "object_count": 10,
+        "object_bytes": 5000000000,
+        "multipart_count": 0
+      },
+      "after_cleanup": {
+        "broker": {
+          "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+          "queued_messages": 0,
+          "unacked_messages": 0,
+          "unacked_index": 0
+        },
+        "connections": {
+          "total": 10,
+          "active": 1,
+          "lock_waiting": 0,
+          "idle_in_transaction": 0
+        },
+        "ungranted_locks": 0,
+        "database": {
+          "xact_commit": 5013,
+          "xact_rollback": 2223,
+          "deadlocks": 0,
+          "temp_bytes": 0,
+          "blks_read": 331,
+          "blks_hit": 45567
+        },
+        "work": {
+          "processing": 0,
+          "active_claims": 0,
+          "expired_claims": 0
+        },
+        "outbox": {
+          "count": 0,
+          "oldest_age_seconds": 0
+        },
+        "files": [
+          {
+            "id": "649f4007-8bd0-416b-a1a4-e55e58f1aabf",
+            "name": "load-01.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "13e48d68af7585629c7dc7d24b8fe1ec5bbdedece3779173a2869fd925280fe2",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "45cb1659-6b7a-4ffe-b4cd-9b67e35ca5d0",
+            "name": "load-02.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "ceba3a2295abecbb7af9557b94a190c4a79c1e67b0e85824adcf4dd530e9cb95",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "c440ff42-bc7c-4163-ad4b-16706873cb33",
+            "name": "load-03.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "10e6ed27800c7a3a9eaf5f6ce694f5e7c7256f0cc5c0c2a8e97d1edbea1fe5c2",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "3e261d83-168e-430d-8607-5a8d22daefea",
+            "name": "load-04.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "5aa2042b2627862d9cf7ea2d2c53a03f604dd34aba831b1179f05b03d25d5ef1",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "0fadee96-f0a4-4610-8cab-f2520f9ffa7b",
+            "name": "load-05.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "8b415f59518aa96f1f0ec2fe067724c891cde3543596226784cefc8f5053676e",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "417f7b2d-e29f-4b8d-9b7e-6c5c03ced89d",
+            "name": "load-06.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "fc47fa0d041f1d3b47ebf681fc201b8a1521c44efbacc92915f9abee7400f3c3",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "98fdec6c-ed33-4b62-947c-651b30a30058",
+            "name": "load-07.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "6fde7c7a43e11685af8452020416cb9c8bfe10e9f013eb896fcf3bf6bfa60649",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "24d3f753-8f98-4366-beb2-c72ddbddb0e5",
+            "name": "load-08.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "94b466e7e11076a56f17e6bfe8a7493899a6ffce21349449513bb8d74af5457f",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "db99b06a-f138-4203-ac86-c078775ac43c",
+            "name": "load-09.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "c87f144b74d783f505f72ff1c05deab4e65956af0efac3ea0566884ee3f2efb1",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "87f580c8-4b7a-48d8-b1aa-a8b7fbeb2c0f",
+            "name": "load-10.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "33f69f4ab5272d99ab60143842c41bdafffaa22d28b73c4a9fc5320918581b4e",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          }
+        ],
+        "object_count": 0,
+        "object_bytes": 0,
+        "multipart_count": 0
+      },
+      "cleanup": [
+        {
+          "file_id": "87f580c8-4b7a-48d8-b1aa-a8b7fbeb2c0f",
+          "status": 204
+        },
+        {
+          "file_id": "db99b06a-f138-4203-ac86-c078775ac43c",
+          "status": 204
+        },
+        {
+          "file_id": "24d3f753-8f98-4366-beb2-c72ddbddb0e5",
+          "status": 204
+        },
+        {
+          "file_id": "98fdec6c-ed33-4b62-947c-651b30a30058",
+          "status": 204
+        },
+        {
+          "file_id": "417f7b2d-e29f-4b8d-9b7e-6c5c03ced89d",
+          "status": 204
+        },
+        {
+          "file_id": "0fadee96-f0a4-4610-8cab-f2520f9ffa7b",
+          "status": 204
+        },
+        {
+          "file_id": "3e261d83-168e-430d-8607-5a8d22daefea",
+          "status": 204
+        },
+        {
+          "file_id": "c440ff42-bc7c-4163-ad4b-16706873cb33",
+          "status": 204
+        },
+        {
+          "file_id": "649f4007-8bd0-416b-a1a4-e55e58f1aabf",
+          "status": 204
+        },
+        {
+          "file_id": "45cb1659-6b7a-4ffe-b4cd-9b67e35ca5d0",
+          "status": 204
+        }
+      ],
+      "cleanup_error": null
+    },
+    {
+      "run": 2,
+      "before_cleanup": {
+        "broker": {
+          "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+          "queued_messages": 0,
+          "unacked_messages": 0,
+          "unacked_index": 0
+        },
+        "connections": {
+          "total": 10,
+          "active": 1,
+          "lock_waiting": 0,
+          "idle_in_transaction": 0
+        },
+        "ungranted_locks": 0,
+        "database": {
+          "xact_commit": 9875,
+          "xact_rollback": 4334,
+          "deadlocks": 0,
+          "temp_bytes": 0,
+          "blks_read": 331,
+          "blks_hit": 97191
+        },
+        "work": {
+          "processing": 0,
+          "active_claims": 0,
+          "expired_claims": 0
+        },
+        "outbox": {
+          "count": 0,
+          "oldest_age_seconds": 0
+        },
+        "files": [
+          {
+            "id": "1ea16a1e-ff38-4015-aceb-203d1ba22e6a",
+            "name": "load-01.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "13e48d68af7585629c7dc7d24b8fe1ec5bbdedece3779173a2869fd925280fe2",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "65694e10-ce5b-4d47-b0ca-e09354dc695e",
+            "name": "load-02.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "ceba3a2295abecbb7af9557b94a190c4a79c1e67b0e85824adcf4dd530e9cb95",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "9d19ee44-e81d-40aa-ba60-446909114488",
+            "name": "load-03.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "10e6ed27800c7a3a9eaf5f6ce694f5e7c7256f0cc5c0c2a8e97d1edbea1fe5c2",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "d3cf4e94-4b47-409c-a3c7-ced25b640210",
+            "name": "load-04.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "5aa2042b2627862d9cf7ea2d2c53a03f604dd34aba831b1179f05b03d25d5ef1",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "ff3e32a7-3a7d-47eb-bb1c-440f845b0a27",
+            "name": "load-05.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "8b415f59518aa96f1f0ec2fe067724c891cde3543596226784cefc8f5053676e",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "ff78279a-62a0-4255-bb01-424e8015c15b",
+            "name": "load-06.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "fc47fa0d041f1d3b47ebf681fc201b8a1521c44efbacc92915f9abee7400f3c3",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "53c710e4-dad5-40d6-b8ac-c728655f43d7",
+            "name": "load-07.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "6fde7c7a43e11685af8452020416cb9c8bfe10e9f013eb896fcf3bf6bfa60649",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "da27fae9-79e3-4c04-9461-1985f2bbe375",
+            "name": "load-08.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "94b466e7e11076a56f17e6bfe8a7493899a6ffce21349449513bb8d74af5457f",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "db583157-48ca-4b7d-9555-6993822fb0a4",
+            "name": "load-09.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "c87f144b74d783f505f72ff1c05deab4e65956af0efac3ea0566884ee3f2efb1",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "c28f626a-30a3-49e9-9274-f32ca3af3f56",
+            "name": "load-10.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "33f69f4ab5272d99ab60143842c41bdafffaa22d28b73c4a9fc5320918581b4e",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          }
+        ],
+        "object_count": 10,
+        "object_bytes": 5000000000,
+        "multipart_count": 0
+      },
+      "after_cleanup": {
+        "broker": {
+          "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+          "queued_messages": 0,
+          "unacked_messages": 0,
+          "unacked_index": 0
+        },
+        "connections": {
+          "total": 10,
+          "active": 1,
+          "lock_waiting": 0,
+          "idle_in_transaction": 0
+        },
+        "ungranted_locks": 0,
+        "database": {
+          "xact_commit": 10074,
+          "xact_rollback": 4466,
+          "deadlocks": 0,
+          "temp_bytes": 0,
+          "blks_read": 331,
+          "blks_hit": 101607
+        },
+        "work": {
+          "processing": 0,
+          "active_claims": 0,
+          "expired_claims": 0
+        },
+        "outbox": {
+          "count": 0,
+          "oldest_age_seconds": 0
+        },
+        "files": [
+          {
+            "id": "1ea16a1e-ff38-4015-aceb-203d1ba22e6a",
+            "name": "load-01.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "13e48d68af7585629c7dc7d24b8fe1ec5bbdedece3779173a2869fd925280fe2",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "65694e10-ce5b-4d47-b0ca-e09354dc695e",
+            "name": "load-02.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "ceba3a2295abecbb7af9557b94a190c4a79c1e67b0e85824adcf4dd530e9cb95",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "9d19ee44-e81d-40aa-ba60-446909114488",
+            "name": "load-03.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "10e6ed27800c7a3a9eaf5f6ce694f5e7c7256f0cc5c0c2a8e97d1edbea1fe5c2",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "d3cf4e94-4b47-409c-a3c7-ced25b640210",
+            "name": "load-04.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "5aa2042b2627862d9cf7ea2d2c53a03f604dd34aba831b1179f05b03d25d5ef1",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "ff3e32a7-3a7d-47eb-bb1c-440f845b0a27",
+            "name": "load-05.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "8b415f59518aa96f1f0ec2fe067724c891cde3543596226784cefc8f5053676e",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "ff78279a-62a0-4255-bb01-424e8015c15b",
+            "name": "load-06.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "fc47fa0d041f1d3b47ebf681fc201b8a1521c44efbacc92915f9abee7400f3c3",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "53c710e4-dad5-40d6-b8ac-c728655f43d7",
+            "name": "load-07.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "6fde7c7a43e11685af8452020416cb9c8bfe10e9f013eb896fcf3bf6bfa60649",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "da27fae9-79e3-4c04-9461-1985f2bbe375",
+            "name": "load-08.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "94b466e7e11076a56f17e6bfe8a7493899a6ffce21349449513bb8d74af5457f",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "db583157-48ca-4b7d-9555-6993822fb0a4",
+            "name": "load-09.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "c87f144b74d783f505f72ff1c05deab4e65956af0efac3ea0566884ee3f2efb1",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "c28f626a-30a3-49e9-9274-f32ca3af3f56",
+            "name": "load-10.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "33f69f4ab5272d99ab60143842c41bdafffaa22d28b73c4a9fc5320918581b4e",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          }
+        ],
+        "object_count": 0,
+        "object_bytes": 0,
+        "multipart_count": 0
+      },
+      "cleanup": [
+        {
+          "file_id": "c28f626a-30a3-49e9-9274-f32ca3af3f56",
+          "status": 204
+        },
+        {
+          "file_id": "db583157-48ca-4b7d-9555-6993822fb0a4",
+          "status": 204
+        },
+        {
+          "file_id": "da27fae9-79e3-4c04-9461-1985f2bbe375",
+          "status": 204
+        },
+        {
+          "file_id": "53c710e4-dad5-40d6-b8ac-c728655f43d7",
+          "status": 204
+        },
+        {
+          "file_id": "ff78279a-62a0-4255-bb01-424e8015c15b",
+          "status": 204
+        },
+        {
+          "file_id": "ff3e32a7-3a7d-47eb-bb1c-440f845b0a27",
+          "status": 204
+        },
+        {
+          "file_id": "d3cf4e94-4b47-409c-a3c7-ced25b640210",
+          "status": 204
+        },
+        {
+          "file_id": "9d19ee44-e81d-40aa-ba60-446909114488",
+          "status": 204
+        },
+        {
+          "file_id": "65694e10-ce5b-4d47-b0ca-e09354dc695e",
+          "status": 204
+        },
+        {
+          "file_id": "1ea16a1e-ff38-4015-aceb-203d1ba22e6a",
+          "status": 204
+        }
+      ],
+      "cleanup_error": null
+    },
+    {
+      "run": 3,
+      "before_cleanup": {
+        "broker": {
+          "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+          "queued_messages": 0,
+          "unacked_messages": 0,
+          "unacked_index": 0
+        },
+        "connections": {
+          "total": 10,
+          "active": 1,
+          "lock_waiting": 0,
+          "idle_in_transaction": 0
+        },
+        "ungranted_locks": 0,
+        "database": {
+          "xact_commit": 14916,
+          "xact_rollback": 6555,
+          "deadlocks": 0,
+          "temp_bytes": 0,
+          "blks_read": 331,
+          "blks_hit": 156120
+        },
+        "work": {
+          "processing": 0,
+          "active_claims": 0,
+          "expired_claims": 0
+        },
+        "outbox": {
+          "count": 0,
+          "oldest_age_seconds": 0
+        },
+        "files": [
+          {
+            "id": "b8056bc6-52b2-4ea5-b99f-3d11f02c751d",
+            "name": "load-01.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "13e48d68af7585629c7dc7d24b8fe1ec5bbdedece3779173a2869fd925280fe2",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "332d00e2-f445-4840-899b-a48709c9f34f",
+            "name": "load-02.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "ceba3a2295abecbb7af9557b94a190c4a79c1e67b0e85824adcf4dd530e9cb95",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "d26637cb-38c0-4e91-84e8-8f3a9def18fa",
+            "name": "load-03.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "10e6ed27800c7a3a9eaf5f6ce694f5e7c7256f0cc5c0c2a8e97d1edbea1fe5c2",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "2903e6e8-25f3-4627-8109-da7202b55d4e",
+            "name": "load-04.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "5aa2042b2627862d9cf7ea2d2c53a03f604dd34aba831b1179f05b03d25d5ef1",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "cbc54cc7-c436-47b2-b941-a2bdbc91756a",
+            "name": "load-05.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "8b415f59518aa96f1f0ec2fe067724c891cde3543596226784cefc8f5053676e",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "529a85a5-3b70-4c74-a444-31ce954fadf5",
+            "name": "load-06.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "fc47fa0d041f1d3b47ebf681fc201b8a1521c44efbacc92915f9abee7400f3c3",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "75132224-cb8e-4a1a-8632-1c29292fcf1f",
+            "name": "load-07.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "6fde7c7a43e11685af8452020416cb9c8bfe10e9f013eb896fcf3bf6bfa60649",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "8d56f5c7-0d68-4db1-bd47-3d5cede40d1b",
+            "name": "load-08.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "94b466e7e11076a56f17e6bfe8a7493899a6ffce21349449513bb8d74af5457f",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "35cf7853-9bd5-4bb3-b63f-880881e0c172",
+            "name": "load-09.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "c87f144b74d783f505f72ff1c05deab4e65956af0efac3ea0566884ee3f2efb1",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "a121304b-d39d-41e9-93ca-e0fdf4c06584",
+            "name": "load-10.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "33f69f4ab5272d99ab60143842c41bdafffaa22d28b73c4a9fc5320918581b4e",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          }
+        ],
+        "object_count": 10,
+        "object_bytes": 5000000000,
+        "multipart_count": 0
+      },
+      "after_cleanup": {
+        "broker": {
+          "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+          "queued_messages": 0,
+          "unacked_messages": 0,
+          "unacked_index": 0
+        },
+        "connections": {
+          "total": 10,
+          "active": 1,
+          "lock_waiting": 0,
+          "idle_in_transaction": 0
+        },
+        "ungranted_locks": 0,
+        "database": {
+          "xact_commit": 15102,
+          "xact_rollback": 6682,
+          "deadlocks": 0,
+          "temp_bytes": 0,
+          "blks_read": 331,
+          "blks_hit": 157908
+        },
+        "work": {
+          "processing": 0,
+          "active_claims": 0,
+          "expired_claims": 0
+        },
+        "outbox": {
+          "count": 0,
+          "oldest_age_seconds": 0
+        },
+        "files": [
+          {
+            "id": "b8056bc6-52b2-4ea5-b99f-3d11f02c751d",
+            "name": "load-01.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "13e48d68af7585629c7dc7d24b8fe1ec5bbdedece3779173a2869fd925280fe2",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "332d00e2-f445-4840-899b-a48709c9f34f",
+            "name": "load-02.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "ceba3a2295abecbb7af9557b94a190c4a79c1e67b0e85824adcf4dd530e9cb95",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "d26637cb-38c0-4e91-84e8-8f3a9def18fa",
+            "name": "load-03.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "10e6ed27800c7a3a9eaf5f6ce694f5e7c7256f0cc5c0c2a8e97d1edbea1fe5c2",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "2903e6e8-25f3-4627-8109-da7202b55d4e",
+            "name": "load-04.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "5aa2042b2627862d9cf7ea2d2c53a03f604dd34aba831b1179f05b03d25d5ef1",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "cbc54cc7-c436-47b2-b941-a2bdbc91756a",
+            "name": "load-05.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "8b415f59518aa96f1f0ec2fe067724c891cde3543596226784cefc8f5053676e",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "529a85a5-3b70-4c74-a444-31ce954fadf5",
+            "name": "load-06.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "fc47fa0d041f1d3b47ebf681fc201b8a1521c44efbacc92915f9abee7400f3c3",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "75132224-cb8e-4a1a-8632-1c29292fcf1f",
+            "name": "load-07.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "6fde7c7a43e11685af8452020416cb9c8bfe10e9f013eb896fcf3bf6bfa60649",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "8d56f5c7-0d68-4db1-bd47-3d5cede40d1b",
+            "name": "load-08.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "94b466e7e11076a56f17e6bfe8a7493899a6ffce21349449513bb8d74af5457f",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "35cf7853-9bd5-4bb3-b63f-880881e0c172",
+            "name": "load-09.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "c87f144b74d783f505f72ff1c05deab4e65956af0efac3ea0566884ee3f2efb1",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "a121304b-d39d-41e9-93ca-e0fdf4c06584",
+            "name": "load-10.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "33f69f4ab5272d99ab60143842c41bdafffaa22d28b73c4a9fc5320918581b4e",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          }
+        ],
+        "object_count": 0,
+        "object_bytes": 0,
+        "multipart_count": 0
+      },
+      "cleanup": [
+        {
+          "file_id": "a121304b-d39d-41e9-93ca-e0fdf4c06584",
+          "status": 204
+        },
+        {
+          "file_id": "35cf7853-9bd5-4bb3-b63f-880881e0c172",
+          "status": 204
+        },
+        {
+          "file_id": "8d56f5c7-0d68-4db1-bd47-3d5cede40d1b",
+          "status": 204
+        },
+        {
+          "file_id": "75132224-cb8e-4a1a-8632-1c29292fcf1f",
+          "status": 204
+        },
+        {
+          "file_id": "529a85a5-3b70-4c74-a444-31ce954fadf5",
+          "status": 204
+        },
+        {
+          "file_id": "cbc54cc7-c436-47b2-b941-a2bdbc91756a",
+          "status": 204
+        },
+        {
+          "file_id": "2903e6e8-25f3-4627-8109-da7202b55d4e",
+          "status": 204
+        },
+        {
+          "file_id": "d26637cb-38c0-4e91-84e8-8f3a9def18fa",
+          "status": 204
+        },
+        {
+          "file_id": "b8056bc6-52b2-4ea5-b99f-3d11f02c751d",
+          "status": 204
+        },
+        {
+          "file_id": "332d00e2-f445-4840-899b-a48709c9f34f",
+          "status": 204
+        }
+      ],
+      "cleanup_error": null
+    }
+  ]
+}
