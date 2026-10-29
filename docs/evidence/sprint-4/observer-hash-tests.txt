@@ -1,0 +1,17 @@
+✔ hashes multiple read buffers and a short tail with exact byte count (13.210083ms)
+✔ empty file returns the SHA-256 empty digest and zero bytes (2.068333ms)
+✔ missing file remains an explicit read failure (1.462125ms)
+✔ a directory is rejected rather than hashed as an empty file (1.142417ms)
+✔ JSON observer requests use separate sockets and close every connection (15.918667ms)
+✔ 204 and non-success statuses remain explicit without retries (2.667541ms)
+✔ absolute deadline includes a stalled response body and does not retry (102.786417ms)
+✔ socket resets fail once with a safe native error code (2.349958ms)
+✔ invalid JSON and nested causes preserve codes, never raw diagnostic text (1.069375ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 247.138084

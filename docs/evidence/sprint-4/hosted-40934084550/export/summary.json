@@ -1,0 +1,1450 @@
+{
+  "schema_version": 1,
+  "exporter_sha256": "a236b1dc2968c4d4aac2304657906a65a2302f5399d3da60d69176883bf2f308",
+  "raw_evidence_sha256": "cce18c741f0b26885fa312f1fcfacad71ba9c2be0a6f8d72b115c5d8176a1a07",
+  "run_id": "cf0133cd-e7bc-4557-b2ed-d009a584b6a9",
+  "status": "failed",
+  "error": "Expected values to be strictly equal:\n\n3 !== 0\n",
+  "scope": "One browser, ten selected files per cohort, local TLS/HTTP2 gateway to MinIO; declared overlap probe shaping; not live AWS or default HTTP/1 capacity",
+  "started_at": "2026-10-29T18:50:43.398Z",
+  "finished_at": "2026-10-29T18:58:00.367Z",
+  "units": {
+    "MB": 1000000,
+    "GB": 1000000000,
+    "MiB": 1048576,
+    "GiB": 1073741824
+  },
+  "missing_value_policy": "Unknown or incomplete measurements are JSON null / CSV blank; no fixture contents are read.",
+  "denominators": {
+    "requested_cohorts": 3,
+    "recorded_cohorts": 3,
+    "files_per_cohort": 10,
+    "file_bytes": 500000000,
+    "expected_file_outcomes": 30,
+    "recorded_file_outcomes": 30,
+    "accepted_file_outcomes": null,
+    "independently_verified_file_outcomes": null,
+    "passed_cohorts": 1,
+    "release_gate_passed": null,
+    "target_size": true,
+    "definition": "A file can pass integrity in a failed cohort. Only passed complete cohorts count toward the concurrency release gate; small fixtures do not establish 500 MB outcomes."
+  },
+  "method_revision": 2,
+  "environment": {
+    "platform": "linux",
+    "release": "7.0.0-1017-azure",
+    "architecture": "x64",
+    "host_cpu": "AMD EPYC 9V74 80-Core Processor",
+    "host_logical_cpus": 4,
+    "host_memory_bytes": 16760344576,
+    "node": "v24.22.1",
+    "compose_project": "clouddrive-ci-load",
+    "execution": {
+      "kind": "github_actions",
+      "repository": "maneesh-bijjula/clouddrive",
+      "run_id": "40934084550",
+      "run_attempt": "1",
+      "source_sha": "84fc75f02ae80e2ff265bd9c6c3fa1da9407bb7b",
+      "runner_environment": "github-hosted",
+      "runner_os": "Linux",
+      "runner_arch": "X64"
+    },
+    "effective_api_settings": {
+      "max_active_uploads_per_workspace": 10,
+      "max_active_uploads_global": 100,
+      "max_api_inflight": 64,
+      "db_pool_size": 8,
+      "db_max_overflow": 8,
+      "db_pool_timeout_seconds": 10,
+      "admission_lock_timeout_seconds": 5,
+      "browser_active_files": 10,
+      "browser_hash_workers": 2,
+      "browser_global_parts": 10,
+      "browser_parts_per_file": 3
+    },
+    "minio_version": "minio version DEVELOPMENT.GOGET (commit-id=DEVELOPMENT.GOGET)\nRuntime: go1.26.10 linux/amd64\nLicense: GNU AGPLv3 - https://www.gnu.org/licenses/agpl-3.0.html\nCopyright: 2015-0000 MinIO, Inc.",
+    "gateway_version": "v2.11.7 h1:yj0Y4fYZGPkSvibBJ1sTWE33xC0fxztVyXEW5iIdUT4=",
+    "images": [
+      {
+        "service": "api",
+        "image_id": "sha256:b687db669711d5898abd1f72aaf38ffed98d8588456c01599e4f5edd49b2188c"
+      },
+      {
+        "service": "beat",
+        "image_id": "sha256:b687db669711d5898abd1f72aaf38ffed98d8588456c01599e4f5edd49b2188c"
+      },
+      {
+        "service": "gateway",
+        "image_id": "sha256:3067cc4e02c091399edbd5d65f85a3ff4d511574aecadb47f280c3761e68852e"
+      },
+      {
+        "service": "minio",
+        "image_id": "sha256:6d0a52dec9d7212378ee70e78b3ef761cd9f3a0e607a08f6f3c4b4b55fe95efa"
+      },
+      {
+        "service": "postgres",
+        "image_id": "sha256:ab20e934b27ba3ff927c1b4c9ff8cf6c32f315f743efe68dd3441182a87fb085"
+      },
+      {
+        "service": "redis",
+        "image_id": "sha256:98c6ca8f397f86e469be752c3e7ed5eb8b17f2479840cb69a2e413037038e9f4"
+      },
+      {
+        "service": "worker",
+        "image_id": "sha256:b687db669711d5898abd1f72aaf38ffed98d8588456c01599e4f5edd49b2188c"
+      }
+    ],
+    "docker": {
+      "cpus": 4,
+      "memory_bytes": 16760344576,
+      "version": "28.0.4"
+    },
+    "git_sha": "84fc75f02ae80e2ff265bd9c6c3fa1da9407bb7b",
+    "git_dirty": false,
+    "source_sha256": {
+      "compose.load.yaml": "dbd7f71bfe83b1cee0af3a928d3c52ce85ab23a87557b23adc22e4e76899d3ac",
+      "Caddyfile.load": "a56161f2be3a9ddccd17f6fd021d0677fe0ef20968df2e688a4c6951de863f1d",
+      "Dockerfile": "369bbb3c7d57225d99b5dfadf26bfdea3eb0f11b69d1acad95e389831ba0dbed",
+      "Dockerfile.minio": "cde2ca1ae71806dab340b22ee337930d9c769f4cc7d5cca83a282c25f10ba5b3",
+      "package.json": "b7065ee6ab845c3fb77ebc3d4e1b15fd86717c5030323fff552e40b1c3b800e5",
+      "package-lock.json": "3926a8ed0520525ed8494bca1a6fb67f193f9e539be4a86da0558f50c802dc51",
+      "requirements.txt": "7a96f3426ebee4676ec20d494d0ed2e9513f2a3ef78f35a0aa2fd46480cf7ab0",
+      "tsconfig.json": "59cf60422227becd628b7481b7c296f91c47e04f1b8db2759f04030e48f0ae4d",
+      "frontend/index.html": "94ca97aea878dc3322d7c949fb617bf7c677bdc7628ee42073b0418f812ea323",
+      "frontend/vite.config.ts": "6eadaac9aa0ffbcd15cda240391f50568a23b6b625f20ed6c7ec6888f238fe60",
+      "frontend/src/style.css": "066baa6c985988582a82578642c68faddefc61e60d72c5f6cc2797e8d3009f77",
+      "frontend/public/favicon.svg": "75f5aeb4a8d65b6c3b58d89e2bce7f6e21f83c39a3d7211eb4547f6a9a20814a",
+      "docs/load-budgets.json": "6f569bfdadd524c30d371bf3e1211024c55dec633355233f19f610a68e4d8e26",
+      "clouddrive/__init__.py": "bc50749c7527c8869db75c23b477b100459807d9b37f030007e99e5babac9779",
+      "clouddrive/api.py": "8db0ba8c252b5302ee8aec53eed2b52a750074b1d12aa569605de521272101f6",
+      "clouddrive/config.py": "18b3c0f966a8de0690f2ba564e520e156d5ae477c5e2fb7219fd15f51ccfc4d9",
+      "clouddrive/db.py": "ffa1152439f480c9aca04393a6d7f33dd41b582f58032578824c9f35c8da7923",
+      "clouddrive/models.py": "ad6eeabadb6cc63bd3ae032262f52ed30b7eea1239059db666d46feb14af9fb3",
+      "clouddrive/observability.py": "2a488df17884149c9f51823b68336b1a1f34cba586593878d84fcb28b51ea395",
+      "clouddrive/recovery_faults.py": "d5933deee21b83d9ba7a8dbb70b00520b89bc3b80e201cdc6eefbf121a81a899",
+      "clouddrive/service.py": "0a576e821e84634467c4215160714bff405221a70266c0adf7a72a0894c8d4b3",
+      "clouddrive/storage.py": "5e3539c250497518c976d58096a3c0e43c1261d4140a752aac5c7afc075722e5",
+      "clouddrive/worker.py": "fc1138efcb72ef0aff6e58e01f0ac3874ac86c5310f8a0a2c4eee7fe96603018",
+      "frontend/src/hash-worker.ts": "5ee4090dfd1a207a2b48214295927cf086e26441ee624041760bd94efaa53d7e",
+      "frontend/src/main.ts": "55d6fdc15e7415a9b28178143f584442603405c7193417a482ab1281b68c81bf",
+      "frontend/src/scheduler.ts": "e4099a91676faf27f803c989c5733af1f186e7529a6cc3a0cd77823b1c6dd9fc",
+      "frontend/src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5",
+      "scripts/benchmark-concurrent.mjs": "20a7425dc7e41b906569cacc7e6d024328454d044d7a99ba7d2b5691a22feec8",
+      "scripts/load-observer.mjs": "e42f9440e6c09d102071b9dab3fe8d278b4258d375a33f3140e1e2d0d162e22e",
+      "scripts/load-state.py": "e38d8fcd4b9d71f0bb95ba816cdc27a585013dc758c915b07c9f37305bc83a88",
+      "scripts/summarize-load.py": "a236b1dc2968c4d4aac2304657906a65a2302f5399d3da60d69176883bf2f308"
+    },
+    "packaged_asset_sha256": {
+      "dist/favicon.svg": "75f5aeb4a8d65b6c3b58d89e2bce7f6e21f83c39a3d7211eb4547f6a9a20814a",
+      "dist/index.html": "7cab311ed0ac5c22e88c8d17579f983ea5724d959fe7b1f21fdf0c5cbbeabeb6",
+      "dist/assets/hash-worker-_1eHXO8U.js": "bcf99a6c0d9d419f2d58fdd3cd29d49e75e03292bde082bb2309a00e9649e80c",
+      "dist/assets/index-z3zbsC4R.css": "3469b5c5587c6b768d0ed30a38e1b0e578704370c11c1dcc72584e171eacd369",
+      "dist/assets/index-CMeMWQwx.js": "a00edc426242d522abd6657f75625bf087603dfa03ef0669974c724d4cfc591a"
+    },
+    "other_running_containers": 0,
+    "host_free_bytes": 89599844352,
+    "storage_free_bytes": 89599844352,
+    "certificate": {
+      "fingerprint256": "24:5D:7D:69:D7:CB:D0:CD:54:4E:C5:8E:99:72:34:5E:9B:E8:C9:4F:4A:D5:BB:68:36:CF:EE:F7:2C:94:30:64",
+      "subject": {},
+      "issuer": {
+        "CN": "Caddy Local Authority - ECC Intermediate"
+      },
+      "negotiated_protocol": "h2",
+      "scope": "Local test CA; no host trust store changes"
+    },
+    "browser": "156.0.8078.4",
+    "cgroup_checks": [
+      {
+        "id": "64c25ea20cf58f1cccee0843bbf59858664e8b69a16616ef703d434691637165",
+        "service": "api",
+        "oom_start": {
+          "rss_sum_bytes": 110886912,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 119443456,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "id": "2e919c56aca1c1a2d2fe6e96ad3bbd9d146cf00963d8052978830cf70732ad45",
+        "service": "beat",
+        "oom_start": {
+          "rss_sum_bytes": 92532736,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 92512256,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "id": "7d9b4df8a37e80f01359cff879f665823306d8a0365697a73ea7b48f1c960425",
+        "service": "gateway",
+        "oom_start": {
+          "rss_sum_bytes": 53641216,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 56492032,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "id": "3b3677ed3a00518347fe3c7d264ae47b37b697fa836b324e782e4b0ee5aa103e",
+        "service": "minio",
+        "oom_start": {
+          "rss_sum_bytes": 121339904,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 440037376,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "id": "6dea7ab15e1ce3c58fac569c349d4b4f9a902477ea9d67434336dddd8abd7646",
+        "service": "postgres",
+        "oom_start": {
+          "rss_sum_bytes": 110202880,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 277643264,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "id": "9586d74b46a1aaa8b9c08641c480ff3a5396bcb5061a8a70637629b214913185",
+        "service": "redis",
+        "oom_start": {
+          "rss_sum_bytes": 10215424,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 10338304,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "id": "b2f118a22fcd8f251f3fa0079148984dd016e8d305a77bd1ff6104f636fffe0e",
+        "service": "worker",
+        "oom_start": {
+          "rss_sum_bytes": 267407360,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 319922176,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      }
+    ]
+  },
+  "observer_api": {
+    "transport": "Native Node HTTP client, new socket per request, Connection: close, absolute15s deadline, no retries; excluded from native browser API latency population",
+    "requests": 762,
+    "status_counts": {
+      "200": 680,
+      "201": 2,
+      "204": 20,
+      "404": 40,
+      "409": 20
+    },
+    "transport_failures": []
+  },
+  "final_global_inventory": {
+    "broker": {
+      "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+      "queued_messages": 0,
+      "unacked_messages": 0,
+      "unacked_index": 0
+    },
+    "connections": {
+      "total": 10,
+      "active": 1,
+      "lock_waiting": 0,
+      "idle_in_transaction": 0
+    },
+    "ungranted_locks": 0,
+    "database": {
+      "xact_commit": 10084,
+      "xact_rollback": 4462,
+      "deadlocks": 0,
+      "temp_bytes": 0,
+      "blks_read": 333,
+      "blks_hit": 93488
+    },
+    "work": {
+      "processing": 0,
+      "active_claims": 0,
+      "expired_claims": 0
+    },
+    "outbox": {
+      "count": 0,
+      "oldest_age_seconds": 0
+    },
+    "object_count": 0,
+    "object_bytes": 0,
+    "multipart_count": 0
+  },
+  "budget_sha256": "6f569bfdadd524c30d371bf3e1211024c55dec633355233f19f610a68e4d8e26",
+  "budgets": {
+    "schema_version": 1,
+    "benchmark": "clouddrive-ten-concurrent-uploads-v1",
+    "status": "declared_before_scored_measurement",
+    "units": {
+      "MB": 1000000,
+      "GB": 1000000000,
+      "MiB": 1048576,
+      "GiB": 1073741824
+    },
+    "release_requirement": {
+      "complete_runs": 3,
+      "files_per_run": 10,
+      "file_bytes": 500000000,
+      "source_bytes_per_run": 5000000000,
+      "file_outcome_denominator": 30,
+      "distinct_fixture_contents": 10,
+      "fresh_workspace_and_file_ids_per_run": true,
+      "fixture_reuse_across_runs_allowed": true
+    },
+    "resource_budgets": {
+      "containers": {
+        "api": {
+          "memory_hard_limit_bytes": 402653184,
+          "cpu_limit_cores": 1
+        },
+        "worker": {
+          "memory_hard_limit_bytes": 536870912,
+          "cpu_limit_cores": 2
+        },
+        "beat": {
+          "memory_hard_limit_bytes": 134217728,
+          "cpu_limit_cores": 0.25
+        },
+        "minio": {
+          "memory_hard_limit_bytes": 805306368,
+          "cpu_limit_cores": 2
+        },
+        "postgres": {
+          "memory_hard_limit_bytes": 402653184,
+          "cpu_limit_cores": 1
+        },
+        "redis": {
+          "memory_hard_limit_bytes": 134217728,
+          "cpu_limit_cores": 0.5
+        },
+        "gateway": {
+          "memory_hard_limit_bytes": 134217728,
+          "cpu_limit_cores": 1
+        }
+      },
+      "container_memory_limit_sum_bytes": 2550136832,
+      "container_cpu_limit_sum_cores": 7.75,
+      "worker_process_concurrency": 2,
+      "browser_sampled_rss_sum_ceiling_bytes": 1610612736,
+      "runner_sampled_rss_ceiling_bytes": 536870912,
+      "sample_interval_ms": 1000,
+      "sampling_error_budget": 0,
+      "memory_accounting": "Container cgroup hard limits are enforced by Docker. Chrome memory is the sum of process RSS and can double-count shared pages; Chrome/runner ceilings are sampled acceptance thresholds, not enforced process memory caps or instantaneous maxima. Record actual timestamps; skipped overlapping collections must be explicit.",
+      "oom_policy": "Fail on any own-service container OOM or increase in cgroup oom/oom_kill counters, including a killed worker pool child."
+    },
+    "disk_budget": {
+      "minimum_host_free_before_fixture_generation_bytes": 25000000000,
+      "recommended_host_free_bytes": 30000000000,
+      "minimum_storage_free_before_scored_run_bytes": 12000000000,
+      "cleanup_policy": "Keep only ten source fixtures; create a fresh ten-file workspace per run; download/hash files sequentially and delete the completed run before the next run."
+    },
+    "time_budget": {
+      "per_cohort_ready_deadline_seconds": 600,
+      "definition": "Starts when the ten-file cohort is selected; includes browser hashing, scheduling, uploads, completion, queueing, and verification. This is a bounded harness deadline, not a latency SLO.",
+      "whole_cohort_deadline_seconds": 900,
+      "whole_cohort_definition": "Bound for the complete cohort, including download integrity checks and scoped cleanup; shared fixture generation is recorded separately."
+    },
+    "success_invariants": [
+      "Ten actual storage PUT byte-transfer intervals have a nonempty common intersection, with positive per-file upload progress and no completed file counted as active.",
+      "All ten files reach READY; each worker and independent streamed download matches source bytes and SHA-256.",
+      "Thirty fresh file IDs across three full runs; no skipped or silently rerun failed cohorts/files.",
+      "One logical file, object, and result per source; no multipart leaks, forbidden cross-workspace downloads, OOMs, unhandled5xx responses, or budget breaches.",
+      "Resource/admission settings, hardware, provider/image identities, source/manifest digests and clocks are recorded; measured source and budgets remain unchanged during scored runs.",
+      "Every attempted run remains in history. An adjusted budget requires a new manifest revision and a fresh complete scored run, with prior failures retained."
+    ],
+    "metrics_required": [
+      "Browser hash time, active transfer windows, multipart completion, source selection to READY, download/hash durations, and total cohort time.",
+      "Aggregate actual-transfer throughput and end-to-end throughput with explicit denominators; per-file latency; API p50/p95 grouped by route template and measured request population.",
+      "Browser/runner RSS and per-service CPU/memory samples; actual sample timestamps; cgroup OOM counters.",
+      "Database pool/checkouts, lock/wait metrics, processing outbox backlog, active/expired claims, publications, delivery/verification attempts, and queue/backlog observations.",
+      "Network/storage errors, application retries, admission rejections, forbidden-access controls, and final scoped inventory."
+    ],
+    "non_claims": [
+      "No throughput or API latency SLO is imposed; report observed values.",
+      "Local MinIO results do not establish live AWS capacity, WAN behavior, or production availability.",
+      "Ten file upload intervals alone or a start barrier do not establish simultaneous byte transfers."
+    ],
+    "scheduler_and_admission": {
+      "browser_active_files": 10,
+      "browser_hash_workers": 2,
+      "browser_global_part_slots": 10,
+      "browser_parts_per_file": 3,
+      "browser_part_fairness": "Reserve one global slot for each admitted active owner before granting spare slots, so ten first PUTs cannot deadlock behind greedily admitted extra part loops.",
+      "workspace_active_upload_limit": 10,
+      "global_active_upload_limit": 100,
+      "active_upload_statuses": [
+        "UPLOADING",
+        "FINALIZING",
+        "PROCESSING"
+      ],
+      "api_max_inflight_requests": 64,
+      "database_pool_size": 8,
+      "database_max_overflow": 8,
+      "database_pool_timeout_seconds": 10
+    },
+    "network_profile": {
+      "browser_to_storage_protocol": "HTTP/2 over TLS through the dedicated test gateway; record negotiated protocol for actual PUTs.",
+      "gateway_to_minio_protocol": "Streamed HTTP reverse proxy; retain the original signed Host and query.",
+      "certificate_scope": "Locally generated test certificate; browser ignores trust errors only for this isolated test context; record certificate fingerprint, never private key.",
+      "default_profile_limitation": "A single-origin HTTP/1 browser may restrict simultaneously active connections; this measured ten-stream result must not be generalized to that default profile.",
+      "overlap_probe": {
+        "permitted": true,
+        "method": "Temporary declared upload shaping only until all ten first PUTs show positive partial progress; remove shaping before any first PUT completes.",
+        "upload_cap_bytes_per_second": 8388608,
+        "evidence_required": [
+          "Shaping start/end timestamps and configured cap.",
+          "Ten distinct files with positive partial upload progress and common active transfer interval.",
+          "HTTP/2 negotiation on actual storage requests."
+        ],
+        "throughput_policy": "All shaping-probe time remains inside reported transfer windows. Do not call the resulting throughput unshaped provider capacity."
+      }
+    }
+  },
+  "sources_unchanged_during_run": null,
+  "fixture_generation_and_independent_hash_s": 13.721676000000002,
+  "total_runner_s": 436.986046,
+  "cohorts": [
+    {
+      "run": 1,
+      "status": "passed",
+      "file_denominator": 10,
+      "recorded_files": 10,
+      "file_integrity_passed": 10,
+      "cohort_accepted_file_outcomes": 10,
+      "overlap_s": 0.5015,
+      "source_bytes": 5000000000,
+      "transfer_window_s": 96.54920000000001,
+      "transfer_MB_per_s": 51.787068147638706,
+      "selection_to_ready_s": 158.810316,
+      "selection_to_ready_MB_per_s": 31.484100818740263,
+      "full_cohort_s": 210.49311799999998,
+      "api_count": 1317,
+      "api_p50_ms": 39.775,
+      "api_p95_ms": 128.759,
+      "outbox_publications": 10,
+      "error": null,
+      "cleanup_error": null
+    },
+    {
+      "run": 2,
+      "status": "failed",
+      "file_denominator": 10,
+      "recorded_files": 10,
+      "file_integrity_passed": 10,
+      "cohort_accepted_file_outcomes": 0,
+      "overlap_s": 0.5005999999999767,
+      "source_bytes": 5000000000,
+      "transfer_window_s": 95.47189999999996,
+      "transfer_MB_per_s": 52.371430756065415,
+      "selection_to_ready_s": 157.60837800000002,
+      "selection_to_ready_MB_per_s": 31.72420186952244,
+      "full_cohort_s": 207.213043,
+      "api_count": 1315,
+      "api_p50_ms": 38.487,
+      "api_p95_ms": 121.654,
+      "outbox_publications": 10,
+      "error": "Runner RSS budget exceeded",
+      "cleanup_error": null
+    },
+    {
+      "run": 3,
+      "status": "failed",
+      "file_denominator": 10,
+      "recorded_files": 10,
+      "file_integrity_passed": 0,
+      "cohort_accepted_file_outcomes": 0,
+      "overlap_s": null,
+      "source_bytes": 5000000000,
+      "transfer_window_s": null,
+      "transfer_MB_per_s": null,
+      "selection_to_ready_s": null,
+      "selection_to_ready_MB_per_s": null,
+      "full_cohort_s": 1.9114289999999983,
+      "api_count": 3,
+      "api_p50_ms": 3.704,
+      "api_p95_ms": 5.422,
+      "outbox_publications": null,
+      "error": "Expected values to be strictly equal:\n\n3 !== 0\n",
+      "cleanup_error": null
+    }
+  ],
+  "observed_peaks": {
+    "browser_rss_sum_bytes": 768688128,
+    "browser_cpu_percent": 234.1084257989485,
+    "node_rss_bytes": 564269056,
+    "node_cpu_percent": 100.32961719331554,
+    "api_inflight": 5,
+    "api_pool_size": 8,
+    "api_pool_checked_out": 4,
+    "api_pool_overflow": 0,
+    "api_pool_capacity": 16,
+    "pg_connections": 10,
+    "pg_active_connections": 4,
+    "pg_lock_waiting": 0,
+    "pg_idle_in_transaction": 3,
+    "pg_ungranted_locks": 0,
+    "pg_deadlocks": 0,
+    "outbox_count": 10,
+    "outbox_oldest_age_s": 3.129764,
+    "redis_queued": 8,
+    "redis_unacked": 2,
+    "redis_unacked_index": 2,
+    "processing": 10,
+    "active_claims": 2,
+    "expired_claims": 0,
+    "scheduler_active_files": 10,
+    "scheduler_hash_workers": 2,
+    "scheduler_global_parts": 10
+  },
+  "service_observed_peaks": {
+    "api": {
+      "service_cpu_percent": 47.27,
+      "service_memory_usage_bytes": 105381888,
+      "service_rss_sum_bytes": 141447168,
+      "service_oom": 0,
+      "service_oom_kill": 0
+    },
+    "beat": {
+      "service_cpu_percent": 4.56,
+      "service_memory_usage_bytes": 74815898,
+      "service_rss_sum_bytes": 92606464,
+      "service_oom": 0,
+      "service_oom_kill": 0
+    },
+    "gateway": {
+      "service_cpu_percent": 93.86,
+      "service_memory_usage_bytes": 53445919,
+      "service_rss_sum_bytes": 63393792,
+      "service_oom": 0,
+      "service_oom_kill": 0
+    },
+    "minio": {
+      "service_cpu_percent": 54.79,
+      "service_memory_usage_bytes": 458017997,
+      "service_rss_sum_bytes": 476180480,
+      "service_oom": 0,
+      "service_oom_kill": 0
+    },
+    "postgres": {
+      "service_cpu_percent": 12.19,
+      "service_memory_usage_bytes": 56109302,
+      "service_rss_sum_bytes": 277647360,
+      "service_oom": 0,
+      "service_oom_kill": 0
+    },
+    "redis": {
+      "service_cpu_percent": 7.37,
+      "service_memory_usage_bytes": 4714398,
+      "service_rss_sum_bytes": 21172224,
+      "service_oom": 0,
+      "service_oom_kill": 0
+    },
+    "worker": {
+      "service_cpu_percent": 46.92,
+      "service_memory_usage_bytes": 203738317,
+      "service_rss_sum_bytes": 319987712,
+      "service_oom": 0,
+      "service_oom_kill": 0
+    }
+  },
+  "sampling": {
+    "sample_count": 160,
+    "nominal_interval_ms": 1000,
+    "sample_errors": 3,
+    "skipped_overlapping_collections": 259,
+    "definition": "Actual timestamps are authoritative. Chrome RSS sums may double-count shared pages. Container memory usage is Docker accounting; process RSS sums may also double-count shared pages. Docker CPU percentages use 100% per CPU core. Samples are observations, not instantaneous maxima.",
+    "scope": "PG connection counts include the read-only observer. API pool metrics describe the API process only. CPU/RSS maxima are sampled; service RSS sums may double-count shared pages. OOM fields are counters, not inferred process outcomes."
+  },
+  "api": {
+    "status_counts": {
+      "200": 2592,
+      "201": 23,
+      "202": 20
+    },
+    "admission_429_count": 0,
+    "unhandled_5xx_count": 0,
+    "latency_by_cohort": [
+      {
+        "run": 1,
+        "all_routes": {
+          "count": 1317,
+          "p50_ms": 39.775,
+          "p95_ms": 128.759,
+          "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+        },
+        "by_route": {
+          "/api/workspaces": {
+            "count": 1,
+            "p50_ms": 42.614,
+            "p95_ms": 42.614,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/workspace": {
+            "count": 1,
+            "p50_ms": 4.206,
+            "p95_ms": 4.206,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/files": {
+            "count": 85,
+            "p50_ms": 22.001,
+            "p95_ms": 79.837,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/uploads": {
+            "count": 10,
+            "p50_ms": 26.847,
+            "p95_ms": 414.111,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/uploads/:id/parts/:number/sign": {
+            "count": 600,
+            "p50_ms": 26.655,
+            "p95_ms": 158.814,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/uploads/:id/parts/:number": {
+            "count": 600,
+            "p50_ms": 53.467,
+            "p95_ms": 114.342,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/uploads/:id/complete": {
+            "count": 10,
+            "p50_ms": 75.993,
+            "p95_ms": 322.363,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/files/:id/download": {
+            "count": 10,
+            "p50_ms": 5.772,
+            "p95_ms": 8.545,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          }
+        }
+      },
+      {
+        "run": 2,
+        "all_routes": {
+          "count": 1315,
+          "p50_ms": 38.487,
+          "p95_ms": 121.654,
+          "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+        },
+        "by_route": {
+          "/api/workspaces": {
+            "count": 1,
+            "p50_ms": 4.757,
+            "p95_ms": 4.757,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/workspace": {
+            "count": 1,
+            "p50_ms": 7.005,
+            "p95_ms": 7.005,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/files": {
+            "count": 83,
+            "p50_ms": 18.674,
+            "p95_ms": 128.502,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/uploads": {
+            "count": 10,
+            "p50_ms": 26.74,
+            "p95_ms": 253.21,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/uploads/:id/parts/:number/sign": {
+            "count": 600,
+            "p50_ms": 25.445,
+            "p95_ms": 121.534,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/uploads/:id/parts/:number": {
+            "count": 600,
+            "p50_ms": 53.505,
+            "p95_ms": 119.083,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/uploads/:id/complete": {
+            "count": 10,
+            "p50_ms": 74.793,
+            "p95_ms": 141.53,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/files/:id/download": {
+            "count": 10,
+            "p50_ms": 5.936,
+            "p95_ms": 7.227,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          }
+        }
+      },
+      {
+        "run": 3,
+        "all_routes": {
+          "count": 3,
+          "p50_ms": 3.704,
+          "p95_ms": 5.422,
+          "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+        },
+        "by_route": {
+          "/api/workspaces": {
+            "count": 1,
+            "p50_ms": 3.558,
+            "p95_ms": 3.558,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/workspace": {
+            "count": 1,
+            "p50_ms": 3.704,
+            "p95_ms": 3.704,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          },
+          "/api/files": {
+            "count": 1,
+            "p50_ms": 5.422,
+            "p95_ms": 5.422,
+            "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+          }
+        }
+      }
+    ],
+    "transport_failure_count": 0,
+    "population": "Native browser application API requests, excluding observer probes; exact latency populations are retained per cohort. Missing optional failure lists remain unknown."
+  },
+  "storage": {
+    "status_counts": {
+      "200": 1200
+    },
+    "protocol_counts": {
+      "h2": 1200
+    },
+    "part_put_count": null,
+    "retried_parts": null
+  },
+  "workers": {
+    "task_attempts": null,
+    "reported_task_retry_ordinals_sum": null,
+    "outbox_publications": null,
+    "scope": "Task attempts are correlated by exact file ID. Celery retries are recorded attempt retry ordinals, not independently counted redeliveries. Outbox publications cover the dedicated worker's cohort time window."
+  },
+  "final_scoped_inventory_by_cohort": [
+    {
+      "run": 1,
+      "before_cleanup": {
+        "broker": {
+          "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+          "queued_messages": 0,
+          "unacked_messages": 0,
+          "unacked_index": 0
+        },
+        "connections": {
+          "total": 9,
+          "active": 1,
+          "lock_waiting": 0,
+          "idle_in_transaction": 0
+        },
+        "ungranted_locks": 0,
+        "database": {
+          "xact_commit": 4823,
+          "xact_rollback": 2111,
+          "deadlocks": 0,
+          "temp_bytes": 0,
+          "blks_read": 323,
+          "blks_hit": 41285
+        },
+        "work": {
+          "processing": 0,
+          "active_claims": 0,
+          "expired_claims": 0
+        },
+        "outbox": {
+          "count": 0,
+          "oldest_age_seconds": 0
+        },
+        "files": [
+          {
+            "id": "e68e6626-058a-4899-9523-5a73bcb41c01",
+            "name": "load-01.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "13e48d68af7585629c7dc7d24b8fe1ec5bbdedece3779173a2869fd925280fe2",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "88123eb6-b13f-48e7-a08b-42f9252a541b",
+            "name": "load-02.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "ceba3a2295abecbb7af9557b94a190c4a79c1e67b0e85824adcf4dd530e9cb95",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "381a1c62-59f1-48ad-9bfa-a9e9a60e621b",
+            "name": "load-03.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "10e6ed27800c7a3a9eaf5f6ce694f5e7c7256f0cc5c0c2a8e97d1edbea1fe5c2",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "1a4a20a9-ba4f-42b8-9324-2892e85a66e4",
+            "name": "load-04.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "5aa2042b2627862d9cf7ea2d2c53a03f604dd34aba831b1179f05b03d25d5ef1",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "cf83520b-dead-4c4f-b80f-a5bfcff5ba8c",
+            "name": "load-05.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "8b415f59518aa96f1f0ec2fe067724c891cde3543596226784cefc8f5053676e",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "63a2e9d3-7718-4ac0-b75a-647cd30e642b",
+            "name": "load-06.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "fc47fa0d041f1d3b47ebf681fc201b8a1521c44efbacc92915f9abee7400f3c3",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "565ddac6-d3f6-4521-b0ed-78ec9eca1fbb",
+            "name": "load-07.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "6fde7c7a43e11685af8452020416cb9c8bfe10e9f013eb896fcf3bf6bfa60649",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "91137d99-cd6e-4111-bbcd-f8d1b3583c3d",
+            "name": "load-08.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "94b466e7e11076a56f17e6bfe8a7493899a6ffce21349449513bb8d74af5457f",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "cc1b1840-f2eb-4556-8c26-44133d59e4df",
+            "name": "load-09.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "c87f144b74d783f505f72ff1c05deab4e65956af0efac3ea0566884ee3f2efb1",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "190ee62b-b776-430b-a298-dbef499a8236",
+            "name": "load-10.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "33f69f4ab5272d99ab60143842c41bdafffaa22d28b73c4a9fc5320918581b4e",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          }
+        ],
+        "object_count": 10,
+        "object_bytes": 5000000000,
+        "multipart_count": 0
+      },
+      "after_cleanup": {
+        "broker": {
+          "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+          "queued_messages": 0,
+          "unacked_messages": 0,
+          "unacked_index": 0
+        },
+        "connections": {
+          "total": 9,
+          "active": 1,
+          "lock_waiting": 0,
+          "idle_in_transaction": 0
+        },
+        "ungranted_locks": 0,
+        "database": {
+          "xact_commit": 5041,
+          "xact_rollback": 2254,
+          "deadlocks": 0,
+          "temp_bytes": 0,
+          "blks_read": 331,
+          "blks_hit": 44468
+        },
+        "work": {
+          "processing": 0,
+          "active_claims": 0,
+          "expired_claims": 0
+        },
+        "outbox": {
+          "count": 0,
+          "oldest_age_seconds": 0
+        },
+        "files": [
+          {
+            "id": "e68e6626-058a-4899-9523-5a73bcb41c01",
+            "name": "load-01.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "13e48d68af7585629c7dc7d24b8fe1ec5bbdedece3779173a2869fd925280fe2",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "88123eb6-b13f-48e7-a08b-42f9252a541b",
+            "name": "load-02.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "ceba3a2295abecbb7af9557b94a190c4a79c1e67b0e85824adcf4dd530e9cb95",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "381a1c62-59f1-48ad-9bfa-a9e9a60e621b",
+            "name": "load-03.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "10e6ed27800c7a3a9eaf5f6ce694f5e7c7256f0cc5c0c2a8e97d1edbea1fe5c2",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "1a4a20a9-ba4f-42b8-9324-2892e85a66e4",
+            "name": "load-04.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "5aa2042b2627862d9cf7ea2d2c53a03f604dd34aba831b1179f05b03d25d5ef1",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "cf83520b-dead-4c4f-b80f-a5bfcff5ba8c",
+            "name": "load-05.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "8b415f59518aa96f1f0ec2fe067724c891cde3543596226784cefc8f5053676e",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "63a2e9d3-7718-4ac0-b75a-647cd30e642b",
+            "name": "load-06.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "fc47fa0d041f1d3b47ebf681fc201b8a1521c44efbacc92915f9abee7400f3c3",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "565ddac6-d3f6-4521-b0ed-78ec9eca1fbb",
+            "name": "load-07.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "6fde7c7a43e11685af8452020416cb9c8bfe10e9f013eb896fcf3bf6bfa60649",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "91137d99-cd6e-4111-bbcd-f8d1b3583c3d",
+            "name": "load-08.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "94b466e7e11076a56f17e6bfe8a7493899a6ffce21349449513bb8d74af5457f",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "cc1b1840-f2eb-4556-8c26-44133d59e4df",
+            "name": "load-09.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "c87f144b74d783f505f72ff1c05deab4e65956af0efac3ea0566884ee3f2efb1",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "190ee62b-b776-430b-a298-dbef499a8236",
+            "name": "load-10.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "33f69f4ab5272d99ab60143842c41bdafffaa22d28b73c4a9fc5320918581b4e",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          }
+        ],
+        "object_count": 0,
+        "object_bytes": 0,
+        "multipart_count": 0
+      },
+      "cleanup": [
+        {
+          "file_id": "190ee62b-b776-430b-a298-dbef499a8236",
+          "status": 204
+        },
+        {
+          "file_id": "cc1b1840-f2eb-4556-8c26-44133d59e4df",
+          "status": 204
+        },
+        {
+          "file_id": "91137d99-cd6e-4111-bbcd-f8d1b3583c3d",
+          "status": 204
+        },
+        {
+          "file_id": "565ddac6-d3f6-4521-b0ed-78ec9eca1fbb",
+          "status": 204
+        },
+        {
+          "file_id": "63a2e9d3-7718-4ac0-b75a-647cd30e642b",
+          "status": 204
+        },
+        {
+          "file_id": "cf83520b-dead-4c4f-b80f-a5bfcff5ba8c",
+          "status": 204
+        },
+        {
+          "file_id": "1a4a20a9-ba4f-42b8-9324-2892e85a66e4",
+          "status": 204
+        },
+        {
+          "file_id": "381a1c62-59f1-48ad-9bfa-a9e9a60e621b",
+          "status": 204
+        },
+        {
+          "file_id": "e68e6626-058a-4899-9523-5a73bcb41c01",
+          "status": 204
+        },
+        {
+          "file_id": "88123eb6-b13f-48e7-a08b-42f9252a541b",
+          "status": 204
+        }
+      ],
+      "cleanup_error": null
+    },
+    {
+      "run": 2,
+      "before_cleanup": {
+        "broker": {
+          "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+          "queued_messages": 0,
+          "unacked_messages": 0,
+          "unacked_index": 0
+        },
+        "connections": {
+          "total": 10,
+          "active": 1,
+          "lock_waiting": 0,
+          "idle_in_transaction": 0
+        },
+        "ungranted_locks": 0,
+        "database": {
+          "xact_commit": 9843,
+          "xact_rollback": 4317,
+          "deadlocks": 0,
+          "temp_bytes": 0,
+          "blks_read": 331,
+          "blks_hit": 89973
+        },
+        "work": {
+          "processing": 0,
+          "active_claims": 0,
+          "expired_claims": 0
+        },
+        "outbox": {
+          "count": 0,
+          "oldest_age_seconds": 0
+        },
+        "files": [
+          {
+            "id": "764150b9-59ea-4c46-86bd-7b548ee28082",
+            "name": "load-01.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "13e48d68af7585629c7dc7d24b8fe1ec5bbdedece3779173a2869fd925280fe2",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "41fa1861-92c5-477a-9a3e-88dc5888f7d6",
+            "name": "load-02.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "ceba3a2295abecbb7af9557b94a190c4a79c1e67b0e85824adcf4dd530e9cb95",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "3a78e301-b573-4f12-ad94-0357594d1dbb",
+            "name": "load-03.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "10e6ed27800c7a3a9eaf5f6ce694f5e7c7256f0cc5c0c2a8e97d1edbea1fe5c2",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "50ad4c5c-5a0d-41aa-9c68-2af3e2b4c35f",
+            "name": "load-04.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "5aa2042b2627862d9cf7ea2d2c53a03f604dd34aba831b1179f05b03d25d5ef1",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "903a9422-def9-40e8-b2d9-832fc1d02f46",
+            "name": "load-05.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "8b415f59518aa96f1f0ec2fe067724c891cde3543596226784cefc8f5053676e",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "9f1b41aa-1098-42e6-8823-18fa80ec56c6",
+            "name": "load-06.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "fc47fa0d041f1d3b47ebf681fc201b8a1521c44efbacc92915f9abee7400f3c3",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "8ecb597b-cbd0-4680-b08b-b9a7de5636f4",
+            "name": "load-07.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "6fde7c7a43e11685af8452020416cb9c8bfe10e9f013eb896fcf3bf6bfa60649",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "d9f0f280-c471-45a9-bdde-cdfb67ff6583",
+            "name": "load-08.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "94b466e7e11076a56f17e6bfe8a7493899a6ffce21349449513bb8d74af5457f",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "e84b3dd8-2af8-4e9e-a342-c5cf145c5a10",
+            "name": "load-09.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "c87f144b74d783f505f72ff1c05deab4e65956af0efac3ea0566884ee3f2efb1",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "3068e7aa-3cb0-4b15-a239-860c1014eae7",
+            "name": "load-10.bin",
+            "size": 500000000,
+            "status": "READY",
+            "sha256": "33f69f4ab5272d99ab60143842c41bdafffaa22d28b73c4a9fc5320918581b4e",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          }
+        ],
+        "object_count": 10,
+        "object_bytes": 5000000000,
+        "multipart_count": 0
+      },
+      "after_cleanup": {
+        "broker": {
+          "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+          "queued_messages": 0,
+          "unacked_messages": 0,
+          "unacked_index": 0
+        },
+        "connections": {
+          "total": 10,
+          "active": 1,
+          "lock_waiting": 0,
+          "idle_in_transaction": 0
+        },
+        "ungranted_locks": 0,
+        "database": {
+          "xact_commit": 10058,
+          "xact_rollback": 4458,
+          "deadlocks": 0,
+          "temp_bytes": 0,
+          "blks_read": 333,
+          "blks_hit": 93209
+        },
+        "work": {
+          "processing": 0,
+          "active_claims": 0,
+          "expired_claims": 0
+        },
+        "outbox": {
+          "count": 0,
+          "oldest_age_seconds": 0
+        },
+        "files": [
+          {
+            "id": "764150b9-59ea-4c46-86bd-7b548ee28082",
+            "name": "load-01.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "13e48d68af7585629c7dc7d24b8fe1ec5bbdedece3779173a2869fd925280fe2",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "41fa1861-92c5-477a-9a3e-88dc5888f7d6",
+            "name": "load-02.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "ceba3a2295abecbb7af9557b94a190c4a79c1e67b0e85824adcf4dd530e9cb95",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "3a78e301-b573-4f12-ad94-0357594d1dbb",
+            "name": "load-03.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "10e6ed27800c7a3a9eaf5f6ce694f5e7c7256f0cc5c0c2a8e97d1edbea1fe5c2",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "50ad4c5c-5a0d-41aa-9c68-2af3e2b4c35f",
+            "name": "load-04.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "5aa2042b2627862d9cf7ea2d2c53a03f604dd34aba831b1179f05b03d25d5ef1",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "903a9422-def9-40e8-b2d9-832fc1d02f46",
+            "name": "load-05.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "8b415f59518aa96f1f0ec2fe067724c891cde3543596226784cefc8f5053676e",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "9f1b41aa-1098-42e6-8823-18fa80ec56c6",
+            "name": "load-06.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "fc47fa0d041f1d3b47ebf681fc201b8a1521c44efbacc92915f9abee7400f3c3",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "8ecb597b-cbd0-4680-b08b-b9a7de5636f4",
+            "name": "load-07.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "6fde7c7a43e11685af8452020416cb9c8bfe10e9f013eb896fcf3bf6bfa60649",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "d9f0f280-c471-45a9-bdde-cdfb67ff6583",
+            "name": "load-08.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "94b466e7e11076a56f17e6bfe8a7493899a6ffce21349449513bb8d74af5457f",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "e84b3dd8-2af8-4e9e-a342-c5cf145c5a10",
+            "name": "load-09.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "c87f144b74d783f505f72ff1c05deab4e65956af0efac3ea0566884ee3f2efb1",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "3068e7aa-3cb0-4b15-a239-860c1014eae7",
+            "name": "load-10.bin",
+            "size": 500000000,
+            "status": "DELETED",
+            "sha256": "33f69f4ab5272d99ab60143842c41bdafffaa22d28b73c4a9fc5320918581b4e",
+            "bytes_verified": 500000000,
+            "result_count": 1,
+            "claim_active": false
+          }
+        ],
+        "object_count": 0,
+        "object_bytes": 0,
+        "multipart_count": 0
+      },
+      "cleanup": [
+        {
+          "file_id": "3068e7aa-3cb0-4b15-a239-860c1014eae7",
+          "status": 204
+        },
+        {
+          "file_id": "e84b3dd8-2af8-4e9e-a342-c5cf145c5a10",
+          "status": 204
+        },
+        {
+          "file_id": "d9f0f280-c471-45a9-bdde-cdfb67ff6583",
+          "status": 204
+        },
+        {
+          "file_id": "8ecb597b-cbd0-4680-b08b-b9a7de5636f4",
+          "status": 204
+        },
+        {
+          "file_id": "9f1b41aa-1098-42e6-8823-18fa80ec56c6",
+          "status": 204
+        },
+        {
+          "file_id": "903a9422-def9-40e8-b2d9-832fc1d02f46",
+          "status": 204
+        },
+        {
+          "file_id": "3a78e301-b573-4f12-ad94-0357594d1dbb",
+          "status": 204
+        },
+        {
+          "file_id": "50ad4c5c-5a0d-41aa-9c68-2af3e2b4c35f",
+          "status": 204
+        },
+        {
+          "file_id": "764150b9-59ea-4c46-86bd-7b548ee28082",
+          "status": 204
+        },
+        {
+          "file_id": "41fa1861-92c5-477a-9a3e-88dc5888f7d6",
+          "status": 204
+        }
+      ],
+      "cleanup_error": null
+    },
+    {
+      "run": 3,
+      "before_cleanup": null,
+      "after_cleanup": {
+        "broker": {
+          "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+          "queued_messages": 0,
+          "unacked_messages": 0,
+          "unacked_index": 0
+        },
+        "connections": {
+          "total": 10,
+          "active": 1,
+          "lock_waiting": 0,
+          "idle_in_transaction": 0
+        },
+        "ungranted_locks": 0,
+        "database": {
+          "xact_commit": 10084,
+          "xact_rollback": 4462,
+          "deadlocks": 0,
+          "temp_bytes": 0,
+          "blks_read": 333,
+          "blks_hit": 93488
+        },
+        "work": {
+          "processing": 0,
+          "active_claims": 0,
+          "expired_claims": 0
+        },
+        "outbox": {
+          "count": 0,
+          "oldest_age_seconds": 0
+        },
+        "files": [],
+        "object_count": 0,
+        "object_bytes": 0,
+        "multipart_count": 0
+      },
+      "cleanup": [],
+      "cleanup_error": null
+    }
+  ]
+}

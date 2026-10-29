@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { chromium } from "@playwright/test";
 import { createCipheriv, createHash, randomUUID } from "node:crypto";
-import { createReadStream, createWriteStream } from "node:fs";
+import { createWriteStream } from "node:fs";
 import {
   mkdir,
   mkdtemp,
@@ -20,7 +20,9 @@ import { createInterface } from "node:readline";
 import { connect } from "node:tls";
 import { parseArgs, promisify } from "node:util";
 import os from "node:os";
+import { getHeapStatistics } from "node:v8";
 import { observeApi } from "./load-observer.mjs";
+import { hashFile } from "./load-file-hash.mjs";
 
 const run = promisify(execFile);
 const { values } = parseArgs({
@@ -58,7 +60,7 @@ await mkdir(dirname(output), { recursive: true });
 const fd = await open(output, "wx");
 const report = {
   schema_version: 1,
-  method_revision: 2,
+  method_revision: 3,
   status: "running",
   run_id: randomUUID(),
   started_at: new Date().toISOString(),
@@ -71,6 +73,7 @@ const report = {
   file_bytes: size,
   files_per_run: count,
   requested_runs: runs,
+  expected_file_outcomes: runs * count,
   target_size: size === 500_000_000,
   budget_sha256: sha(budgetsBytes),
   budgets,
@@ -82,6 +85,9 @@ const report = {
     host_logical_cpus: os.cpus().length,
     host_memory_bytes: os.totalmem(),
     node: process.version,
+    node_exec_argv: [...process.execArgv],
+    node_heap_size_limit_bytes: getHeapStatistics().heap_size_limit,
+    node_memory_at_startup: process.memoryUsage(),
     compose_project: project,
     execution: {
       kind: process.env.GITHUB_ACTIONS === "true" ? "github_actions" : "local",
@@ -163,17 +169,7 @@ const sampleTasks = new Set(),
 let lastBrowserCPU,
   lastNodeCPU = process.cpuUsage(),
   lastNodeWall = performance.now();
-async function hashPath(path) {
-  let bytes = 0;
-  const digest = createHash("sha256");
-  for await (const chunk of createReadStream(path, {
-    highWaterMark: 1024 * 1024,
-  })) {
-    bytes += chunk.length;
-    digest.update(chunk);
-  }
-  return { bytes, sha256: digest.digest("hex") };
-}
+const hashPath = hashFile;
 function observe(command = {}) {
   const task = observerQueue.then(
     () =>
@@ -352,6 +348,7 @@ async function sample() {
         services.map((s) => s.service).sort(),
         "Incomplete resource sample",
       );
+      const nodeMemory = process.memoryUsage();
       const record = {
         t_s: clock(),
         collection_started_at_s: collectionStarted,
@@ -359,7 +356,11 @@ async function sample() {
         phase,
         browser_rss_sum_bytes: rss,
         browser_cpu_percent: chromeCPU,
-        node_rss_bytes: process.memoryUsage().rss,
+        node_rss_bytes: nodeMemory.rss,
+        node_heap_used_bytes: nodeMemory.heapUsed,
+        node_heap_total_bytes: nodeMemory.heapTotal,
+        node_external_bytes: nodeMemory.external,
+        node_array_buffers_bytes: nodeMemory.arrayBuffers,
         node_cpu_percent: nodeCPU,
         services: stats,
         ops: ops.data,
@@ -549,6 +550,10 @@ function instrument() {
   };
 }
 try {
+  assert.ok(
+    report.environment.node_heap_size_limit_bytes <= 256 * 1024 * 1024,
+    "Runner V8 heap limit must be <=256MiB; use node --max-old-space-size=192 --max-semi-space-size=8",
+  );
   const ids = (await compose("ps", "--quiet"))
     .trim()
     .split("\n")
@@ -713,6 +718,7 @@ try {
             "benchmark-concurrent.mjs",
             "load-state.py",
             "load-observer.mjs",
+            "load-file-hash.mjs",
             "summarize-load.py",
           ].includes(n))
       )
@@ -827,6 +833,9 @@ try {
   fixtureDir = await mkdtemp(resolve("test-results/load-fixture-"));
   log("generate-fixtures");
   const generatedAt = clock();
+  // Reuse one immutable chunk across all fixture streams. AES-CTR output is
+  // independent of chunk boundaries; the source bytes and seeds are unchanged.
+  const fixtureZero = Buffer.alloc(1024 * 1024);
   for (let i = 0; i < count; i++) {
     const name = `load-${String(i + 1).padStart(2, "0")}.bin`,
       seed = `CloudDrive Sprint4 fixture v1/${i + 1}`,
@@ -835,11 +844,10 @@ try {
         "aes-256-ctr",
         createHash("sha256").update(seed).digest(),
         Buffer.alloc(16),
-      ),
-      zero = Buffer.alloc(4 * 1024 * 1024);
+      );
     function* blocks() {
-      for (let o = 0; o < size; o += zero.length)
-        yield zero.subarray(0, Math.min(zero.length, size - o));
+      for (let o = 0; o < size; o += fixtureZero.length)
+        yield fixtureZero.subarray(0, Math.min(fixtureZero.length, size - o));
     }
     await pipeline(
       Readable.from(blocks()),
@@ -1577,6 +1585,47 @@ try {
   observer?.stdin.end();
   observerLine?.close();
   if (fixtureDir) await rm(fixtureDir, { recursive: true, force: true });
+  // A global/provenance/resource failure must still retain the requested
+  // denominator and the work actually observed, without accepting failed runs.
+  report.expected_file_outcomes = runs * count;
+  report.attempted_file_ids = [
+    ...new Set(
+      report.runs.flatMap((r) => r.files.map((f) => f.id)).filter(Boolean),
+    ),
+  ].sort();
+  report.attempted_file_outcomes = report.attempted_file_ids.length;
+  report.file_integrity_passed = report.runs.reduce(
+    (total, r) =>
+      total + r.files.filter((f) => f.integrity_status === "passed").length,
+    0,
+  );
+  report.completed_cohorts = report.runs.filter((r) =>
+    ["passed", "failed"].includes(r.status),
+  ).length;
+  report.accepted_cohorts = report.runs.filter(
+    (r) =>
+      r.status === "passed" &&
+      r.files.length === count &&
+      r.files.every((f) => f.integrity_status === "passed"),
+  ).length;
+  report.file_outcomes_passed = report.accepted_cohorts * count;
+  report.outcome_definitions = {
+    expected_file_outcomes:
+      "Requested cohorts multiplied by files per cohort, including unstarted work",
+    attempted_file_outcomes:
+      "Distinct file IDs observed in initiation responses",
+    file_integrity_passed:
+      "Files with matching source/worker/download bytes and SHA-256, regardless of cohort acceptance",
+    file_outcomes_passed:
+      "Files in complete accepted cohorts; failed cohorts contribute zero",
+  };
+  report.release_gate_passed =
+    report.status === "passed" &&
+    report.runs.length === runs &&
+    report.accepted_cohorts === runs &&
+    size === 500_000_000 &&
+    runs === 3 &&
+    report.file_outcomes_passed === 30;
   report.finished_at = new Date().toISOString();
   report.total_runner_s = clock();
   await save();

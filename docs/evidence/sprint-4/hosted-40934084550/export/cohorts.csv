@@ -1,0 +1,7 @@
+run,status,file_denominator,recorded_files,file_integrity_passed,cohort_accepted_file_outcomes,overlap_s,source_bytes,transfer_window_s,transfer_MB_per_s,selection_to_ready_s,selection_to_ready_MB_per_s,full_cohort_s,api_count,api_p50_ms,api_p95_ms,outbox_publications,error,cleanup_error
+1,passed,10,10,10,10,0.5015,5000000000,96.54920000000001,51.787068147638706,158.810316,31.484100818740263,210.49311799999998,1317,39.775,128.759,10,,
+2,failed,10,10,10,0,0.5005999999999767,5000000000,95.47189999999996,52.371430756065415,157.60837800000002,31.72420186952244,207.213043,1315,38.487,121.654,10,Runner RSS budget exceeded,
+3,failed,10,10,0,0,,5000000000,,,,,1.9114289999999983,3,3.704,5.422,,"Expected values to be strictly equal:
+
+3 !== 0
+",

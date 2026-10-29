@@ -35,7 +35,7 @@ jobs:
       - run: pip install -r requirements-dev.txt
       - run: npm ci
       - run: npm run build
-      - run: node --test scripts/load-observer.test.mjs
+      - run: node --test scripts/load-observer.test.mjs scripts/load-file-hash.test.mjs
       - run: npx playwright install --with-deps chromium
       - name: Build only the isolated disk-backed HTTP2 stack
         run: |

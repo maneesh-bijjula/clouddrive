@@ -174,6 +174,10 @@ def export(raw_path, output):
                 "browser_cpu_percent",
                 "node_rss_bytes",
                 "node_cpu_percent",
+                "node_heap_used_bytes",
+                "node_heap_total_bytes",
+                "node_external_bytes",
+                "node_array_buffers_bytes",
             ):
                 row[key] = sample.get(key)
             for column, path in {
@@ -266,6 +270,8 @@ def export(raw_path, output):
             "file_bytes": raw.get("file_bytes"),
             "expected_file_outcomes": expected,
             "recorded_file_outcomes": len(file_rows),
+            "attempted_file_outcomes": raw.get("attempted_file_outcomes"),
+            "accepted_cohorts": raw.get("accepted_cohorts"),
             "accepted_file_outcomes": raw.get("file_outcomes_passed"),
             "independently_verified_file_outcomes": raw.get("file_integrity_passed"),
             "passed_cohorts": sum(r.get("status") == "passed" for r in runs),

@@ -61,7 +61,11 @@ Implementation `027f19b` passed both [ordinary CI](https://github.com/maneesh-bi
 
 Harness method revision 2 uses fresh control-plane connections with an absolute deadline, no automatic retries, and credential-free error/cause codes. The original connection failure's root cause was not captured and remains unproven. Failed-cohort shutdown now closes the browser before deleting test uploads, preventing cleanup from generating misleading storage 404s. The start-barrier interceptor is removed after the ten initial PUTs are released; subsequent parts use ordinary browser transfers. Positive-partial-progress and ten-way overlap checks remain mandatory, and all shaping time remains in throughput windows.
 
-The target-size three-run denominator, scored throughput/latencies, resource peaks, and final delivery-commit GitHub CI remain pending. Existing Sprint 2 large-file and Sprint 3 recovery evidence remain separate historical measurements.
+The first hosted full attempt on `84fc75f` also failed its release gate: cohort 1 passed all checks, cohort 2 independently verified its ten downloads but sampled **538.13 MiB Node RSS**, exceeding the unchanged **512 MiB** runner ceiling, and cohort 3 was rejected before uploads after the global resource failures. Twenty verified downloads in that failed batch do not satisfy the 30/30 three-cohort requirement. There were no observer transport errors. [Raw failed hosted report](evidence/sprint-4/hosted-40934084550/results.json), [CSV/JSON exports](evidence/sprint-4/hosted-40934084550/export/summary.json), and [workflow](https://github.com/maneesh-bijjula/clouddrive/actions/runs/40934084550) are retained.
+
+Method revision 3 bounds V8 old-space to 192 MiB and semi-space to 8 MiB through `npm run bench:concurrent`, and checks that the effective heap limit is at most 256 MiB before starting. It hashes each source/download through one reusable 1 MiB read buffer and generates AES-CTR fixtures with a shared 1 MiB zero chunk. Fixture seeds/contents and the numerical budget manifest remain unchanged. Heap-used/heap-total/external/ArrayBuffer samples accompany RSS, and failed reports retain requested, attempted, integrity-verified and accepted counts separately. Heap settings do not guarantee the RSS ceiling; a new complete three-cohort run must still pass it.
+
+The required three-run target, scored throughput/latencies, resource peaks, and final delivery-commit GitHub CI remain pending. Existing Sprint 2 large-file and Sprint 3 recovery evidence remain separate historical measurements.
 
 ## Regression gates
 
@@ -109,6 +113,8 @@ Ordinary CI adds one small ten-file smoke after the full host and packaged regre
 Every API response carries a validated or generated `X-Request-ID`. Structured logs connect request/route/status/duration to durable file IDs; worker events include file/task IDs, task outcomes, actual verification commits and processing duration. Outbox-publication totals are scoped to the isolated stack and cohort time window; unlike task/verification events they contain no file IDs. These logs exclude credentials, signed queries, raw exception text and filenames. The packaged Uvicorn command disables its separate raw access log.
 
 Admission counts `UPLOADING`, `FINALIZING` and `PROCESSING` across the workspace and globally under a PostgreSQL transaction advisory lock. Existing request-ID replays remain available at capacity. Capacity responses are 429 with `Retry-After`; database-pool exhaustion is retryable 503. Browser initiation/completion capacity retries stop after eight attempts and retain a selectable paused upload with its original request ID. Part retries retain the existing four-attempt bound. Slots are released before backoff; pausing or switching workspace cancels queued acquisition and active work. The target benchmark is deliberately stricter than these recovery semantics: it requires exactly the expected number of successful PUTs and reports zero PUT retries to pass.
+
+Always use the npm benchmark entry point so its bounded Node heap settings apply. A direct invocation without those settings fails its preflight.
 
 Machine-readable exports use the standard-library exporter:
 

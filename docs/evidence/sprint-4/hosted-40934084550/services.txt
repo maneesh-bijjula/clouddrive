@@ -1,0 +1,8 @@
+NAME                            IMAGE                         COMMAND                  SERVICE    CREATED         STATUS                   PORTS
+clouddrive-ci-load-api-1        clouddrive:load-test          "uvicorn clouddrive.…"   api        7 minutes ago   Up 7 minutes (healthy)   127.0.0.1:18093->8090/tcp
+clouddrive-ci-load-beat-1       clouddrive:load-test          "celery -A clouddriv…"   beat       7 minutes ago   Up 7 minutes             8090/tcp
+clouddrive-ci-load-gateway-1    caddy:2.11.7-alpine           "caddy run --config …"   gateway    7 minutes ago   Up 7 minutes (healthy)   80/tcp, 2019/tcp, 443/udp, 127.0.0.1:19013->443/tcp
+clouddrive-ci-load-minio-1      clouddrive-minio:2025-10-15   "minio server /data …"   minio      7 minutes ago   Up 7 minutes (healthy)   9001/tcp, 127.0.0.1:19014->9000/tcp
+clouddrive-ci-load-postgres-1   postgres:17-alpine            "docker-entrypoint.s…"   postgres   7 minutes ago   Up 7 minutes (healthy)   127.0.0.1:15439->5432/tcp
+clouddrive-ci-load-redis-1      redis:7-alpine                "docker-entrypoint.s…"   redis      7 minutes ago   Up 7 minutes (healthy)   127.0.0.1:16386->6379/tcp
+clouddrive-ci-load-worker-1     clouddrive:load-test          "celery -A clouddriv…"   worker     7 minutes ago   Up 7 minutes             8090/tcp

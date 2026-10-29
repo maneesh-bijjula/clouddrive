@@ -94,6 +94,20 @@
       "report": "laptop-target-2-checkpoint.json",
       "checkpoint_note": "laptop-pause.json",
       "implementation": "027f19b1d497aa35e6e7c0e13284ef100ee766ce"
+    },
+    {
+      "id": "hosted-40934084550",
+      "status": "failed",
+      "implementation": "84fc75f02ae80e2ff265bd9c6c3fa1da9407bb7b",
+      "workflow_url": "https://github.com/maneesh-bijjula/clouddrive/actions/runs/40934084550",
+      "file_bytes": 500000000,
+      "requested_cohorts": 3,
+      "completed_cohorts": 2,
+      "passed_cohorts": 1,
+      "independently_verified_downloads": 20,
+      "scope": "Cohort1passed;cohort2verified10downloadsbutfailedNodeRSSbudget;cohort3rejectedbeforeuploadsbypriorglobalbudgetfailures. Thisbatchdoesnotsatisfy30/30 release gate.",
+      "reason": "Benchmark Node RSS sampled peak538.1MiB exceeded unchanged512MiB ceiling during download/hash. Noobservertransporterrors.",
+      "report": "hosted-40934084550/results.json"
     }
   ]
 }

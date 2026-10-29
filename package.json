@@ -10,8 +10,8 @@
     "format": "prettier --write frontend tests-browser *.json *.ts .github README.md compose.yaml",
     "bench:upload": "node scripts/benchmark-upload.mjs",
     "test:recovery": "node scripts/recovery-matrix.mjs",
-    "bench:concurrent": "node scripts/benchmark-concurrent.mjs",
-    "test:observer": "node --test scripts/load-observer.test.mjs"
+    "bench:concurrent": "node --max-old-space-size=192 --max-semi-space-size=8 scripts/benchmark-concurrent.mjs",
+    "test:observer": "node --test scripts/load-observer.test.mjs scripts/load-file-hash.test.mjs"
   },
   "dependencies": {
     "@noble/hashes": "2.4.0",
