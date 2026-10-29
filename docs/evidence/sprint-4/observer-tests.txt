@@ -1,0 +1,13 @@
+✔ JSON observer requests use separate sockets and close every connection (14.628167ms)
+✔ 204 and non-success statuses remain explicit without retries (2.747041ms)
+✔ absolute deadline includes a stalled response body and does not retry (102.5895ms)
+✔ socket resets fail once with a safe native error code (1.984083ms)
+✔ invalid JSON and nested causes preserve codes, never raw diagnostic text (1.119292ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 228.373625

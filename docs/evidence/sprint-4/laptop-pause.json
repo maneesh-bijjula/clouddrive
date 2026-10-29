@@ -1,0 +1,37 @@
+{
+  "stopped_at_utc": "2026-10-29T00:34:09.220566+00:00",
+  "reason": "User requested stop for now",
+  "implementation_commit": "027f19b1d497aa35e6e7c0e13284ef100ee766ce",
+  "implementation_pushed_to": "main",
+  "implementation_ci": {
+    "CI": {
+      "run": 40792865976,
+      "conclusion": "success"
+    },
+    "Named recovery matrix": {
+      "run": 40792866045,
+      "conclusion": "success"
+    }
+  },
+  "remaining": "Sprint4 target-size concurrency acceptance is NOT complete; retain target1 disk-preflight failure and target2 failed first cohort plus interrupted subsequent work. Diagnose observer API fetch failure, improve error-cause capture/transport handling, then run a fresh complete three-cohort benchmark without changing budgets silently. Export/publish final evidence, update docs and push, verify final exact-commit CI.",
+  "target2_last_saved_status": "running",
+  "target2_checkpoint_cohorts": [
+    {
+      "run": 1,
+      "status": "failed",
+      "error": "fetch failed",
+      "file_integrity_passed": 0
+    },
+    {
+      "run": 2,
+      "status": "running",
+      "error": null,
+      "file_integrity_passed": null
+    }
+  ],
+  "raw_report_policy": "Raw benchmark JSON preserved exactly as checkpointed; running means interrupted/incomplete. No passing target-size result claimed.",
+  "fixtures": [
+    "test-results/load-fixture-QX9vCu"
+  ],
+  "temporary_source_fixtures_removed": true
+}

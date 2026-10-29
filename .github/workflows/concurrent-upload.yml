@@ -35,12 +35,19 @@ jobs:
       - run: pip install -r requirements-dev.txt
       - run: npm ci
       - run: npm run build
+      - run: node --test scripts/load-observer.test.mjs
       - run: npx playwright install --with-deps chromium
       - name: Build only the isolated disk-backed HTTP2 stack
         run: |
           docker compose -p clouddrive-ci-load -f compose.load.yaml build api minio
           docker compose -p clouddrive-ci-load -f compose.load.yaml pull postgres redis gateway
           docker compose -p clouddrive-ci-load -f compose.load.yaml up --no-build --pull never -d --wait
+      - name: Reclaim only this fresh hosted job's build cache and record free disk
+        run: |
+          test "$GITHUB_ACTIONS" = "true"
+          test "$RUNNER_ENVIRONMENT" = "github-hosted"
+          docker buildx prune --force
+          df -B1 .
       - name: Real browser transfers, overlap proof, budgets and independent download hashes
         env:
           FIXTURE_BYTES: ${{ inputs.bytes }}
@@ -50,6 +57,12 @@ jobs:
           mkdir -p test-results/load
           set -o pipefail
           npm run bench:concurrent -- --bytes "$FIXTURE_BYTES" --runs "$COMPLETE_RUNS" --project clouddrive-ci-load --output test-results/load/results.json 2>&1 | tee test-results/load/transcript.txt
+      - name: Export measured outcomes and resource samples, including failed reports
+        if: always()
+        run: |
+          if test -s test-results/load/results.json; then
+            python scripts/summarize-load.py test-results/load/results.json test-results/load/export
+          fi
       - name: Isolated service state (exclude signed-URL gateway logs)
         if: always()
         run: |

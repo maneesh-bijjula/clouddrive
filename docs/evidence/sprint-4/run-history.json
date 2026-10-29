@@ -56,6 +56,44 @@
       "file_outcomes": "10/10",
       "release_gate_passed": false,
       "reason": "Final harness rehearsal including settings/image/asset checks and global cleanup inventory"
+    },
+    {
+      "id": "laptop-target-1",
+      "status": "failed_preflight",
+      "file_bytes": 500000000,
+      "requested_cohorts": 3,
+      "cohorts_started": 0,
+      "reason": "24,621,199,360 host free bytes fell below fixed25,000,000,000-byte disk budget; no target fixture or upload started",
+      "report": "laptop-target-1.json",
+      "implementation": "027f19b1d497aa35e6e7c0e13284ef100ee766ce"
+    },
+    {
+      "id": "laptop-target-2",
+      "status": "interrupted",
+      "file_bytes": 500000000,
+      "requested_cohorts": 3,
+      "completed_cohorts": 1,
+      "passed_cohorts": 0,
+      "cohort_outcomes": [
+        {
+          "run": 1,
+          "status": "failed",
+          "error": "Observer API fetch failed; underlying cause not captured",
+          "verified_downloads": 0
+        },
+        {
+          "run": 2,
+          "status": "interrupted_by_user"
+        },
+        {
+          "run": 3,
+          "status": "not_started"
+        }
+      ],
+      "reason": "User stopped due severe laptop slowdown. Raw checkpoint retains status running and is incomplete evidence. First cohort storage404s after failure were caused by cleanup deleting uploads before closing browser; no passing target-size claim.",
+      "report": "laptop-target-2-checkpoint.json",
+      "checkpoint_note": "laptop-pause.json",
+      "implementation": "027f19b1d497aa35e6e7c0e13284ef100ee766ce"
     }
   ]
 }

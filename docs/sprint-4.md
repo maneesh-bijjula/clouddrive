@@ -25,7 +25,7 @@ A start barrier, multiple queued files, and overlapping whole-file lifetimes do 
 
 The sampled Chrome process-RSS sum must remain at or below **1.5 GiB**, and the Node runner RSS at or below **512 MiB**. Chrome RSS may count shared pages more than once. These are sampled acceptance ceilings; Docker container limits are enforced hard limits. Sampling cannot establish instantaneous process allocation maxima. The nominal sample period is one second; actual timestamps and any skipped overlapping samples are reported. Sampling errors have a zero budget.
 
-Container OOM state and cgroup OOM counters must both be checked, since a killed Celery child can leave the container's main process alive. The profile is intended for the shared 8 GiB host and roughly 3.83 GiB Docker VM; other running workloads and available capacity must be recorded rather than stopped.
+Container OOM state and cgroup OOM counters must both be checked, since a killed Celery child can leave the container's main process alive. The budgets were initially chosen for the shared 8 GiB laptop and roughly 3.83 GiB Docker VM. That laptop became unresponsive under the target load, and the user stopped the test. Target-size runs now execute on GitHub-hosted runners; their actual CPU/RAM and available capacity must be recorded. CPU limits are ceilings, not reserved capacity. The numerical budget manifest is unchanged.
 
 The host needs at least **25 GB free before fixture generation**, with **30 GB recommended**. The storage filesystem needs at least **12 GB free** before a scored run. Download verification is sequential and streaming; only one downloaded 500 MB fixture is retained at a time. The runner's 600-second READY deadline includes browser hashing through READY; a 900-second complete-cohort bound includes downloads and cleanup. These are harness bounds, not latency SLOs. Shared fixture generation is recorded separately.
 
@@ -57,7 +57,11 @@ The complete Python suite passed **108/108 (41 unit + 67 integration)**. The pac
 
 A separate complete named recovery regression passed **20/20**, including actual process kills and dependency outages. This is one additional regression pass, separate from the historical Sprint 3 60/60 release denominator.
 
-The target-size three-run denominator, scored throughput/latencies, resource peaks, and exact delivery-commit GitHub CI remain pending. Existing Sprint 2 large-file and Sprint 3 recovery evidence remain separate historical measurements.
+Implementation `027f19b` passed both [ordinary CI](https://github.com/maneesh-bijjula/clouddrive/actions/runs/40792865976) and the [named recovery workflow](https://github.com/maneesh-bijjula/clouddrive/actions/runs/40792866045). Target-size concurrency remains unverified. The first laptop attempt failed its unchanged disk preflight before allocating fixtures. The second had an observer API connection failure in cohort 1 and was stopped by the user during cohort 2 because the laptop became severely slow. Its raw checkpoint remains incomplete (`status: running`), with no passing cohort or verified target-size download. [Failed preflight](evidence/sprint-4/laptop-target-1.json), [interrupted checkpoint](evidence/sprint-4/laptop-target-2-checkpoint.json), and [pause note](evidence/sprint-4/laptop-pause.json) are retained unchanged.
+
+Harness method revision 2 uses fresh control-plane connections with an absolute deadline, no automatic retries, and credential-free error/cause codes. The original connection failure's root cause was not captured and remains unproven. Failed-cohort shutdown now closes the browser before deleting test uploads, preventing cleanup from generating misleading storage 404s. The start-barrier interceptor is removed after the ten initial PUTs are released; subsequent parts use ordinary browser transfers. Positive-partial-progress and ten-way overlap checks remain mandatory, and all shaping time remains in throughput windows.
+
+The target-size three-run denominator, scored throughput/latencies, resource peaks, and final delivery-commit GitHub CI remain pending. Existing Sprint 2 large-file and Sprint 3 recovery evidence remain separate historical measurements.
 
 ## Regression gates
 
@@ -65,7 +69,16 @@ Before completion, run the full Python suite and packaged browser workflows, fix
 
 ## Reproduce the isolated benchmark
 
-From the repository root, install the pinned Python/npm dependencies, install Playwright Chromium, and build the host assets used for image comparison. Ensure ports 18093, 15439, 16386, 19013, and 19014 are available. The project uses its own database, Redis database, disk-backed bucket and named volumes; do not substitute normal application endpoints.
+Use GitHub-hosted execution for the full load test so it does not compete with work on the laptop:
+
+```bash
+gh workflow run concurrent-upload.yml --ref main -f bytes=500000000 -f runs=3
+gh run list --workflow concurrent-upload.yml
+```
+
+The workflow builds isolated application/storage images, reclaims only its fresh hosted job's build cache, checks the unchanged disk minimum, records hosted-run provenance, and exports CSV/JSON artifacts even when a report fails. It never starts laptop containers. Retain every attempted hosted run in history.
+
+For a separately authorized, idle local test machine, install the pinned Python/npm dependencies, install Playwright Chromium, and build the host assets used for image comparison. Ensure ports 18093, 15439, 16386, 19013, and 19014 are available. The project uses its own database, Redis database, disk-backed bucket and named volumes; do not substitute normal application endpoints.
 
 ```bash
 source .venv/bin/activate

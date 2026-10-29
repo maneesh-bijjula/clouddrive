@@ -20,6 +20,7 @@ import { createInterface } from "node:readline";
 import { connect } from "node:tls";
 import { parseArgs, promisify } from "node:util";
 import os from "node:os";
+import { observeApi } from "./load-observer.mjs";
 
 const run = promisify(execFile);
 const { values } = parseArgs({
@@ -57,6 +58,7 @@ await mkdir(dirname(output), { recursive: true });
 const fd = await open(output, "wx");
 const report = {
   schema_version: 1,
+  method_revision: 2,
   status: "running",
   run_id: randomUUID(),
   started_at: new Date().toISOString(),
@@ -81,9 +83,26 @@ const report = {
     host_memory_bytes: os.totalmem(),
     node: process.version,
     compose_project: project,
+    execution: {
+      kind: process.env.GITHUB_ACTIONS === "true" ? "github_actions" : "local",
+      repository: process.env.GITHUB_REPOSITORY ?? null,
+      run_id: process.env.GITHUB_RUN_ID ?? null,
+      run_attempt: process.env.GITHUB_RUN_ATTEMPT ?? null,
+      source_sha: process.env.GITHUB_SHA ?? null,
+      runner_environment: process.env.RUNNER_ENVIRONMENT ?? null,
+      runner_os: process.env.RUNNER_OS ?? null,
+      runner_arch: process.env.RUNNER_ARCH ?? null,
+    },
   },
   fixtures: [],
   runs: [],
+  observer_api: {
+    transport:
+      "Native Node HTTP client, new socket per request, Connection: close, absolute15s deadline, no retries; excluded from native browser API latency population",
+    requests: 0,
+    status_counts: {},
+    transport_failures: [],
+  },
   resources: {
     interval_ms: 1000,
     samples: [],
@@ -177,17 +196,32 @@ function observe(command = {}) {
   return task;
 }
 async function api(path, { token, method = "GET", body, ops = false } = {}) {
-  const r = await fetch(baseURL + "/api" + path, {
-    method,
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(ops ? { "X-Metrics-Key": metricsKey } : {}),
-      ...(body ? { "Content-Type": "application/json" } : {}),
-    },
-    ...(body ? { body: JSON.stringify(body) } : {}),
-    signal: AbortSignal.timeout(15_000),
-  });
-  return { status: r.status, data: r.status === 204 ? null : await r.json() };
+  report.observer_api.requests++;
+  try {
+    const response = await observeApi(baseURL + "/api" + path, {
+      method,
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(ops ? { "X-Metrics-Key": metricsKey } : {}),
+      },
+      body,
+    });
+    const key = String(response.status);
+    report.observer_api.status_counts[key] =
+      (report.observer_api.status_counts[key] ?? 0) + 1;
+    return response;
+  } catch (e) {
+    report.observer_api.transport_failures.push({
+      run: cohort?.run ?? null,
+      phase,
+      method,
+      route: path.replace(/[0-9a-f-]{36}/g, ":id"),
+      code: e.code ?? "ERR_OBSERVER_REQUEST",
+      cause_code: e.cause_code ?? null,
+      t_s: clock(),
+    });
+    throw e;
+  }
 }
 async function wait(fn, label, seconds = 600) {
   const end = performance.now() + seconds * 1000;
@@ -641,6 +675,12 @@ try {
   );
   const git = async (...args) => (await run("git", args)).stdout.trim();
   report.environment.git_sha = await git("rev-parse", "HEAD");
+  if (process.env.GITHUB_ACTIONS === "true")
+    assert.equal(
+      report.environment.git_sha,
+      process.env.GITHUB_SHA,
+      "Hosted checkout must match workflow source revision",
+    );
   report.environment.git_dirty = !!(await git("status", "--porcelain"));
   if (size === 500_000_000 && runs === 3)
     assert.equal(
@@ -672,6 +712,7 @@ try {
           [
             "benchmark-concurrent.mjs",
             "load-state.py",
+            "load-observer.mjs",
             "summarize-load.py",
           ].includes(n))
       )
@@ -831,6 +872,7 @@ try {
     await save();
     const runRecord = cohort;
     let token, ws, cdp, outsiderToken;
+    const barrierTasks = new Set();
     lastBrowserCPU = undefined;
     const deadlineTimer = setTimeout(() => {
       cohort.fatal = "Cohort900s deadline exceeded";
@@ -860,6 +902,7 @@ try {
         }
       });
       page.on("pageerror", (e) => {
+        if (runRecord.closing) return;
         runRecord.browser_errors.push(safeError(e));
         runRecord.fatal = "Browser runtime error";
       });
@@ -976,17 +1019,30 @@ try {
       let release;
       const gate = new Promise((r) => (release = r));
       releaseGate = release;
-      await page.route(/.*\?.*partNumber=.*/, async (route) => {
-        const u = new URL(route.request().url());
-        if (
-          route.request().method() === "PUT" &&
-          Number(u.searchParams.get("partNumber")) === 1
-        ) {
-          first.add(u.pathname.split("/").at(-1));
-          await gate;
-        }
-        await route.continue().catch(() => {});
-      });
+      // Only the ten first-part requests need interception. Later parts must
+      // not keep paying the browser-driver routing/body-copy overhead.
+      const firstPartPattern =
+        /^https:\/\/localhost:19013\/.*[?&]partNumber=1(?:&|$)/;
+      const firstPartHandler = (route) => {
+        const task = (async () => {
+          const u = new URL(route.request().url());
+          if (route.request().method() === "PUT") {
+            first.add(u.pathname.split("/").at(-1));
+            await gate;
+          }
+          if (runRecord.closing) await route.abort("aborted");
+          else await route.continue();
+        })().catch((e) => {
+          if (!runRecord.closing) {
+            (runRecord.barrier_errors ??= []).push(safeError(e));
+            runRecord.fatal ??= "First-part barrier continuation failed";
+          }
+        });
+        barrierTasks.add(task);
+        void task.then(() => barrierTasks.delete(task));
+        return task;
+      };
+      await page.route(firstPartPattern, firstPartHandler);
       await cdp.send("Network.emulateNetworkConditions", {
         offline: false,
         latency: 0,
@@ -1037,6 +1093,11 @@ try {
       await save();
       release();
       releaseGate = undefined;
+      // Wait for all already-held first PUTs to continue before removing only
+      // this handler. Neither the progress proof nor its shaping is bypassed.
+      await Promise.all([...barrierTasks]);
+      await page.unroute(firstPartPattern, firstPartHandler);
+      cohort.probe.barrier_interceptor_removed_at_s = clock();
       await wait(
         async () => {
           const p = await page.evaluate(() =>
@@ -1127,7 +1188,20 @@ try {
           partial_samples: p.partial_samples,
         })),
       };
-      assert.ok(cohort.storage_events.length >= count);
+      await wait(
+        () => cohort.storage_events.length === trace.puts.length,
+        "All storage protocol events",
+        10,
+      );
+      assert.equal(cohort.storage_events.length, trace.puts.length);
+      assert.deepEqual(
+        cohort.storage_events
+          .filter((e) => e.part === 1)
+          .map((e) => e.file_id)
+          .sort(),
+        cohort.files.map((f) => f.id).sort(),
+        "HTTP/2 proof must cover all ten initial file IDs",
+      );
       assert.ok(
         cohort.storage_events.every(
           (e) => e.protocol === "h2" && e.status === 200,
@@ -1173,7 +1247,9 @@ try {
         f.completion_to_ready_s = f.ready_at_s - f.completion_response_s;
       }
       cohort.final_inventory = state;
-      cohort.workspace_metrics = (await api("/metrics", { token })).data;
+      const workspaceMetrics = await api("/metrics", { token });
+      assert.equal(workspaceMetrics.status, 200);
+      cohort.workspace_metrics = workspaceMetrics.data;
 
       for (const f of cohort.files) {
         assert.equal(
@@ -1269,19 +1345,57 @@ try {
     } catch (e) {
       cohort.status = "failed";
       cohort.error = safeError(e);
+      cohort.error_code = e.code ?? null;
+      cohort.error_cause_code = e.cause_code ?? null;
     } finally {
       clearTimeout(deadlineTimer);
-      cohort.closing = true;
-      page?.removeAllListeners("requestfailed");
-      page?.removeAllListeners("requestfinished");
-      releaseGate?.();
-      releaseGate = undefined;
       clearInterval(timer);
       timer = undefined;
       await Promise.all([...sampleTasks]);
       await Promise.all([...eventTasks]);
-      if (ws && token) {
+      // Snapshot native outcomes before shutdown or metadata/storage cleanup
+      // can create intentional aborts or NoSuchUpload responses of their own.
+      if (page) {
         try {
+          cohort.final_browser_trace = await page.evaluate(() => window.__load);
+          cohort.trace_snapshot_at_s = clock();
+          cohort.cleanup_interrupted_puts = cohort.final_browser_trace.puts
+            .filter((p) => !Number.isFinite(p.response_end_ms))
+            .map((p) => ({
+              file_id: p.file_id,
+              part: p.part,
+              send_ms: p.send_ms,
+              outcome: "interrupted_measurement_at_shutdown",
+              completion_status: "unknown_at_trace_cutoff",
+            }));
+        } catch (e) {
+          cohort.status = "failed";
+          cohort.trace_snapshot_error = safeError(e);
+          cohort.error ??= "Pre-cleanup browser trace unavailable";
+        }
+      }
+      cohort.closing = true;
+      cohort.native_observation_closed_at_s = clock();
+      page?.removeAllListeners("requestfailed");
+      page?.removeAllListeners("requestfinished");
+      await Promise.all([...eventTasks]);
+      releaseGate?.();
+      releaseGate = undefined;
+      await Promise.all([...barrierTasks]);
+      let browserClosed = !context;
+      try {
+        await context?.close();
+        browserClosed = true;
+        cohort.browser_stopped_before_cleanup_at_s = clock();
+      } catch (e) {
+        cohort.status = "failed";
+        cohort.browser_shutdown_error = safeError(e);
+      }
+      await cdp?.detach().catch(() => {});
+      context = page = undefined;
+      if (ws && token && browserClosed) {
+        try {
+          cohort.cleanup_started_at_s = clock();
           const inv = await api("/files", { token });
           assert.equal(inv.status, 200);
           cohort.cleanup = [];
@@ -1307,11 +1421,8 @@ try {
           cohort.status = "failed";
           cohort.cleanup_error = safeError(e);
         }
-      }
-      if (page) {
-        try {
-          cohort.final_browser_trace = await page.evaluate(() => window.__load);
-        } catch {}
+      } else if (ws && token) {
+        cohort.cleanup_skipped = "Browser shutdown could not be confirmed";
       }
       // Retain observed attempts even when a cohort failed before all files
       // reached READY or completed independent download verification.
@@ -1321,14 +1432,15 @@ try {
           (p) => p.file_id === f.id,
         );
         f.observed_part_put_attempts = attempts.length;
+        const observedStatus = (p) =>
+          !Number.isFinite(p.response_end_ms)
+            ? "interrupted"
+            : String(p.status ?? "unknown");
         f.observed_put_status_counts = Object.fromEntries(
-          [...new Set(attempts.map((p) => String(p.status ?? "pending")))].map(
-            (status) => [
-              status,
-              attempts.filter((p) => String(p.status ?? "pending") === status)
-                .length,
-            ],
-          ),
+          [...new Set(attempts.map(observedStatus))].map((status) => [
+            status,
+            attempts.filter((p) => observedStatus(p) === status).length,
+          ]),
         );
         f.observed_retried_part_attempts =
           attempts.length - new Set(attempts.map((p) => p.part)).size;
@@ -1356,9 +1468,6 @@ try {
           cohort.worker_log_error = safeError(e);
         }
       }
-      await cdp?.detach().catch(() => {});
-      await context?.close().catch(() => {});
-      context = page = undefined;
       cohort.finished_at = new Date().toISOString();
       cohort.total_elapsed_s = clock() - cohort.started_at_s;
       for (const f of cohort.files) f.integrity_status ??= "not_verified";
@@ -1388,6 +1497,8 @@ try {
         transfer_MB_per_s: cohort.transfer_MB_per_s,
       });
       await save();
+      if (cohort.browser_shutdown_error)
+        throw new Error("Browser shutdown failed; scoped cleanup skipped");
     }
   }
   report.final_global_inventory = await observe({ inventory: true });
@@ -1455,6 +1566,8 @@ try {
 } catch (e) {
   report.status = "failed";
   report.error = safeError(e);
+  report.error_code = e.code ?? null;
+  report.error_cause_code = e.cause_code ?? null;
 } finally {
   releaseGate?.();
   clearInterval(timer);
