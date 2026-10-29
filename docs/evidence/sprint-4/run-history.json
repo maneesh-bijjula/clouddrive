@@ -1,0 +1,61 @@
+{
+  "scope": "Development/regression attempts are separate from target-size scored cohorts; no hidden file or cohort reruns.",
+  "attempts": [
+    {
+      "id": "python-full-1",
+      "status": "passed",
+      "cases": 108,
+      "scope": "41 unit +67 integration"
+    },
+    {
+      "id": "concurrency-focused-1",
+      "status": "passed",
+      "cases": 8,
+      "scope": "2 pure scheduler +6 browser"
+    },
+    {
+      "id": "browser-full-1",
+      "status": "interrupted",
+      "completed_cases": 13,
+      "requested_cases": 28,
+      "scope": "Not a completed suite; interrupted before this resumed session"
+    },
+    {
+      "id": "browser-full-2",
+      "status": "passed",
+      "cases": 28,
+      "scope": "2 pure scheduler +26 browser; retries disabled"
+    },
+    {
+      "id": "smoke-1",
+      "status": "failed",
+      "file_bytes": 16777233,
+      "cohorts_started": 0,
+      "reason": "TLS probe omitted server name; failed before fixture generation or upload"
+    },
+    {
+      "id": "smoke-2",
+      "status": "passed",
+      "file_bytes": 16777233,
+      "cohorts": 1,
+      "file_outcomes": "10/10",
+      "release_gate_passed": false,
+      "reason": "Small rehearsal after TLS server-name fix"
+    },
+    {
+      "id": "recovery-1",
+      "status": "passed",
+      "attempts": "20/20",
+      "scope": "One full named matrix against Sprint4 source; separate from historical Sprint3 60/60 release denominator"
+    },
+    {
+      "id": "smoke-3",
+      "status": "passed",
+      "file_bytes": 16777233,
+      "cohorts": 1,
+      "file_outcomes": "10/10",
+      "release_gate_passed": false,
+      "reason": "Final harness rehearsal including settings/image/asset checks and global cleanup inventory"
+    }
+  ]
+}

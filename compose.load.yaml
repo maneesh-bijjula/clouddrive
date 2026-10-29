@@ -1,0 +1,170 @@
+# Isolated disk-backed HTTP2 load profile; never uses normal workspace volumes.
+name: clouddrive-sprint4-load
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: clouddrive
+      POSTGRES_PASSWORD: clouddrive
+      POSTGRES_DB: clouddrive_load_test
+    ports:
+      - 127.0.0.1:15439:5432
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U clouddrive
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    volumes:
+      - load-postgres-data:/var/lib/postgresql/data
+    mem_limit: 384m
+    cpus: 1
+  redis:
+    image: redis:7-alpine
+    ports:
+      - 127.0.0.1:16386:6379
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    mem_limit: 128m
+    cpus: 0.5
+    volumes:
+      - load-redis-data:/data
+  minio:
+    build:
+      context: .
+      dockerfile: Dockerfile.minio
+    image: clouddrive-minio:2025-10-15
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: clouddrive
+      MINIO_ROOT_PASSWORD: clouddrive-local
+      MINIO_API_CORS_ALLOW_ORIGIN: http://localhost:18093,http://127.0.0.1:18093
+    ports:
+      - 127.0.0.1:19014:9000
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:9000/minio/health/live
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    volumes:
+      - load-object-data:/data
+    mem_limit: 768m
+    cpus: 2
+  api:
+    image: clouddrive:load-test
+    build:
+      context: .
+    environment:
+      CLOUDDRIVE_DATABASE_URL: postgresql+psycopg://clouddrive:clouddrive@postgres:5432/clouddrive_load_test
+      CLOUDDRIVE_REDIS_URL: redis://redis:6379/0
+      CLOUDDRIVE_S3_ENDPOINT: http://minio:9000
+      CLOUDDRIVE_S3_PUBLIC_ENDPOINT: https://localhost:19013
+      CLOUDDRIVE_S3_ACCESS_KEY: clouddrive
+      CLOUDDRIVE_S3_SECRET_KEY: clouddrive-local
+      CLOUDDRIVE_S3_BUCKET: clouddrive-load-test
+      CLOUDDRIVE_METRICS_KEY: clouddrive-load-ops-test
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      gateway:
+        condition: service_healthy
+    ports:
+      - 127.0.0.1:18093:8090
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://localhost:8090/api/health')
+      interval: 3s
+      timeout: 5s
+      retries: 20
+    mem_limit: 384m
+    cpus: 1
+  worker:
+    image: clouddrive:load-test
+    environment:
+      CLOUDDRIVE_DATABASE_URL: postgresql+psycopg://clouddrive:clouddrive@postgres:5432/clouddrive_load_test
+      CLOUDDRIVE_REDIS_URL: redis://redis:6379/0
+      CLOUDDRIVE_S3_ENDPOINT: http://minio:9000
+      CLOUDDRIVE_S3_PUBLIC_ENDPOINT: https://localhost:19013
+      CLOUDDRIVE_S3_ACCESS_KEY: clouddrive
+      CLOUDDRIVE_S3_SECRET_KEY: clouddrive-local
+      CLOUDDRIVE_S3_BUCKET: clouddrive-load-test
+      CLOUDDRIVE_METRICS_KEY: clouddrive-load-ops-test
+    depends_on:
+      api:
+        condition: service_healthy
+    command:
+      - celery
+      - -A
+      - clouddrive.worker:celery
+      - worker
+      - --loglevel=INFO
+      - --concurrency=2
+    mem_limit: 512m
+    cpus: 2
+  beat:
+    image: clouddrive:load-test
+    environment:
+      CLOUDDRIVE_DATABASE_URL: postgresql+psycopg://clouddrive:clouddrive@postgres:5432/clouddrive_load_test
+      CLOUDDRIVE_REDIS_URL: redis://redis:6379/0
+      CLOUDDRIVE_S3_ENDPOINT: http://minio:9000
+      CLOUDDRIVE_S3_PUBLIC_ENDPOINT: https://localhost:19013
+      CLOUDDRIVE_S3_ACCESS_KEY: clouddrive
+      CLOUDDRIVE_S3_SECRET_KEY: clouddrive-local
+      CLOUDDRIVE_S3_BUCKET: clouddrive-load-test
+      CLOUDDRIVE_METRICS_KEY: clouddrive-load-ops-test
+    depends_on:
+      api:
+        condition: service_healthy
+    command:
+      - celery
+      - -A
+      - clouddrive.worker:celery
+      - beat
+      - --loglevel=INFO
+      - --schedule=/tmp/clouddrive-load-beat
+    mem_limit: 128m
+    cpus: 0.25
+  gateway:
+    image: caddy:2.11.7-alpine
+    ports:
+      - 127.0.0.1:19013:443
+    volumes:
+      - ./Caddyfile.load:/etc/caddy/Caddyfile:ro
+      - load-gateway-data:/data
+      - load-gateway-config:/config
+    mem_limit: 128m
+    cpus: 1
+    depends_on:
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget --no-check-certificate -q -O- https://localhost/minio/health/live >/dev/null
+      interval: 2s
+      timeout: 3s
+      retries: 30
+volumes:
+  load-postgres-data: {}
+  load-object-data: {}
+  load-redis-data: {}
+  load-gateway-data: {}
+  load-gateway-config: {}

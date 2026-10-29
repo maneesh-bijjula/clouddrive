@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "benchmark": "clouddrive-ten-concurrent-uploads-v1",
+  "status": "declared_before_scored_measurement",
+  "units": {
+    "MB": 1000000,
+    "GB": 1000000000,
+    "MiB": 1048576,
+    "GiB": 1073741824
+  },
+  "release_requirement": {
+    "complete_runs": 3,
+    "files_per_run": 10,
+    "file_bytes": 500000000,
+    "source_bytes_per_run": 5000000000,
+    "file_outcome_denominator": 30,
+    "distinct_fixture_contents": 10,
+    "fresh_workspace_and_file_ids_per_run": true,
+    "fixture_reuse_across_runs_allowed": true
+  },
+  "resource_budgets": {
+    "containers": {
+      "api": {
+        "memory_hard_limit_bytes": 402653184,
+        "cpu_limit_cores": 1
+      },
+      "worker": {
+        "memory_hard_limit_bytes": 536870912,
+        "cpu_limit_cores": 2
+      },
+      "beat": {
+        "memory_hard_limit_bytes": 134217728,
+        "cpu_limit_cores": 0.25
+      },
+      "minio": {
+        "memory_hard_limit_bytes": 805306368,
+        "cpu_limit_cores": 2
+      },
+      "postgres": {
+        "memory_hard_limit_bytes": 402653184,
+        "cpu_limit_cores": 1
+      },
+      "redis": {
+        "memory_hard_limit_bytes": 134217728,
+        "cpu_limit_cores": 0.5
+      },
+      "gateway": {
+        "memory_hard_limit_bytes": 134217728,
+        "cpu_limit_cores": 1
+      }
+    },
+    "container_memory_limit_sum_bytes": 2550136832,
+    "container_cpu_limit_sum_cores": 7.75,
+    "worker_process_concurrency": 2,
+    "browser_sampled_rss_sum_ceiling_bytes": 1610612736,
+    "runner_sampled_rss_ceiling_bytes": 536870912,
+    "sample_interval_ms": 1000,
+    "sampling_error_budget": 0,
+    "memory_accounting": "Container cgroup hard limits are enforced by Docker. Chrome memory is the sum of process RSS and can double-count shared pages; Chrome/runner ceilings are sampled acceptance thresholds, not enforced process memory caps or instantaneous maxima. Record actual timestamps; skipped overlapping collections must be explicit.",
+    "oom_policy": "Fail on any own-service container OOM or increase in cgroup oom/oom_kill counters, including a killed worker pool child."
+  },
+  "disk_budget": {
+    "minimum_host_free_before_fixture_generation_bytes": 25000000000,
+    "recommended_host_free_bytes": 30000000000,
+    "minimum_storage_free_before_scored_run_bytes": 12000000000,
+    "cleanup_policy": "Keep only ten source fixtures; create a fresh ten-file workspace per run; download/hash files sequentially and delete the completed run before the next run."
+  },
+  "time_budget": {
+    "per_cohort_ready_deadline_seconds": 600,
+    "definition": "Starts when the ten-file cohort is selected; includes browser hashing, scheduling, uploads, completion, queueing, and verification. This is a bounded harness deadline, not a latency SLO.",
+    "whole_cohort_deadline_seconds": 900,
+    "whole_cohort_definition": "Bound for the complete cohort, including download integrity checks and scoped cleanup; shared fixture generation is recorded separately."
+  },
+  "success_invariants": [
+    "Ten actual storage PUT byte-transfer intervals have a nonempty common intersection, with positive per-file upload progress and no completed file counted as active.",
+    "All ten files reach READY; each worker and independent streamed download matches source bytes and SHA-256.",
+    "Thirty fresh file IDs across three full runs; no skipped or silently rerun failed cohorts/files.",
+    "One logical file, object, and result per source; no multipart leaks, forbidden cross-workspace downloads, OOMs, unhandled5xx responses, or budget breaches.",
+    "Resource/admission settings, hardware, provider/image identities, source/manifest digests and clocks are recorded; measured source and budgets remain unchanged during scored runs.",
+    "Every attempted run remains in history. An adjusted budget requires a new manifest revision and a fresh complete scored run, with prior failures retained."
+  ],
+  "metrics_required": [
+    "Browser hash time, active transfer windows, multipart completion, source selection to READY, download/hash durations, and total cohort time.",
+    "Aggregate actual-transfer throughput and end-to-end throughput with explicit denominators; per-file latency; API p50/p95 grouped by route template and measured request population.",
+    "Browser/runner RSS and per-service CPU/memory samples; actual sample timestamps; cgroup OOM counters.",
+    "Database pool/checkouts, lock/wait metrics, processing outbox backlog, active/expired claims, publications, delivery/verification attempts, and queue/backlog observations.",
+    "Network/storage errors, application retries, admission rejections, forbidden-access controls, and final scoped inventory."
+  ],
+  "non_claims": [
+    "No throughput or API latency SLO is imposed; report observed values.",
+    "Local MinIO results do not establish live AWS capacity, WAN behavior, or production availability.",
+    "Ten file upload intervals alone or a start barrier do not establish simultaneous byte transfers."
+  ],
+  "scheduler_and_admission": {
+    "browser_active_files": 10,
+    "browser_hash_workers": 2,
+    "browser_global_part_slots": 10,
+    "browser_parts_per_file": 3,
+    "browser_part_fairness": "Reserve one global slot for each admitted active owner before granting spare slots, so ten first PUTs cannot deadlock behind greedily admitted extra part loops.",
+    "workspace_active_upload_limit": 10,
+    "global_active_upload_limit": 100,
+    "active_upload_statuses": ["UPLOADING", "FINALIZING", "PROCESSING"],
+    "api_max_inflight_requests": 64,
+    "database_pool_size": 8,
+    "database_max_overflow": 8,
+    "database_pool_timeout_seconds": 10
+  },
+  "network_profile": {
+    "browser_to_storage_protocol": "HTTP/2 over TLS through the dedicated test gateway; record negotiated protocol for actual PUTs.",
+    "gateway_to_minio_protocol": "Streamed HTTP reverse proxy; retain the original signed Host and query.",
+    "certificate_scope": "Locally generated test certificate; browser ignores trust errors only for this isolated test context; record certificate fingerprint, never private key.",
+    "default_profile_limitation": "A single-origin HTTP/1 browser may restrict simultaneously active connections; this measured ten-stream result must not be generalized to that default profile.",
+    "overlap_probe": {
+      "permitted": true,
+      "method": "Temporary declared upload shaping only until all ten first PUTs show positive partial progress; remove shaping before any first PUT completes.",
+      "upload_cap_bytes_per_second": 8388608,
+      "evidence_required": [
+        "Shaping start/end timestamps and configured cap.",
+        "Ten distinct files with positive partial upload progress and common active transfer interval.",
+        "HTTP/2 negotiation on actual storage requests."
+      ],
+      "throughput_policy": "All shaping-probe time remains inside reported transfer windows. Do not call the resulting throughput unshaped provider capacity."
+    }
+  }
+}

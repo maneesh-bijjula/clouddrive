@@ -1,0 +1,66 @@
+name: Ten concurrent uploads (manual)
+on:
+  workflow_dispatch:
+    inputs:
+      bytes:
+        description: Bytes per file (small fixtures are smoke evidence only)
+        type: choice
+        options: ["500000000", "16777233"]
+        default: "500000000"
+      runs:
+        description: Complete ten-file cohorts (three target-size cohorts required)
+        type: choice
+        options: ["3", "1"]
+        default: "3"
+permissions:
+  contents: read
+concurrency:
+  group: concurrent-upload-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  concurrent-upload:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: "24"
+          cache: npm
+      - run: pip install -r requirements-dev.txt
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Build only the isolated disk-backed HTTP2 stack
+        run: |
+          docker compose -p clouddrive-ci-load -f compose.load.yaml build api minio
+          docker compose -p clouddrive-ci-load -f compose.load.yaml pull postgres redis gateway
+          docker compose -p clouddrive-ci-load -f compose.load.yaml up --no-build --pull never -d --wait
+      - name: Real browser transfers, overlap proof, budgets and independent download hashes
+        env:
+          FIXTURE_BYTES: ${{ inputs.bytes }}
+          COMPLETE_RUNS: ${{ inputs.runs }}
+          CLOUDDRIVE_TEST_PYTHON: python
+        run: |
+          mkdir -p test-results/load
+          set -o pipefail
+          npm run bench:concurrent -- --bytes "$FIXTURE_BYTES" --runs "$COMPLETE_RUNS" --project clouddrive-ci-load --output test-results/load/results.json 2>&1 | tee test-results/load/transcript.txt
+      - name: Isolated service state (exclude signed-URL gateway logs)
+        if: always()
+        run: |
+          mkdir -p test-results/load
+          docker compose -p clouddrive-ci-load -f compose.load.yaml ps --all > test-results/load/services.txt
+      - uses: actions/upload-artifact@v7.0.2
+        if: always()
+        with:
+          name: concurrent-upload-evidence
+          path: test-results/load
+          retention-days: 30
+      - name: Remove only this disposable load stack and its volumes
+        if: always()
+        run: docker compose -p clouddrive-ci-load -f compose.load.yaml down -v --remove-orphans

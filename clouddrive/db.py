@@ -9,7 +9,14 @@ from .config import settings
 
 @lru_cache
 def engine():
-    return create_engine(settings().database_url, pool_pre_ping=True, pool_size=8, max_overflow=8)
+    config = settings()
+    return create_engine(
+        config.database_url,
+        pool_pre_ping=True,
+        pool_size=config.db_pool_size,
+        max_overflow=config.db_max_overflow,
+        pool_timeout=config.db_pool_timeout_seconds,
+    )
 
 
 def migrate():

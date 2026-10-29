@@ -11,6 +11,7 @@ from sqlalchemy import text
 from .config import settings
 from .db import engine
 from .models import part_count, part_length
+from .observability import event
 from .recovery_faults import checkpoint
 from .storage import head, missing, remote_part, s3
 
@@ -103,7 +104,7 @@ def upload_transaction(workspace_id, id):
         )
 
 
-def describe(conn, file):
+def describe(conn, file, parts=None):
     return {
         **{
             key: file[key]
@@ -123,15 +124,57 @@ def describe(conn, file):
             )
         },
         "part_count": part_count(file["size"], file["part_size"]),
-        "parts": [
-            dict(row)
-            for row in query(
-                conn,
-                "SELECT number,checksum,etag FROM upload_parts WHERE file_id=:id ORDER BY number",
-                id=file["id"],
-            ).mappings()
-        ],
+        "parts": (
+            parts
+            if parts is not None
+            else [
+                dict(row)
+                for row in query(
+                    conn,
+                    "SELECT number,checksum,etag FROM upload_parts WHERE file_id=:id ORDER BY number",
+                    id=file["id"],
+                ).mappings()
+            ]
+        ),
     }
+
+
+def admission_lock(conn):
+    # A single transaction lock makes workspace and global counts atomic across
+    # API processes. It covers only new admissions, never an idempotent replay.
+    query(
+        conn,
+        "SELECT set_config('lock_timeout',:timeout,true)",
+        timeout=f"{int(settings().admission_lock_timeout_seconds * 1000)}ms",
+    )
+    query(conn, "SELECT pg_advisory_xact_lock(1987052404)")
+
+
+def check_capacity(conn, workspace_id):
+    counts = (
+        query(
+            conn,
+            """SELECT count(*) AS total,
+        count(*) FILTER (WHERE workspace_id=:workspace) AS workspace
+        FROM files WHERE status IN ('UPLOADING','FINALIZING','PROCESSING')""",
+            workspace=workspace_id,
+        )
+        .mappings()
+        .one()
+    )
+    config = settings()
+    if (
+        counts["total"] >= config.max_active_uploads_global
+        or counts["workspace"] >= config.max_active_uploads_per_workspace
+    ):
+        raise HTTPException(
+            429,
+            {
+                "code": "upload_capacity",
+                "message": "Upload capacity is full. Resume an existing upload or wait for a transfer to finish.",
+            },
+            headers={"Retry-After": "1"},
+        )
 
 
 def initiate(workspace_id, data):
@@ -139,21 +182,40 @@ def initiate(workspace_id, data):
         raise HTTPException(413, f"File exceeds the {settings().max_file_bytes} byte limit")
     id = uuid4()
     with engine().begin() as conn:
-        query(
+        existing = query(
             conn,
-            """INSERT INTO files(id,workspace_id,request_id,name,size,media_type,expected_sha256,part_size,object_key,status)
-          VALUES (:id,:workspace,:request,:name,:size,:type,:hash,:part_size,:key,'UPLOADING')
-          ON CONFLICT(workspace_id,request_id) DO NOTHING""",
-            id=id,
+            "SELECT id FROM files WHERE workspace_id=:workspace AND request_id=:request FOR UPDATE",
             workspace=workspace_id,
             request=data.request_id,
-            name=data.name,
-            size=data.size,
-            type=data.media_type,
-            hash=data.sha256,
-            part_size=settings().part_bytes,
-            key=f"{workspace_id}/{id}",
-        )
+        ).first()
+        if not existing:
+            admission_lock(conn)
+            # Another initiator may have committed this same request while the
+            # lock was awaited. Replays remain valid even at full capacity.
+            existing = query(
+                conn,
+                "SELECT id FROM files WHERE workspace_id=:workspace AND request_id=:request FOR UPDATE",
+                workspace=workspace_id,
+                request=data.request_id,
+            ).first()
+            if not existing:
+                check_capacity(conn, workspace_id)
+        if not existing:
+            query(
+                conn,
+                """INSERT INTO files(id,workspace_id,request_id,name,size,media_type,expected_sha256,part_size,object_key,status)
+          VALUES (:id,:workspace,:request,:name,:size,:type,:hash,:part_size,:key,'UPLOADING')
+          ON CONFLICT(workspace_id,request_id) DO NOTHING""",
+                id=id,
+                workspace=workspace_id,
+                request=data.request_id,
+                name=data.name,
+                size=data.size,
+                type=data.media_type,
+                hash=data.sha256,
+                part_size=settings().part_bytes,
+                key=f"{workspace_id}/{id}",
+            )
         file = (
             query(
                 conn,
@@ -196,7 +258,9 @@ def initiate(workspace_id, data):
                 upload=response["UploadId"],
                 id=file["id"],
             )
-        return describe(conn, file)
+        result = describe(conn, file)
+    event("upload_initiated", file_id=str(file["id"]), replay=bool(existing))
+    return result
 
 
 def sign_part(workspace_id, id, number, checksum):
@@ -420,9 +484,11 @@ def finish_delete(workspace_id, id):
 
 def retry_processing(workspace_id, id):
     with engine().begin() as conn:
+        admission_lock(conn)
         file = get_file(conn, workspace_id, id, True)
         if file["status"] != "FAILED":
             raise HTTPException(409, "Only failed processing can be retried")
+        check_capacity(conn, workspace_id)
         query(
             conn,
             "UPDATE files SET status='PROCESSING',claim=NULL,lease_until=NULL,error=NULL,updated_at=now() WHERE id=:id",

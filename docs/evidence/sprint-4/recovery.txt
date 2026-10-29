@@ -1,0 +1,21 @@
+{"pass":1,"case":"R01","status":"passed","recovery_s":3.449905}
+{"pass":1,"case":"R02","status":"passed","recovery_s":6.302373}
+{"pass":1,"case":"R03","status":"passed","recovery_s":6.210185}
+{"pass":1,"case":"R04","status":"passed","recovery_s":3.185317}
+{"pass":1,"case":"R05","status":"passed","recovery_s":5.898321}
+{"pass":1,"case":"R06","status":"passed","recovery_s":3.256498}
+{"pass":1,"case":"R07","status":"passed","recovery_s":5.827531}
+{"pass":1,"case":"R08","status":"passed","recovery_s":7.380533}
+{"pass":1,"case":"R09","status":"passed","recovery_s":2.611381}
+{"pass":1,"case":"R10","status":"passed","recovery_s":2.26627}
+{"pass":1,"case":"R11","status":"passed","recovery_s":33.410283}
+{"pass":1,"case":"R12","status":"passed","recovery_s":3.70946}
+{"pass":1,"case":"R13","status":"passed","recovery_s":4.221843}
+{"pass":1,"case":"R14","status":"passed","recovery_s":6.96802}
+{"pass":1,"case":"R15","status":"passed","recovery_s":6.012084}
+{"pass":1,"case":"R16","status":"passed","recovery_s":3.717962}
+{"pass":1,"case":"R17","status":"passed","recovery_s":32.611867}
+{"pass":1,"case":"R18","status":"passed","recovery_s":95.057732}
+{"pass":1,"case":"R19","status":"passed","recovery_s":94.005127}
+{"pass":1,"case":"R20","status":"passed","recovery_s":3.208532}
+{"status":"passed","passed_attempts":20,"expected_attempts":20,"release_gate_passed":false,"output":"/Users/maneeshbijjula/Documents/New project/clouddrive/test-results/sprint4-dev/recovery-1.json"}

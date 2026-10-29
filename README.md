@@ -8,7 +8,7 @@ A private file workspace with resumable multipart uploads, direct object-storage
 
 ## What it does
 
-- Upload files directly from the browser to private object storage using signed multipart requests. The default inclusive limit is **5 GB (5,000,000,000 bytes) per file**, with 8 MiB parts and up to three concurrent part transfers per file.
+- Upload files directly from the browser to private object storage using signed multipart requests. The default inclusive limit is **5 GB (5,000,000,000 bytes) per file**, with 8 MiB parts, up to ten active files, two hashing workers, ten global part slots, and up to three part loops per file.
 - Pause an upload, reload the page, and resume by selecting the same file. A cancellable browser worker hashes the file in bounded chunks; full-file SHA-256 identifies the original content; confirmed parts are reused. Lost upload acknowledgements are reconciled against storage.
 - Verify each part with SHA-256 at the storage boundary, then independently stream and verify the entire file in a Celery worker. Downloads stay blocked until verification passes.
 - Browse, search, sort, inspect checksums, preview UTF-8 text, download, and delete files. The interface works on desktop and mobile.
@@ -101,7 +101,7 @@ npm ci
 docker compose up -d --wait postgres redis minio
 cp .env.example .env
 npm run build
-uvicorn clouddrive.api:app --host 127.0.0.1 --port 8090
+uvicorn clouddrive.api:app --host 127.0.0.1 --port 8090 --no-access-log
 ```
 
 In two additional terminals with the virtual environment activated:
@@ -121,7 +121,7 @@ Configuration uses `CLOUDDRIVE_` environment variables; see [.env.example](.env.
 
 The separate [named recovery matrix](docs/sprint-3.md) exercises 20 distinct recoverable faults with explicit injection proof and source/download integrity checks. Its three-pass release denominator is 60 attempts; development rehearsals and ordinary test counts are reported separately.
 
-The implementation passes **39 unit tests, 50 real-service integration tests, and 20 browser workflows**. The browser workflows also pass against the packaged Docker stack. See [verification notes](docs/verification.md) for the tested failure cases and a repeatable broker-outage check.
+The implementation passes **41 unit tests, 67 real-service integration tests, 26 browser workflows, and two pure scheduler checks**. The browser workflows also pass against the packaged Docker stack. See [verification notes](docs/verification.md) for the tested failure cases and a repeatable broker-outage check.
 
 Unit tests run without infrastructure:
 
@@ -144,7 +144,13 @@ Activate the virtual environment first. On a machine with Google Chrome installe
 
 Coverage includes multipart checksums, resumed uploads, duplicate initiation/completion, cross-workspace isolation, corrupt-content rejection, private downloads, deletion, broker publish failure, expired worker claims, and recovery after S3 completion followed by a failed database update. Browser tests exercise real Celery processing, byte-identical downloads, safe text previews, access-key transfer, mobile layout, and pause/resume across reloads. CI runs the browser suite against both host processes and a separately built packaged Docker stack, then uploads test artifacts. Recovery coverage includes a real SIGKILL after object deletion, forced PostgreSQL row-lock races, expired multipart restart, stale workers, all file operations under another workspace key, and an upgrade from populated baseline metadata. These regression counts are separate from the named recovery matrix.
 
-Completed work and evidence are recorded in the [Sprint 1](docs/sprint-1.md), [Sprint 2](docs/sprint-2.md), and [Sprint 3](docs/sprint-3.md) reports. Remaining concurrency and operations work is tracked in [the completion plan](docs/completion-plan.md).
+Completed work and evidence are recorded in the [Sprint 1](docs/sprint-1.md), [Sprint 2](docs/sprint-2.md), [Sprint 3](docs/sprint-3.md), and [Sprint 4](docs/sprint-4.md) reports. Remaining operations work is tracked in [the completion plan](docs/completion-plan.md).
+
+## Limits and observability
+
+The API defaults to ten active uploads per workspace and one hundred globally, counting upload, finalization and processing. It preserves existing upload request IDs at capacity and returns retryable admission responses for new work. The browser queues selections, cancels queued work on pause, and releases transfer buffers before retry backoff. See [.env.example](.env.example) for admission, scheduler and database-pool settings.
+
+Workspace-authenticated `/api/metrics` exposes only that workspace's counts and timing observations. Optional `/api/ops` requires a separate private `CLOUDDRIVE_METRICS_KEY` in `X-Metrics-Key`; it is disabled by default. Every API response includes `X-Request-ID`, with credential-free structured API/worker events. Metrics are bounded, process-local observations; see [scope and benchmark reproduction](docs/sprint-4.md).
 
 ## Operating scope
 

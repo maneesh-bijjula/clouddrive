@@ -10,6 +10,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
+    ignoreHTTPSErrors: process.env.PLAYWRIGHT_IGNORE_HTTPS_ERRORS === "1",
     baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:8090",
     channel: process.env.PLAYWRIGHT_CHANNEL || undefined,
     viewport: { width: 1440, height: 1000 },

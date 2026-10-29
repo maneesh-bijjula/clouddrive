@@ -1,0 +1,39 @@
+
+> clouddrive@0.1.0 test:browser
+> playwright test --retries=0 --output=test-results/sprint4-packaged-2
+
+
+Running 28 tests using 1 worker
+
+(node:94027) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests-browser/concurrency.spec.ts:55:1 › scheduler reserves a first part for every admitted file and cancels queued work (4ms)
+  ✓   2 tests-browser/concurrency.spec.ts:109:1 › scheduler bounds hashing and each file's part ownership (1ms)
+  ✓   3 tests-browser/concurrency.spec.ts:150:1 › one selection starts ten files without exceeding the global part budget (7.4s)
+  ✓   4 tests-browser/concurrency.spec.ts:190:1 › pausing queued and active files frees capacity without starting the paused selection (10.0s)
+  ✓   5 tests-browser/concurrency.spec.ts:255:1 › hash wait cancellation permits a new file while at most two workers run (3.8s)
+  ✓   6 tests-browser/concurrency.spec.ts:297:3 › bounded initiation capacity retries preserve the upload for manual resume (9.5s)
+  ✓   7 tests-browser/concurrency.spec.ts:297:3 › bounded completion capacity retries preserve the upload for manual resume (12.8s)
+  ✓   8 tests-browser/concurrency.spec.ts:343:1 › workspace switching retires paused queued and hashing work (7.0s)
+  ✓   9 tests-browser/recovery.spec.ts:62:1 › interrupted upload can be deleted and uploaded again with a fresh request ID (7.0s)
+  ✓  10 tests-browser/recovery.spec.ts:94:3 › a deleted upload remembered by another tab is replaced without reload (10.3s)
+  ✓  11 tests-browser/recovery.spec.ts:94:3 › a deleted upload remembered by another tab is replaced after reload (10.2s)
+  ✓  12 tests-browser/recovery.spec.ts:119:1 › expired storage becomes terminal and Restart verifies the reselected original file (10.8s)
+  ✓  13 tests-browser/recovery.spec.ts:154:1 › duplicate file selection keeps one active upload and one storage transfer (4.5s)
+  ✓  14 tests-browser/recovery.spec.ts:183:1 › workspace switch isolates saved requests and an old in-flight response (3.8s)
+  ✓  15 tests-browser/transfer.spec.ts:30:1 › a transient signing failure retries automatically (4.0s)
+  ✓  16 tests-browser/transfer.spec.ts:47:3 › a lost storage-reply is reconciled without a second PUT (6.9s)
+  ✓  17 tests-browser/transfer.spec.ts:47:3 › a lost acknowledgement-reply is reconciled without a second PUT (3.8s)
+  ✓  18 tests-browser/transfer.spec.ts:77:1 › a genuinely expired S3 URL is re-signed without expiring the upload (3.9s)
+  ✓  19 tests-browser/transfer.spec.ts:113:1 › a permanent storage rejection is not retried (371ms)
+  ✓  20 tests-browser/transfer.spec.ts:132:1 › transient failures stop after four attempts and can then resume (6.8s)
+  ✓  21 tests-browser/transfer.spec.ts:152:1 › pause cancels a hashing worker before creating an upload (829ms)
+  ✓  22 tests-browser/transfer.spec.ts:184:1 › upload can start after workspace configuration while the first listing is pending (4.2s)
+  ✓  23 tests-browser/transfer.spec.ts:212:1 › the last multipart part can finish before the first two parts (10.7s)
+  ✓  24 tests-browser/workspace.spec.ts:27:1 › uploads, verifies through Celery, previews safely, and downloads identical bytes (4.6s)
+  ✓  25 tests-browser/workspace.spec.ts:51:1 › resumes a multipart upload after reload without resending its confirmed part (8.5s)
+  ✓  26 tests-browser/workspace.spec.ts:121:1 › exports workspace access, reopens it in a fresh browser, searches, and deletes (4.7s)
+  ✓  27 tests-browser/workspace.spec.ts:154:1 › mobile workspace fits the screen and supports upload and file details (7.1s)
+  ✓  28 tests-browser/workspace.spec.ts:182:1 › validates empty uploads and renders a real populated workspace (12.4s)
+
+  28 passed (3.0m)

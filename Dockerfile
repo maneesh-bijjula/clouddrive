@@ -15,4 +15,4 @@ COPY clouddrive ./clouddrive
 COPY --from=frontend /build/dist ./dist
 USER app
 EXPOSE 8090
-CMD ["uvicorn", "clouddrive.api:app", "--host", "0.0.0.0", "--port", "8090"]
+CMD ["uvicorn", "clouddrive.api:app", "--host", "0.0.0.0", "--port", "8090", "--no-access-log"]

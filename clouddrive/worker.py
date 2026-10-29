@@ -11,6 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from .config import settings
 from .db import engine, migrate
+from .observability import correlation, event
 from .recovery_faults import checkpoint
 from .service import finalize, finish_delete, query
 from .storage import s3
@@ -120,6 +121,13 @@ def process_file(id):
             outcome = ("ready" if matches else "failed") if changed.rowcount else "skipped"
         if outcome != "skipped":
             checkpoint("worker_result_committed", id, outcome=outcome)
+            event(
+                "verification_finished",
+                file_id=str(id),
+                status=outcome,
+                bytes_verified=size,
+                duration_ms=round((time.monotonic() - verification_started) * 1000, 3),
+            )
         return outcome
     except ClaimLost:
         return "skipped"
@@ -144,8 +152,12 @@ def process(self, id):
         redelivered=bool((self.request.delivery_info or {}).get("redelivered")),
         task_id=self.request.id or "",
     )
+    started = time.monotonic()
+    context = correlation.set(f"file:{id}")
+    outcome = "error"
     try:
-        return process_file(UUID(id))
+        outcome = process_file(UUID(id))
+        return outcome
     except (ClientError, BotoCoreError, SQLAlchemyError, OSError) as exc:
         if self.request.retries >= self.max_retries:
             with engine().begin() as conn:
@@ -155,12 +167,24 @@ def process(self, id):
                   WHERE id=:id AND status='PROCESSING' AND claim IS NULL""",
                     id=UUID(id),
                 )
-            return "failed"
+            outcome = "failed"
+            return outcome
         raise self.retry(exc=exc, countdown=min(2**self.request.retries, 30))
+    finally:
+        event(
+            "processing_task",
+            file_id=str(id),
+            task_id=self.request.id,
+            retries=self.request.retries,
+            outcome=outcome,
+            duration_ms=round((time.monotonic() - started) * 1000, 3),
+        )
+        correlation.reset(context)
 
 
 def dispatch_pending(publish=None):
     publish = publish or (lambda id: process.delay(str(id)))
+    started = time.monotonic()
     with engine().begin() as conn:
         # Recover work whose broker message was lost, or whose worker died.
         query(
@@ -182,6 +206,11 @@ def dispatch_pending(publish=None):
             publish(id)
             checkpoint("outbox_published", id)
             query(conn, "DELETE FROM processing_outbox WHERE file_id=:id", id=id)
+    event(
+        "outbox_dispatched",
+        published=len(rows),
+        duration_ms=round((time.monotonic() - started) * 1000, 3),
+    )
     return len(rows)
 
 

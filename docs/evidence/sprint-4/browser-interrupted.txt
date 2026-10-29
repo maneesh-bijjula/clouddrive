@@ -1,0 +1,22 @@
+
+> clouddrive@0.1.0 test:browser
+> playwright test --retries=0
+
+
+Running 28 tests using 1 worker
+
+(node:91401) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests-browser/concurrency.spec.ts:55:1 › scheduler reserves a first part for every admitted file and cancels queued work (4ms)
+  ✓   2 tests-browser/concurrency.spec.ts:109:1 › scheduler bounds hashing and each file's part ownership (0ms)
+  ✓   3 tests-browser/concurrency.spec.ts:150:1 › one selection starts ten files without exceeding the global part budget (7.1s)
+  ✓   4 tests-browser/concurrency.spec.ts:190:1 › pausing queued and active files frees capacity without starting the paused selection (6.9s)
+  ✓   5 tests-browser/concurrency.spec.ts:255:1 › hash wait cancellation permits a new file while at most two workers run (4.0s)
+  ✓   6 tests-browser/concurrency.spec.ts:297:3 › bounded initiation capacity retries preserve the upload for manual resume (9.5s)
+  ✓   7 tests-browser/concurrency.spec.ts:297:3 › bounded completion capacity retries preserve the upload for manual resume (9.5s)
+  ✓   8 tests-browser/concurrency.spec.ts:343:1 › workspace switching retires paused queued and hashing work (6.5s)
+  ✓   9 tests-browser/recovery.spec.ts:62:1 › interrupted upload can be deleted and uploaded again with a fresh request ID (9.9s)
+  ✓  10 tests-browser/recovery.spec.ts:94:3 › a deleted upload remembered by another tab is replaced without reload (10.2s)
+  ✓  11 tests-browser/recovery.spec.ts:94:3 › a deleted upload remembered by another tab is replaced after reload (10.5s)
+  ✓  12 tests-browser/recovery.spec.ts:119:1 › expired storage becomes terminal and Restart verifies the reselected original file (7.5s)
+  ✓  13 tests-browser/recovery.spec.ts:154:1 › duplicate file selection keeps one active upload and one storage transfer (7.1s)

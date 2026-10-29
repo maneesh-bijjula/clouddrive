@@ -9,7 +9,8 @@
     "test:browser": "playwright test",
     "format": "prettier --write frontend tests-browser *.json *.ts .github README.md compose.yaml",
     "bench:upload": "node scripts/benchmark-upload.mjs",
-    "test:recovery": "node scripts/recovery-matrix.mjs"
+    "test:recovery": "node scripts/recovery-matrix.mjs",
+    "bench:concurrent": "node scripts/benchmark-concurrent.mjs"
   },
   "dependencies": {
     "@noble/hashes": "2.4.0",

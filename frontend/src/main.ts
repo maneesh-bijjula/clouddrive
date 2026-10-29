@@ -1,5 +1,6 @@
 import "./style.css";
 import { sha256 } from "@noble/hashes/sha2.js";
+import { UploadScheduler } from "./scheduler";
 import {
   createIcons,
   Cloud,
@@ -114,10 +115,12 @@ interface Transfer {
   progress: number;
   controllers: Set<XMLHttpRequest | AbortController>;
   cancelHash?: () => void;
+  cancellation: AbortController;
   workspace: string;
   fingerprint?: string;
 }
 const transfers = new Map<string, Transfer>();
+let uploadScheduler = new UploadScheduler();
 let token = localStorage.getItem("clouddrive.access") || "";
 let files: StoredFile[] = [];
 let stats = { total: 0, ready: 0, bytes: 0, pending: 0 };
@@ -136,6 +139,7 @@ class ApiError extends Error {
     message: string,
     readonly code?: string,
     readonly status?: number,
+    readonly retryAfter?: number,
   ) {
     super(message);
   }
@@ -185,6 +189,7 @@ async function api<T = any>(
         : error.detail?.message || `Request failed (${response.status})`,
       error.detail?.code,
       response.status,
+      Number(response.headers.get("Retry-After")) || undefined,
     );
   }
   return response.status === 204 ? (undefined as T) : response.json();
@@ -276,6 +281,9 @@ function render() {
 }
 
 function renderTransfers() {
+  const scheduling = uploadScheduler.snapshot();
+  for (const [key, value] of Object.entries(scheduling))
+    $("#transfer-panel").dataset[key] = String(value);
   $("#transfer-panel").hidden = transfers.size === 0;
   $("#transfer-panel").innerHTML = [...transfers.values()]
     .map(
@@ -302,8 +310,19 @@ async function refresh() {
 }
 
 function assertActive(transfer: Transfer) {
-  if (transfer.paused || transfer.workspace !== workspaceId)
+  if (
+    transfer.paused ||
+    transfer.cancellation.signal.aborted ||
+    transfer.workspace !== workspaceId
+  )
     throw new DOMException("Paused", "AbortError");
+}
+
+function pauseTransfer(transfer: Transfer) {
+  transfer.paused = true;
+  transfer.cancellation.abort();
+  transfer.controllers.forEach((controller) => controller.abort());
+  transfer.cancelHash?.();
 }
 
 function base64(value: Uint8Array) {
@@ -356,7 +375,11 @@ function retryable(error: unknown) {
   );
 }
 
-function retryDelay(attempt: number, transfer: Transfer) {
+function retryDelay(
+  attempt: number,
+  transfer: Transfer,
+  milliseconds?: number,
+) {
   return new Promise<void>((resolve, reject) => {
     const controller = new AbortController();
     transfer.controllers.add(controller);
@@ -365,7 +388,7 @@ function retryDelay(attempt: number, transfer: Transfer) {
         transfer.controllers.delete(controller);
         resolve();
       },
-      Math.min(2000, 250 * 2 ** attempt),
+      milliseconds ?? Math.min(2000, 250 * 2 ** attempt),
     );
     controller.signal.onabort = () => {
       clearTimeout(timer);
@@ -464,6 +487,7 @@ async function upload(file: File, target?: string) {
   }
   const accessKey = token;
   const uploadWorkspace = workspaceId;
+  const scheduler = uploadScheduler;
   const uploadApi = async (path: string, method = "GET", body?: unknown) => {
     assertActive(transfer);
     const controller = new AbortController();
@@ -488,14 +512,63 @@ async function upload(file: File, target?: string) {
     key: crypto.randomUUID(),
     name: file.name,
     paused: false,
-    state: "Checking file…",
+    state: "Queued · Waiting for upload slot",
     progress: 0,
     controllers: new Set(),
+    cancellation: new AbortController(),
+  };
+  const capacityApi = async (path: string, method: string, body?: unknown) => {
+    for (let attempt = 0; ; attempt++) {
+      try {
+        return await uploadApi(path, method, body);
+      } catch (error) {
+        assertActive(transfer);
+        if (
+          !(error instanceof ApiError) ||
+          error.status !== 429 ||
+          attempt >= 7
+        )
+          throw error;
+        transfer.state = `Waiting for upload capacity · attempt ${attempt + 2} of 8`;
+        renderTransfers();
+        await retryDelay(
+          attempt,
+          transfer,
+          Math.min(
+            3000,
+            Math.max(
+              1000,
+              (error.retryAfter || 1 + Math.floor(attempt / 2)) * 1000,
+            ),
+          ),
+        );
+      }
+    }
   };
   transfers.set(transfer.key, transfer);
   renderTransfers();
+  let releaseFile: (() => void) | undefined;
   try {
-    const checksum = await hashFile(file, transfer);
+    releaseFile = await scheduler.acquireFile(
+      transfer.key,
+      transfer.cancellation.signal,
+    );
+    assertActive(transfer);
+    transfer.state = "Waiting to check file…";
+    renderTransfers();
+    const releaseHash = await scheduler.acquireHash(
+      transfer.cancellation.signal,
+    );
+    let checksum: string;
+    try {
+      assertActive(transfer);
+      transfer.state = "Checking file…";
+      renderTransfers();
+      checksum = await hashFile(file, transfer);
+    } finally {
+      releaseHash();
+      renderTransfers();
+    }
     const existing = target
       ? files.find((item) => item.id === target)
       : files.find(
@@ -519,6 +592,14 @@ async function upload(file: File, target?: string) {
       uploadWorkspace,
     );
     transfer.fingerprint = fingerprint;
+    for (const other of transfers.values())
+      if (
+        other.key !== transfer.key &&
+        other.workspace === uploadWorkspace &&
+        other.fingerprint === fingerprint &&
+        other.paused
+      )
+        transfers.delete(other.key);
     if (
       [...transfers.values()].some(
         (other) =>
@@ -533,7 +614,7 @@ async function upload(file: File, target?: string) {
     let requestId = localStorage.getItem(fingerprint) || crypto.randomUUID();
     localStorage.setItem(fingerprint, requestId);
     const initiate = () =>
-      uploadApi("/uploads", "POST", {
+      capacityApi("/uploads", "POST", {
         request_id: requestId,
         name: file.name,
         size: file.size,
@@ -611,70 +692,103 @@ async function upload(file: File, target?: string) {
           !session.parts.some((part) => part.number === number && part.etag),
       );
       let partFailure: unknown;
+      let heldParts = 0;
       const send = async () => {
-        while (queue.length) {
-          if (partFailure) throw partFailure;
-          assertActive(transfer);
-          const number = queue.shift()!;
-          const chunk = file.slice(
-            (number - 1) * session.part_size,
-            Math.min(number * session.part_size, file.size),
-          );
-          const partChecksum = base64(
-            sha256(new Uint8Array(await chunk.arrayBuffer())),
-          );
-          assertActive(transfer);
-          for (let attempt = 0; ; attempt++) {
+        try {
+          while (queue.length) {
+            if (partFailure) throw partFailure;
             assertActive(transfer);
-            try {
-              const signed = await uploadApi(
-                `/uploads/${session.id}/parts/${number}/sign`,
-                "POST",
-                { checksum: partChecksum },
-              );
-              if (!signed.uploaded) {
-                const etag = await putPart(
-                  signed.url,
-                  signed.headers,
-                  chunk,
-                  transfer,
-                  (loaded) => {
-                    partProgress.set(number, loaded);
-                    update();
-                  },
-                );
-                assertActive(transfer);
-                await uploadApi(
-                  `/uploads/${session.id}/parts/${number}`,
-                  "PUT",
-                  {
-                    checksum: partChecksum,
-                    etag,
-                  },
-                );
-              }
-              break;
-            } catch (error) {
-              if (partFailure) throw partFailure;
+            const number = queue.shift()!;
+            // Blob slicing retains a file handle; acquire global capacity before
+            // reading bytes or creating a per-part hashing buffer.
+            const chunk = file.slice(
+              (number - 1) * session.part_size,
+              Math.min(number * session.part_size, file.size),
+            );
+            let partChecksum: string | undefined;
+            for (let attempt = 0; ; attempt++) {
               assertActive(transfer);
-              if (!retryable(error) || attempt >= 3) {
-                partFailure = error;
-                transfer.controllers.forEach((controller) =>
-                  controller.abort(),
+              try {
+                if (!heldParts) {
+                  transfer.state = "Waiting for transfer capacity…";
+                  renderTransfers();
+                }
+                const releasePart = await scheduler.acquirePart(
+                  transfer.key,
+                  transfer.cancellation.signal,
                 );
-                throw error;
+                heldParts++;
+                try {
+                  assertActive(transfer);
+                  if (partFailure) throw partFailure;
+                  update();
+                  partChecksum ||= base64(
+                    sha256(new Uint8Array(await chunk.arrayBuffer())),
+                  );
+                  assertActive(transfer);
+                  const signed = await uploadApi(
+                    `/uploads/${session.id}/parts/${number}/sign`,
+                    "POST",
+                    { checksum: partChecksum },
+                  );
+                  if (!signed.uploaded) {
+                    const etag = await putPart(
+                      signed.url,
+                      signed.headers,
+                      chunk,
+                      transfer,
+                      (loaded) => {
+                        partProgress.set(number, loaded);
+                        update();
+                      },
+                    );
+                    assertActive(transfer);
+                    await uploadApi(
+                      `/uploads/${session.id}/parts/${number}`,
+                      "PUT",
+                      { checksum: partChecksum, etag },
+                    );
+                  }
+                } finally {
+                  heldParts--;
+                  releasePart();
+                  renderTransfers();
+                }
+                break;
+              } catch (error) {
+                if (partFailure) throw partFailure;
+                assertActive(transfer);
+                if (!retryable(error) || attempt >= 3) throw error;
+                partProgress.set(number, 0);
+                transfer.state = `Retrying part ${number} · attempt ${attempt + 2} of 4`;
+                renderTransfers();
+                await retryDelay(
+                  attempt,
+                  transfer,
+                  error instanceof ApiError && error.retryAfter
+                    ? Math.min(3000, error.retryAfter * 1000)
+                    : undefined,
+                );
               }
-              partProgress.set(number, 0);
-              transfer.state = `Retrying part ${number} · attempt ${attempt + 2} of 4`;
-              renderTransfers();
-              await retryDelay(attempt, transfer);
             }
+            partProgress.set(number, chunk.size);
+            update();
           }
-          partProgress.set(number, chunk.size);
-          update();
+        } catch (error) {
+          // Cancel queued part acquisitions as well as HTTP requests. Every
+          // sibling settles before the admitted file slot can be released.
+          if (!partFailure) {
+            partFailure = error;
+            transfer.cancellation.abort();
+            transfer.controllers.forEach((controller) => controller.abort());
+          }
+          throw partFailure;
         }
       };
-      const workers = Array.from({ length: Math.min(3, queue.length) }, send);
+      const workers = Array.from(
+        { length: Math.min(scheduler.limits.parts_per_file, queue.length) },
+        send,
+      );
       // Wait for all part loops before permitting another transfer of this file.
       const results = await Promise.allSettled(workers);
       const failed = results.find((result) => result.status === "rejected");
@@ -683,7 +797,7 @@ async function upload(file: File, target?: string) {
     assertActive(transfer);
     transfer.state = "Finishing upload…";
     renderTransfers();
-    session = await uploadApi(`/uploads/${session.id}/complete`, "POST");
+    session = await capacityApi(`/uploads/${session.id}/complete`, "POST");
     assertActive(transfer);
     if (session.status === "EXPIRED")
       throw new Error(
@@ -697,11 +811,12 @@ async function upload(file: File, target?: string) {
     );
     await refresh();
   } catch (error) {
-    transfer.controllers.forEach((controller) => controller.abort());
-    transfer.cancelHash?.();
-    transfer.paused = true;
-    transfer.state =
-      error instanceof DOMException && error.name === "AbortError"
+    pauseTransfer(transfer);
+    if (uploadWorkspace !== workspaceId) return;
+    const capacityExhausted = error instanceof ApiError && error.status === 429;
+    transfer.state = capacityExhausted
+      ? "Waiting for capacity · Select file to resume"
+      : error instanceof DOMException && error.name === "AbortError"
         ? "Paused · Select file to resume"
         : "Interrupted · Select file to resume";
     renderTransfers();
@@ -711,11 +826,15 @@ async function upload(file: File, target?: string) {
           ? error.message
           : "Upload interrupted. Select the same file to resume.",
       );
-    setTimeout(() => {
-      transfers.delete(transfer.key);
-      renderTransfers();
-    }, 12000);
+    if (!capacityExhausted)
+      setTimeout(() => {
+        transfers.delete(transfer.key);
+        renderTransfers();
+      }, 12000);
     await refresh().catch(() => {});
+  } finally {
+    releaseFile?.();
+    renderTransfers();
   }
 }
 
@@ -736,17 +855,13 @@ function chooseFiles(target?: string) {
 }
 for (const selector of ["#upload-button", "#browse-button", "#first-upload"])
   $(selector).addEventListener("click", () => chooseFiles());
-$("#file-input").addEventListener("change", async (event) => {
+$("#file-input").addEventListener("change", (event) => {
   const input = event.target as HTMLInputElement;
   const chosen = [...(input.files || [])];
   const target = resumeTarget;
   resumeTarget = undefined;
   input.value = "";
-  const batchWorkspace = workspaceId;
-  for (const file of chosen) {
-    if (workspaceId !== batchWorkspace) break;
-    await upload(file, target);
-  }
+  for (const file of chosen) void upload(file, target);
 });
 $("#search").addEventListener("input", render);
 $("#sort").addEventListener("change", render);
@@ -779,9 +894,7 @@ $("#transfer-panel").addEventListener("click", (event) => {
   );
   const transfer = button && transfers.get(button.dataset.pause!);
   if (transfer) {
-    transfer.paused = true;
-    transfer.controllers.forEach((controller) => controller.abort());
-    transfer.cancelHash?.();
+    pauseTransfer(transfer);
     transfer.state = "Pausing…";
     renderTransfers();
   }
@@ -828,9 +941,7 @@ document.addEventListener("click", async (event) => {
         return;
       for (const transfer of transfers.values())
         if (transfer.id === file.id) {
-          transfer.paused = true;
-          transfer.controllers.forEach((controller) => controller.abort());
-          transfer.cancelHash?.();
+          pauseTransfer(transfer);
         }
       await fileApi(`/files/${file.id}`, "DELETE");
       forgetRequest(file, actionWorkspace);
@@ -862,14 +973,11 @@ for (const type of ["dragenter", "dragover"])
     drop.classList.add("dragging");
   });
 drop.addEventListener("dragleave", () => drop.classList.remove("dragging"));
-drop.addEventListener("drop", async (event) => {
+drop.addEventListener("drop", (event) => {
   event.preventDefault();
   drop.classList.remove("dragging");
-  const batchWorkspace = workspaceId;
-  for (const file of [...((event as DragEvent).dataTransfer?.files || [])]) {
-    if (workspaceId !== batchWorkspace) break;
-    await upload(file);
-  }
+  for (const file of [...((event as DragEvent).dataTransfer?.files || [])])
+    void upload(file);
 });
 for (const selector of ["#workspace-settings", "#workspace-settings-mobile"])
   $(selector).addEventListener("click", () =>
@@ -920,7 +1028,9 @@ $("#key-input").addEventListener("change", async (event) => {
       undefined,
       data.access_key,
     );
+    transfers.forEach(pauseTransfer);
     transfers.clear();
+    uploadScheduler = new UploadScheduler(workspace.upload_limits);
     files = [];
     resumeTarget = undefined;
     selectedDetail = undefined;
@@ -963,6 +1073,8 @@ async function initialize() {
       localStorage.setItem("clouddrive.access", token);
     }
     const workspace = await api("/workspace");
+    if (workspaceId !== workspace.id)
+      uploadScheduler = new UploadScheduler(workspace.upload_limits);
     limit = workspace.max_file_bytes;
     workspaceId = workspace.id;
     workspaceLabel = `Workspace ${workspace.id.slice(0, 8)}`;

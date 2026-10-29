@@ -8,7 +8,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-python@v7.0.0
@@ -55,6 +55,27 @@ jobs:
           mkdir -p test-results
           docker compose -f compose.test.yaml logs --no-color > test-results/infrastructure.log
           docker compose -f compose.verify.yaml logs --no-color > test-results/packaged-infrastructure.log
+      - name: Release ordinary test stacks before the bounded load smoke
+        run: |
+          docker compose -f compose.verify.yaml down
+          docker compose -f compose.test.yaml down
+      - name: Start isolated HTTP2 load profile
+        run: |
+          docker compose -p clouddrive-ci-load -f compose.load.yaml build api
+          docker compose -p clouddrive-ci-load -f compose.load.yaml pull postgres redis gateway
+          docker compose -p clouddrive-ci-load -f compose.load.yaml up --no-build --pull never -d --wait
+      - name: Ten-file concurrency smoke (small fixtures; not 500 MB evidence)
+        env:
+          CLOUDDRIVE_TEST_PYTHON: python
+        run: |
+          mkdir -p test-results/load
+          set -o pipefail
+          npm run bench:concurrent -- --bytes 16777233 --runs 1 --project clouddrive-ci-load --output test-results/load/smoke.json 2>&1 | tee test-results/load/transcript.txt
+      - name: Isolated load service state (exclude signed-URL gateway logs)
+        if: always()
+        run: |
+          mkdir -p test-results/load
+          docker compose -p clouddrive-ci-load -f compose.load.yaml ps --all > test-results/load/services.txt
       - uses: actions/upload-artifact@v7.0.2
         if: always()
         with:
@@ -66,5 +87,6 @@ jobs:
       - name: Stop test services
         if: always()
         run: |
+          docker compose -p clouddrive-ci-load -f compose.load.yaml down -v --remove-orphans
           docker compose -f compose.verify.yaml down
           docker compose -f compose.test.yaml down

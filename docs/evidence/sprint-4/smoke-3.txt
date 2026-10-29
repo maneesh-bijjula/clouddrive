@@ -1,0 +1,4 @@
+{"stage":"generate-fixtures","t_s":4.585507}
+{"stage":"select-ten","t_s":11.370618,"run":1,"bytes":16777233}
+{"stage":"cohort-finished","t_s":28.682834,"run":1,"status":"passed","overlap_s":1.011399999976158,"transfer_MB_per_s":38.75544698544699}
+{"status":"passed","release_gate_passed":false,"passed_files":10,"output":"/Users/maneeshbijjula/Documents/New project/clouddrive/test-results/sprint4-dev/smoke-3.json"}
