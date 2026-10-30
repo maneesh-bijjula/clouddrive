@@ -134,6 +134,7 @@ let resumeTarget: string | undefined;
 let refreshInFlight: { key: string; revision: number } | undefined;
 let listingRevision = 0;
 let workspaceEpoch = 0;
+let accessImportRevision = 0;
 let pageCount = 1;
 let nextCursor: string | null = null;
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
@@ -1066,6 +1067,7 @@ $("#key-input").addEventListener("change", async (event) => {
   const file = input.files?.[0];
   input.value = "";
   if (!file) return;
+  const revision = ++accessImportRevision;
   try {
     if ([...transfers.values()].some((transfer) => !transfer.paused))
       throw new Error("Pause active uploads before switching workspaces.");
@@ -1084,6 +1086,7 @@ $("#key-input").addEventListener("change", async (event) => {
       undefined,
       data.access_key,
     );
+    if (revision !== accessImportRevision) return;
     workspaceEpoch++;
     listingRevision++;
     transfers.forEach(pauseTransfer);
@@ -1105,8 +1108,11 @@ $("#key-input").addEventListener("change", async (event) => {
       `Resumable uploads · Up to ${bytes(limit)} per file`;
     $<HTMLDialogElement>("#access-dialog").close();
     await refresh(true);
+    if (revision !== accessImportRevision) return;
+    startPolling();
     notice("Workspace opened. Your access key is saved in this browser.", true);
   } catch (error) {
+    if (revision !== accessImportRevision) return;
     notice((error as Error).message);
     $<HTMLDialogElement>("#access-dialog").close();
   }
@@ -1124,6 +1130,18 @@ for (const dialog of document.querySelectorAll("dialog"))
         dialog.close();
     }
   });
+
+function startPolling() {
+  connected = true;
+  if (!pollTimer)
+    pollTimer = setInterval(
+      () =>
+        refresh().catch(() => {
+          $("#workspace-id").textContent = "Connection interrupted";
+        }),
+      3000,
+    );
+}
 
 async function initialize() {
   const epoch = workspaceEpoch;
@@ -1147,15 +1165,7 @@ async function initialize() {
       `Resumable uploads · Up to ${bytes(limit)} per file`;
     await refresh(true);
     if (epoch !== workspaceEpoch || token !== accessKey) return;
-    connected = true;
-    if (!pollTimer)
-      pollTimer = setInterval(
-        () =>
-          refresh().catch(() => {
-            $("#workspace-id").textContent = "Connection interrupted";
-          }),
-        3000,
-      );
+    startPolling();
   } catch (error) {
     if (epoch !== workspaceEpoch) return;
     notice((error as Error).message);

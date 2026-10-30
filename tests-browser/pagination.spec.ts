@@ -121,3 +121,67 @@ test("a late old listing cannot overwrite a newer refresh of the same workspace"
     release();
   }
 });
+
+test("workspace import during initial connection keeps the new access and live processing updates", async ({
+  page,
+  request,
+}) => {
+  const workspace = await (await request.post("/api/workspaces")).json();
+  let release!: () => void;
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let captured = false;
+  await page.route("**/api/workspace", async (route) => {
+    if (!captured) {
+      captured = true;
+      const response = await route.fetch();
+      await held;
+      await route.fulfill({ response });
+    } else await route.continue();
+  });
+  try {
+    await page.goto("/");
+    await expect.poll(() => captured).toBe(true);
+    await page
+      .getByRole("button", { name: "Manage access", exact: true })
+      .click();
+    await page
+      .locator("#key-input")
+      .setInputFiles({
+        name: "access.json",
+        mimeType: "application/json",
+        buffer: Buffer.from(
+          JSON.stringify({
+            application: "clouddrive",
+            access_key: workspace.access_key,
+          }),
+        ),
+      });
+    await expect(page.locator("#workspace-id")).toHaveText(
+      `Workspace ${workspace.id.slice(0, 8)}`,
+    );
+    const response = page.waitForResponse(
+      (r) => new URL(r.url()).pathname === "/api/workspace",
+    );
+    release();
+    await response;
+    await page
+      .locator("#file-input")
+      .setInputFiles({
+        name: "switched-early.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from("preserve this content"),
+      });
+    await expect(
+      page
+        .locator("tbody tr", { hasText: "switched-early.txt" })
+        .getByText("Verified", { exact: true }),
+    ).toBeVisible();
+    await expect(page.locator("#workspace-id")).toHaveText(
+      `Workspace ${workspace.id.slice(0, 8)}`,
+    );
+  } finally {
+    release();
+  }
+});
