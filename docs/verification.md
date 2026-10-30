@@ -1,5 +1,13 @@
 # Verification
 
+## Sprint 5 verification
+
+Implementation `d723e4e` passed **121 Python cases (45 unit + 76 integration)**, **29 host and 29 packaged Playwright cases (27 browser workflows + 2 scheduler checks per mode)** with zero runner retries, **9 Node helper tests**, and one complete additional **20/20 named recovery regression**. Python had zero skips/failures/errors and the existing TestClient deprecation warning. The bounded small concurrency smoke passed ten 16,777,233-byte files; it is not a target-size benchmark.
+
+The separate hosted restore exercise recovered **3/3 committed objects (16,804,502 bytes total)** into a fresh Compose project/database/bucket, preserved two workspace keys, reprocessed pending work, rejected a populated destination, and restarted an unfinished 12,500,000-byte file through the packaged browser. Core backup/restore took **0.2391/0.4511 s** for those small fixtures; the complete exercise took **206.3426 s**. These clocks are not RPO/RTO guarantees. Source inventory was unchanged, and all 24 recorded source hashes match the implementation. See [Sprint 5](sprint-5.md) for exact timing boundaries, recovery point, raw evidence, failure history and CI identities; use the [operations runbook](operations.md) for manual commands.
+
+All heavy Sprint 5 execution ran on GitHub-hosted runners. The existing laptop deployment/other projects/data were left untouched. The final documentation/evidence commit is pushed directly to main and its exact-SHA workflows checked after publication; earlier measured application sources remain unchanged.
+
 ## Sprint 4 regression verification
 
 The bounded scheduler/admission/observability implementation passed **108 Python cases (41 unit + 67 integration)** and **28 packaged Playwright cases (26 browser workflows + 2 pure scheduler checks)**, with browser retries disabled. A separate complete **20/20** named recovery regression passed against the same application source. The separate hosted target-size run passed **three complete ten-file cohorts (30/30)** on `20f9dbf`, with matching source/worker/download hashes, 1,800 successful HTTP/2 PUTs, unchanged budgets, and clean final inventory. Nine lightweight Node observer/hash-helper tests also passed. Small ten-file rehearsals remain a separate denominator. See [Sprint 4](sprint-4.md) for commands, budget manifest, transport profile, raw results and precise measurement status.

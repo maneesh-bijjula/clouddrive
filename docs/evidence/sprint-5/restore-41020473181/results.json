@@ -1,0 +1,220 @@
+{
+  "status": "passed",
+  "started_at": "2026-10-30T07:30:50.658969+00:00",
+  "workflow": {
+    "run_id": "41020473181",
+    "run_attempt": "1",
+    "repository": "maneesh-bijjula/clouddrive"
+  },
+  "source_sha256": {
+    "clouddrive/operations.py": "7c56ac02937d9e9f9ba4be7ca801d49b5c2f5d2046c26017d5d2bd4c73601848",
+    "clouddrive/listing.py": "bdb63d833755fe7a8acc8366c41bb0e71303b5ba7346f8a0b1e71c94387c2e18",
+    "clouddrive/api.py": "3eab9905284fdeae763b5b0c53e1b21da002e296eaa294ac4ec1d30f98f446bb",
+    "clouddrive/service.py": "b596f38ae22e877d4093f6c3021d1b136a96ce9869b2579267df5ec2c4a47059",
+    "clouddrive/db.py": "ffa1152439f480c9aca04393a6d7f33dd41b582f58032578824c9f35c8da7923",
+    "clouddrive/storage.py": "5e3539c250497518c976d58096a3c0e43c1261d4140a752aac5c7afc075722e5",
+    "clouddrive/worker.py": "fc1138efcb72ef0aff6e58e01f0ac3874ac86c5310f8a0a2c4eee7fe96603018",
+    "clouddrive/config.py": "18b3c0f966a8de0690f2ba564e520e156d5ae477c5e2fb7219fd15f51ccfc4d9",
+    "clouddrive/migrations/001_initial.sql": "1f2f2d8088acc58441ac2e3b1926e6643be720796103876b23aadbe4b359c9b4",
+    "clouddrive/migrations/002_recovery_states.sql": "20de6ed8a56cbe6235bcda4459e73f4ee0e3b3718f541daa03fe01218af03362",
+    "clouddrive/migrations/003_listing.sql": "e1ac24384df8808f7409596772d71217b67df26ce3fac45798754abecc88b43e",
+    "scripts/verify-restore.py": "e682c09d16f43335adafd0eac4f5ccaefd41e8760e6eb63a991f9db75e2aa949",
+    "scripts/verify-restore-browser.mjs": "e0b1b48704a2662216aa14270b3acd187887d80f2109210edcadd09a4dc43f14",
+    "compose.operations.yaml": "0b4f28779e0ab6cbb6bf7d129cc1527054d7e201557e99464e0a0c982e425061",
+    "Dockerfile": "369bbb3c7d57225d99b5dfadf26bfdea3eb0f11b69d1acad95e389831ba0dbed",
+    "Dockerfile.minio": "cde2ca1ae71806dab340b22ee337930d9c769f4cc7d5cca83a282c25f10ba5b3",
+    "frontend/src/main.ts": "e839e18b478b172ae475d7816bf53d2cf9668fec5a2b87048b65ecf3b6b058b0",
+    "frontend/src/scheduler.ts": "e4099a91676faf27f803c989c5733af1f186e7529a6cc3a0cd77823b1c6dd9fc",
+    "frontend/src/hash-worker.ts": "5ee4090dfd1a207a2b48214295927cf086e26441ee624041760bd94efaa53d7e",
+    "frontend/index.html": "36b0409a75a4d49b2739ccf6c13a845d332df4dbb35c8eda21910b9b71080c6f",
+    "package.json": "85df4b0519dbf1f02866cfbedcbc6b3e3c1a66ce7c5e1e45561c85f4afffe0e4",
+    "package-lock.json": "3926a8ed0520525ed8494bca1a6fb67f193f9e539be4a86da0558f50c802dc51",
+    "requirements.txt": "7a96f3426ebee4676ec20d494d0ed2e9513f2a3ef78f35a0aa2fd46480cf7ab0",
+    ".github/workflows/operations.yml": "46501e9d11806348a4909a9ea3618e7247757d89a7f240ed3bf59556e72a4600"
+  },
+  "source_sha": "d723e4edca9e6767c6c43a41b73a885bc9a2747f",
+  "environment": {
+    "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+    "cpu_count": 4,
+    "provider": "MinIO",
+    "runner": "github-hosted"
+  },
+  "scope": "Small functional offline backup/restore exercise; no RPO/RTO guarantee or live AWS measurement",
+  "last_source_write_acknowledged_at": "2026-10-30T07:33:29.712222+00:00",
+  "source_inventory": {
+    "workspaces": 2,
+    "files_by_status": {
+      "UPLOADING": 1,
+      "PROCESSING": 1,
+      "READY": 2,
+      "DELETED": 1
+    },
+    "active_claims": 0,
+    "outbox": 1,
+    "objects": 3,
+    "multipart_sessions": 1
+  },
+  "source_quiesced_at": "2026-10-30T07:33:32.123730+00:00",
+  "archive_validation": {
+    "status": "passed",
+    "recovery_point": "2026-10-30T07:33:33.646317+00:00",
+    "object_count": 3,
+    "object_bytes": 16804502
+  },
+  "backup": {
+    "started_at": "2026-10-30T07:33:33.445160+00:00",
+    "finished_at": "2026-10-30T07:33:33.684231+00:00",
+    "backup_seconds": 0.2390653420000035,
+    "recovery_point": "2026-10-30T07:33:33.646317+00:00",
+    "object_count": 3
+  },
+  "restore": {
+    "status": "passed",
+    "started_at": "2026-10-30T07:33:41.175026+00:00",
+    "finished_at": "2026-10-30T07:33:41.626143+00:00",
+    "restore_seconds": 0.4511326360000112,
+    "recovery_point": "2026-10-30T07:33:33.646317+00:00",
+    "objects_verified": 3,
+    "files_by_status": {
+      "EXPIRED": 1,
+      "PROCESSING": 1,
+      "READY": 2,
+      "DELETED": 1
+    }
+  },
+  "restore_archive_sha256": "95d93e3436ec9d71263265681e9d15268c8a833ba0211a432db63c7a56d72914",
+  "populated_target_refused": true,
+  "workspace_keys_verified": 2,
+  "verified_downloads": [
+    {
+      "file_id": "68ce087f-aa59-4daf-839d-6a0828117135",
+      "bytes": 30,
+      "sha256": "dc48f4f89e3bf4dd04ad2972416f9ee38a0b433539d5632241aff6c547b87788",
+      "status": "passed"
+    },
+    {
+      "file_id": "22473922-2d48-4c6e-9589-1cef93082119",
+      "bytes": 16777472,
+      "sha256": "05ed1b1e4ecae7a46341e4d75068661516d5530f8a50375b503fa3bf8070323f",
+      "status": "passed"
+    },
+    {
+      "file_id": "94210328-4f08-4b7e-8e16-553dfa87a0b4",
+      "bytes": 27000,
+      "sha256": "5459d5075d66ee6dc78a93f96234b18fbc25d51588dfa81454f379eaf777631c",
+      "status": "passed"
+    }
+  ],
+  "unfinished_policy": {
+    "status": "EXPIRED",
+    "receipt_count": 0
+  },
+  "destination_inventory_before_browser_restart": {
+    "workspaces": 2,
+    "files_by_status": {
+      "EXPIRED": 1,
+      "READY": 3,
+      "DELETED": 1
+    },
+    "active_claims": 0,
+    "outbox": 0,
+    "objects": 3,
+    "multipart_sessions": 0
+  },
+  "committed_object_outcomes": {
+    "expected": 3,
+    "verified": 3,
+    "lost": 0
+  },
+  "rpo_scope": "All three committed source objects at the offline recovery point recovered. One unfinished MPU requires source reselection. No accepted writes during snapshot. No contractual RPO.",
+  "fresh_projects": [
+    "clouddrive-ci-ops-source",
+    "clouddrive-ci-ops-target"
+  ],
+  "packaged_browser": {
+    "original_key_import": "passed",
+    "restored_download": "passed",
+    "unfinished_restart": "passed"
+  },
+  "restarted_download": {
+    "file_id": "c3d292a6-eea7-47be-a6bb-41ac80ec124d",
+    "bytes": 12500000,
+    "sha256": "2b99858119c40f3df5165e53adafea0d40ca2c5cdbf94272bb56d93c781f6831",
+    "status": "passed"
+  },
+  "cleanup_dry_run": {
+    "apply": false,
+    "outcomes": [],
+    "truncated": false
+  },
+  "final_inventory": {
+    "workspaces": 3,
+    "files_by_status": {
+      "READY": 4,
+      "DELETED": 2
+    },
+    "active_claims": 0,
+    "outbox": 0,
+    "objects": 4,
+    "multipart_sessions": 0
+  },
+  "source_unchanged_after_restore": true,
+  "image_ids": [
+    {
+      "ID": "sha256:ab20e934b27ba3ff927c1b4c9ff8cf6c32f315f743efe68dd3441182a87fb085",
+      "ContainerName": "clouddrive-ci-ops-target-postgres-1",
+      "Repository": "postgres",
+      "Tag": "17-alpine",
+      "Platform": "linux/amd64",
+      "Size": 297179006,
+      "LastTagTime": "0001-01-01T00:00:00Z"
+    },
+    {
+      "ID": "sha256:2e624705ce82900a9d61db57b08355de5f1bd2929bcf0e07a934e1e778e05a9b",
+      "ContainerName": "clouddrive-ci-ops-target-worker-1",
+      "Repository": "clouddrive",
+      "Tag": "operations",
+      "Platform": "linux/amd64",
+      "Size": 256170445,
+      "LastTagTime": "2026-10-30T07:31:30.533656672Z"
+    },
+    {
+      "ID": "sha256:98c6ca8f397f86e469be752c3e7ed5eb8b17f2479840cb69a2e413037038e9f4",
+      "ContainerName": "clouddrive-ci-ops-target-redis-1",
+      "Repository": "redis",
+      "Tag": "7-alpine",
+      "Platform": "linux/amd64",
+      "Size": 39058931,
+      "LastTagTime": "0001-01-01T00:00:00Z"
+    },
+    {
+      "ID": "sha256:2e624705ce82900a9d61db57b08355de5f1bd2929bcf0e07a934e1e778e05a9b",
+      "ContainerName": "clouddrive-ci-ops-target-beat-1",
+      "Repository": "clouddrive",
+      "Tag": "operations",
+      "Platform": "linux/amd64",
+      "Size": 256170445,
+      "LastTagTime": "2026-10-30T07:31:30.533656672Z"
+    },
+    {
+      "ID": "sha256:ff45a24ec2836b24994ef6ae8d69d991bf2837d6790e9ca9e5e9fe1b4185061b",
+      "ContainerName": "clouddrive-ci-ops-target-minio-1",
+      "Repository": "clouddrive-minio",
+      "Tag": "2025-10-15",
+      "Platform": "linux/amd64",
+      "Size": 164050991,
+      "LastTagTime": "2026-10-30T07:33:05.008315317Z"
+    },
+    {
+      "ID": "sha256:2e624705ce82900a9d61db57b08355de5f1bd2929bcf0e07a934e1e778e05a9b",
+      "ContainerName": "clouddrive-ci-ops-target-api-1",
+      "Repository": "clouddrive",
+      "Tag": "operations",
+      "Platform": "linux/amd64",
+      "Size": 256170445,
+      "LastTagTime": "2026-10-30T07:31:30.533656672Z"
+    }
+  ],
+  "source_hashes_unchanged": true,
+  "finished_at": "2026-10-30T07:34:17.001558+00:00"
+}

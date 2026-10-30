@@ -28,6 +28,10 @@ The versioned recovery matrix passed **20/20 named cases in each of three comple
 
 Three complete hosted runs passed **10 × 500 MB uploads each (30/30 file outcomes)**, where each file is exactly **500,000,000 bytes**. All source, worker and downloaded SHA-256 values matched. Each run proved ten overlapping byte transfers; aggregate transfer-window rates were **46.31–46.64 MB/s**, with all ten READY in **172.91–173.71 s**. This used GitHub-hosted Ubuntu/Chromium and container-local MinIO through a TLS/HTTP2 gateway with a declared brief shaping probe. It does not establish live AWS, default HTTP/1 or laptop capacity. [Budgets, clocks, exact environment, failed-attempt history and JSON/CSV evidence](docs/sprint-4.md).
 
+## Verified backup and restore
+
+A hosted exercise recovered **3/3 committed objects (16,804,502 bytes total)** into a new isolated Compose project, preserved both workspace keys, and reverified pending processing. A separate unfinished 12,500,000-byte upload was restarted from its original source through the packaged browser. The original inventory remained unchanged. This is small-fixture MinIO recovery evidence; restore timings are not production RPO/RTO guarantees. [Exact recovery point, clocks, commands and evidence](docs/sprint-5.md); [operations runbook](docs/operations.md).
+
 ## Run locally
 
 Requires Docker with Compose v2. All application ports bind to the loopback interface.
@@ -126,7 +130,7 @@ Configuration uses `CLOUDDRIVE_` environment variables; see [.env.example](.env.
 
 The separate [named recovery matrix](docs/sprint-3.md) exercises 20 distinct recoverable faults with explicit injection proof and source/download integrity checks. Its three-pass release denominator is 60 attempts; development rehearsals and ordinary test counts are reported separately.
 
-The implementation passes **41 unit tests, 67 real-service integration tests, 26 browser workflows, two pure scheduler checks, and nine lightweight benchmark-helper tests**. The browser workflows also pass against the packaged Docker stack. See [verification notes](docs/verification.md) for the tested failure cases and a repeatable broker-outage check.
+The implementation passes **45 unit tests, 76 real-service integration tests, 27 browser workflows, two pure scheduler checks, and nine lightweight benchmark-helper tests**. The browser workflows also pass against the packaged Docker stack. See [verification notes](docs/verification.md) for the tested failure cases and a repeatable broker-outage check.
 
 Unit tests run without infrastructure:
 
@@ -149,7 +153,7 @@ Activate the virtual environment first. On a machine with Google Chrome installe
 
 Coverage includes multipart checksums, resumed uploads, duplicate initiation/completion, cross-workspace isolation, corrupt-content rejection, private downloads, deletion, broker publish failure, expired worker claims, and recovery after S3 completion followed by a failed database update. Browser tests exercise real Celery processing, byte-identical downloads, safe text previews, access-key transfer, mobile layout, and pause/resume across reloads. CI runs the browser suite against both host processes and a separately built packaged Docker stack, then uploads test artifacts. Recovery coverage includes a real SIGKILL after object deletion, forced PostgreSQL row-lock races, expired multipart restart, stale workers, all file operations under another workspace key, and an upgrade from populated baseline metadata. These regression counts are separate from the named recovery matrix.
 
-Completed work and evidence are recorded in the [Sprint 1](docs/sprint-1.md), [Sprint 2](docs/sprint-2.md), [Sprint 3](docs/sprint-3.md), and [Sprint 4](docs/sprint-4.md) reports. Remaining operations work is tracked in [the completion plan](docs/completion-plan.md).
+Completed work and evidence are recorded in the [Sprint 1](docs/sprint-1.md), [Sprint 2](docs/sprint-2.md), [Sprint 3](docs/sprint-3.md), [Sprint 4](docs/sprint-4.md), and [Sprint 5](docs/sprint-5.md) reports. All five planned sprints are complete; see [the completion plan](docs/completion-plan.md) for the original scope.
 
 ## Limits and observability
 

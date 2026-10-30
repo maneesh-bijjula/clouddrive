@@ -1,0 +1,57 @@
+{
+  "attempts": [
+    {
+      "source": "517072d6f9bda859b4e8f09ffc26fd1bbc15ded8",
+      "ci_run": 41018837802,
+      "ci_status": "failed",
+      "python_passed": 116,
+      "python_total": 118,
+      "failure": "Two legacy assertions expected 2 migrations; index migration 003 makes 3. Data-preservation assertions passed.",
+      "restore_run": 41018837738,
+      "restore_status": "passed",
+      "recovery": {
+        "conclusion": "cancelled",
+        "headSha": "517072d6f9bda859b4e8f09ffc26fd1bbc15ded8",
+        "status": "completed",
+        "url": "https://github.com/maneesh-bijjula/clouddrive/actions/runs/41018837771"
+      }
+    },
+    {
+      "source": "02971a774aec406981ab21176f9c8dfc07cb89b4",
+      "ci_run": 41019540414,
+      "ci_status": "failed",
+      "python_passed": 120,
+      "python_total": 120,
+      "host_browser_passed": 28,
+      "host_browser_total": 29,
+      "failure": "New seed helper safely refused normal default settings before connecting. Corrected explicit isolated defaults. Packaged suite not reached.",
+      "restore_run": 41019540342,
+      "restore_status": "passed",
+      "recovery": {
+        "conclusion": "cancelled",
+        "headSha": "02971a774aec406981ab21176f9c8dfc07cb89b4",
+        "status": "completed",
+        "url": "https://github.com/maneesh-bijjula/clouddrive/actions/runs/41019540358"
+      }
+    },
+    {
+      "source": "d723e4edca9e6767c6c43a41b73a885bc9a2747f",
+      "ci_run": 41020473284,
+      "ci_status": "passed",
+      "python_passed": 121,
+      "python_total": 121,
+      "host_browser_passed": 29,
+      "host_browser_total": 29,
+      "packaged_browser_passed": 29,
+      "packaged_browser_total": 29,
+      "helper_tests_passed": 9,
+      "restore_run": 41020473181,
+      "restore_status": "passed",
+      "recovery_run": 41020473334,
+      "recovery_cases_passed": 20,
+      "recovery_cases_total": 20,
+      "browser_retries": 0
+    }
+  ],
+  "denominators": "Release restore is one complete 3-object inventory on d723e4e, plus a separate unfinished-file restart. Prior successful development restores are separate. Named recovery is one additional 20-case regression, not a rerun of Sprint 3's three-pass release denominator. Small concurrency smoke is not 500 MB evidence."
+}

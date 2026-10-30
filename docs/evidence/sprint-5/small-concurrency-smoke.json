@@ -1,0 +1,4944 @@
+{
+  "schema_version": 1,
+  "method_revision": 3,
+  "status": "passed",
+  "run_id": "58d4d6ed-1f16-4c0e-bfbe-f93657282515",
+  "started_at": "2026-10-30T07:39:11.684Z",
+  "display_timezone": "America/Los_Angeles",
+  "started_at_local": "2026-10-30 00:39:11",
+  "scope": "One browser, ten selected files per cohort, local TLS/HTTP2 gateway to MinIO; declared overlap probe shaping; not live AWS or default HTTP/1 capacity",
+  "file_bytes": 16777233,
+  "files_per_run": 10,
+  "requested_runs": 1,
+  "expected_file_outcomes": 10,
+  "target_size": false,
+  "budget_sha256": "6f569bfdadd524c30d371bf3e1211024c55dec633355233f19f610a68e4d8e26",
+  "budgets": {
+    "schema_version": 1,
+    "benchmark": "clouddrive-ten-concurrent-uploads-v1",
+    "status": "declared_before_scored_measurement",
+    "units": {
+      "MB": 1000000,
+      "GB": 1000000000,
+      "MiB": 1048576,
+      "GiB": 1073741824
+    },
+    "release_requirement": {
+      "complete_runs": 3,
+      "files_per_run": 10,
+      "file_bytes": 500000000,
+      "source_bytes_per_run": 5000000000,
+      "file_outcome_denominator": 30,
+      "distinct_fixture_contents": 10,
+      "fresh_workspace_and_file_ids_per_run": true,
+      "fixture_reuse_across_runs_allowed": true
+    },
+    "resource_budgets": {
+      "containers": {
+        "api": {
+          "memory_hard_limit_bytes": 402653184,
+          "cpu_limit_cores": 1
+        },
+        "worker": {
+          "memory_hard_limit_bytes": 536870912,
+          "cpu_limit_cores": 2
+        },
+        "beat": {
+          "memory_hard_limit_bytes": 134217728,
+          "cpu_limit_cores": 0.25
+        },
+        "minio": {
+          "memory_hard_limit_bytes": 805306368,
+          "cpu_limit_cores": 2
+        },
+        "postgres": {
+          "memory_hard_limit_bytes": 402653184,
+          "cpu_limit_cores": 1
+        },
+        "redis": {
+          "memory_hard_limit_bytes": 134217728,
+          "cpu_limit_cores": 0.5
+        },
+        "gateway": {
+          "memory_hard_limit_bytes": 134217728,
+          "cpu_limit_cores": 1
+        }
+      },
+      "container_memory_limit_sum_bytes": 2550136832,
+      "container_cpu_limit_sum_cores": 7.75,
+      "worker_process_concurrency": 2,
+      "browser_sampled_rss_sum_ceiling_bytes": 1610612736,
+      "runner_sampled_rss_ceiling_bytes": 536870912,
+      "sample_interval_ms": 1000,
+      "sampling_error_budget": 0,
+      "memory_accounting": "Container cgroup hard limits are enforced by Docker. Chrome memory is the sum of process RSS and can double-count shared pages; Chrome/runner ceilings are sampled acceptance thresholds, not enforced process memory caps or instantaneous maxima. Record actual timestamps; skipped overlapping collections must be explicit.",
+      "oom_policy": "Fail on any own-service container OOM or increase in cgroup oom/oom_kill counters, including a killed worker pool child."
+    },
+    "disk_budget": {
+      "minimum_host_free_before_fixture_generation_bytes": 25000000000,
+      "recommended_host_free_bytes": 30000000000,
+      "minimum_storage_free_before_scored_run_bytes": 12000000000,
+      "cleanup_policy": "Keep only ten source fixtures; create a fresh ten-file workspace per run; download/hash files sequentially and delete the completed run before the next run."
+    },
+    "time_budget": {
+      "per_cohort_ready_deadline_seconds": 600,
+      "definition": "Starts when the ten-file cohort is selected; includes browser hashing, scheduling, uploads, completion, queueing, and verification. This is a bounded harness deadline, not a latency SLO.",
+      "whole_cohort_deadline_seconds": 900,
+      "whole_cohort_definition": "Bound for the complete cohort, including download integrity checks and scoped cleanup; shared fixture generation is recorded separately."
+    },
+    "success_invariants": [
+      "Ten actual storage PUT byte-transfer intervals have a nonempty common intersection, with positive per-file upload progress and no completed file counted as active.",
+      "All ten files reach READY; each worker and independent streamed download matches source bytes and SHA-256.",
+      "Thirty fresh file IDs across three full runs; no skipped or silently rerun failed cohorts/files.",
+      "One logical file, object, and result per source; no multipart leaks, forbidden cross-workspace downloads, OOMs, unhandled5xx responses, or budget breaches.",
+      "Resource/admission settings, hardware, provider/image identities, source/manifest digests and clocks are recorded; measured source and budgets remain unchanged during scored runs.",
+      "Every attempted run remains in history. An adjusted budget requires a new manifest revision and a fresh complete scored run, with prior failures retained."
+    ],
+    "metrics_required": [
+      "Browser hash time, active transfer windows, multipart completion, source selection to READY, download/hash durations, and total cohort time.",
+      "Aggregate actual-transfer throughput and end-to-end throughput with explicit denominators; per-file latency; API p50/p95 grouped by route template and measured request population.",
+      "Browser/runner RSS and per-service CPU/memory samples; actual sample timestamps; cgroup OOM counters.",
+      "Database pool/checkouts, lock/wait metrics, processing outbox backlog, active/expired claims, publications, delivery/verification attempts, and queue/backlog observations.",
+      "Network/storage errors, application retries, admission rejections, forbidden-access controls, and final scoped inventory."
+    ],
+    "non_claims": [
+      "No throughput or API latency SLO is imposed; report observed values.",
+      "Local MinIO results do not establish live AWS capacity, WAN behavior, or production availability.",
+      "Ten file upload intervals alone or a start barrier do not establish simultaneous byte transfers."
+    ],
+    "scheduler_and_admission": {
+      "browser_active_files": 10,
+      "browser_hash_workers": 2,
+      "browser_global_part_slots": 10,
+      "browser_parts_per_file": 3,
+      "browser_part_fairness": "Reserve one global slot for each admitted active owner before granting spare slots, so ten first PUTs cannot deadlock behind greedily admitted extra part loops.",
+      "workspace_active_upload_limit": 10,
+      "global_active_upload_limit": 100,
+      "active_upload_statuses": [
+        "UPLOADING",
+        "FINALIZING",
+        "PROCESSING"
+      ],
+      "api_max_inflight_requests": 64,
+      "database_pool_size": 8,
+      "database_max_overflow": 8,
+      "database_pool_timeout_seconds": 10
+    },
+    "network_profile": {
+      "browser_to_storage_protocol": "HTTP/2 over TLS through the dedicated test gateway; record negotiated protocol for actual PUTs.",
+      "gateway_to_minio_protocol": "Streamed HTTP reverse proxy; retain the original signed Host and query.",
+      "certificate_scope": "Locally generated test certificate; browser ignores trust errors only for this isolated test context; record certificate fingerprint, never private key.",
+      "default_profile_limitation": "A single-origin HTTP/1 browser may restrict simultaneously active connections; this measured ten-stream result must not be generalized to that default profile.",
+      "overlap_probe": {
+        "permitted": true,
+        "method": "Temporary declared upload shaping only until all ten first PUTs show positive partial progress; remove shaping before any first PUT completes.",
+        "upload_cap_bytes_per_second": 8388608,
+        "evidence_required": [
+          "Shaping start/end timestamps and configured cap.",
+          "Ten distinct files with positive partial upload progress and common active transfer interval.",
+          "HTTP/2 negotiation on actual storage requests."
+        ],
+        "throughput_policy": "All shaping-probe time remains inside reported transfer windows. Do not call the resulting throughput unshaped provider capacity."
+      }
+    }
+  },
+  "environment": {
+    "platform": "linux",
+    "release": "7.0.0-1017-azure",
+    "architecture": "x64",
+    "host_cpu": "AMD EPYC 9V45 96-Core Processor",
+    "host_logical_cpus": 4,
+    "host_memory_bytes": 16760344576,
+    "node": "v24.22.1",
+    "node_exec_argv": [
+      "--max-old-space-size=192",
+      "--max-semi-space-size=8"
+    ],
+    "node_heap_size_limit_bytes": 226492416,
+    "node_memory_at_startup": {
+      "rss": 144429056,
+      "heapTotal": 68415488,
+      "heapUsed": 48677856,
+      "external": 4345893,
+      "arrayBuffers": 155171
+    },
+    "compose_project": "clouddrive-ci-load",
+    "execution": {
+      "kind": "github_actions",
+      "repository": "maneesh-bijjula/clouddrive",
+      "run_id": "41020473284",
+      "run_attempt": "1",
+      "source_sha": "d723e4edca9e6767c6c43a41b73a885bc9a2747f",
+      "runner_environment": "github-hosted",
+      "runner_os": "Linux",
+      "runner_arch": "X64"
+    },
+    "effective_api_settings": {
+      "max_active_uploads_per_workspace": 10,
+      "max_active_uploads_global": 100,
+      "max_api_inflight": 64,
+      "db_pool_size": 8,
+      "db_max_overflow": 8,
+      "db_pool_timeout_seconds": 10,
+      "admission_lock_timeout_seconds": 5,
+      "browser_active_files": 10,
+      "browser_hash_workers": 2,
+      "browser_global_parts": 10,
+      "browser_parts_per_file": 3
+    },
+    "minio_version": "minio version DEVELOPMENT.GOGET (commit-id=DEVELOPMENT.GOGET)\nRuntime: go1.26.10 linux/amd64\nLicense: GNU AGPLv3 - https://www.gnu.org/licenses/agpl-3.0.html\nCopyright: 2015-0000 MinIO, Inc.",
+    "gateway_version": "v2.11.7 h1:yj0Y4fYZGPkSvibBJ1sTWE33xC0fxztVyXEW5iIdUT4=",
+    "images": [
+      {
+        "service": "api",
+        "image_id": "sha256:9624511efceec277312a05601fcc167cf803f5aab6de5f89104055f5235389c9"
+      },
+      {
+        "service": "beat",
+        "image_id": "sha256:9624511efceec277312a05601fcc167cf803f5aab6de5f89104055f5235389c9"
+      },
+      {
+        "service": "gateway",
+        "image_id": "sha256:3067cc4e02c091399edbd5d65f85a3ff4d511574aecadb47f280c3761e68852e"
+      },
+      {
+        "service": "minio",
+        "image_id": "sha256:7f2bbf80980075036ea06e16e05a616e29998eda84bd5e8cb76ce97f8decbb02"
+      },
+      {
+        "service": "postgres",
+        "image_id": "sha256:ab20e934b27ba3ff927c1b4c9ff8cf6c32f315f743efe68dd3441182a87fb085"
+      },
+      {
+        "service": "redis",
+        "image_id": "sha256:98c6ca8f397f86e469be752c3e7ed5eb8b17f2479840cb69a2e413037038e9f4"
+      },
+      {
+        "service": "worker",
+        "image_id": "sha256:9624511efceec277312a05601fcc167cf803f5aab6de5f89104055f5235389c9"
+      }
+    ],
+    "docker": {
+      "cpus": 4,
+      "memory_bytes": 16760344576,
+      "version": "28.0.4"
+    },
+    "git_sha": "d723e4edca9e6767c6c43a41b73a885bc9a2747f",
+    "git_dirty": false,
+    "source_sha256": {
+      "compose.load.yaml": "dbd7f71bfe83b1cee0af3a928d3c52ce85ab23a87557b23adc22e4e76899d3ac",
+      "Caddyfile.load": "a56161f2be3a9ddccd17f6fd021d0677fe0ef20968df2e688a4c6951de863f1d",
+      "Dockerfile": "369bbb3c7d57225d99b5dfadf26bfdea3eb0f11b69d1acad95e389831ba0dbed",
+      "Dockerfile.minio": "cde2ca1ae71806dab340b22ee337930d9c769f4cc7d5cca83a282c25f10ba5b3",
+      "package.json": "85df4b0519dbf1f02866cfbedcbc6b3e3c1a66ce7c5e1e45561c85f4afffe0e4",
+      "package-lock.json": "3926a8ed0520525ed8494bca1a6fb67f193f9e539be4a86da0558f50c802dc51",
+      "requirements.txt": "7a96f3426ebee4676ec20d494d0ed2e9513f2a3ef78f35a0aa2fd46480cf7ab0",
+      "tsconfig.json": "59cf60422227becd628b7481b7c296f91c47e04f1b8db2759f04030e48f0ae4d",
+      "frontend/index.html": "36b0409a75a4d49b2739ccf6c13a845d332df4dbb35c8eda21910b9b71080c6f",
+      "frontend/vite.config.ts": "6eadaac9aa0ffbcd15cda240391f50568a23b6b625f20ed6c7ec6888f238fe60",
+      "frontend/src/style.css": "066baa6c985988582a82578642c68faddefc61e60d72c5f6cc2797e8d3009f77",
+      "frontend/public/favicon.svg": "75f5aeb4a8d65b6c3b58d89e2bce7f6e21f83c39a3d7211eb4547f6a9a20814a",
+      "docs/load-budgets.json": "6f569bfdadd524c30d371bf3e1211024c55dec633355233f19f610a68e4d8e26",
+      "clouddrive/__init__.py": "bc50749c7527c8869db75c23b477b100459807d9b37f030007e99e5babac9779",
+      "clouddrive/api.py": "3eab9905284fdeae763b5b0c53e1b21da002e296eaa294ac4ec1d30f98f446bb",
+      "clouddrive/config.py": "18b3c0f966a8de0690f2ba564e520e156d5ae477c5e2fb7219fd15f51ccfc4d9",
+      "clouddrive/db.py": "ffa1152439f480c9aca04393a6d7f33dd41b582f58032578824c9f35c8da7923",
+      "clouddrive/listing.py": "bdb63d833755fe7a8acc8366c41bb0e71303b5ba7346f8a0b1e71c94387c2e18",
+      "clouddrive/models.py": "ad6eeabadb6cc63bd3ae032262f52ed30b7eea1239059db666d46feb14af9fb3",
+      "clouddrive/observability.py": "2a488df17884149c9f51823b68336b1a1f34cba586593878d84fcb28b51ea395",
+      "clouddrive/operations.py": "7c56ac02937d9e9f9ba4be7ca801d49b5c2f5d2046c26017d5d2bd4c73601848",
+      "clouddrive/recovery_faults.py": "d5933deee21b83d9ba7a8dbb70b00520b89bc3b80e201cdc6eefbf121a81a899",
+      "clouddrive/service.py": "b596f38ae22e877d4093f6c3021d1b136a96ce9869b2579267df5ec2c4a47059",
+      "clouddrive/storage.py": "5e3539c250497518c976d58096a3c0e43c1261d4140a752aac5c7afc075722e5",
+      "clouddrive/worker.py": "fc1138efcb72ef0aff6e58e01f0ac3874ac86c5310f8a0a2c4eee7fe96603018",
+      "frontend/src/hash-worker.ts": "5ee4090dfd1a207a2b48214295927cf086e26441ee624041760bd94efaa53d7e",
+      "frontend/src/main.ts": "e839e18b478b172ae475d7816bf53d2cf9668fec5a2b87048b65ecf3b6b058b0",
+      "frontend/src/scheduler.ts": "e4099a91676faf27f803c989c5733af1f186e7529a6cc3a0cd77823b1c6dd9fc",
+      "frontend/src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5",
+      "scripts/benchmark-concurrent.mjs": "befc2713a1d6af011aac8523c7e27bf91ee038b1c147759abeaf2c54d459b50d",
+      "scripts/load-file-hash.mjs": "4aff9d02791a13d99fe8627430017770c9c4522e13d0cbb5b12664402e1a1efd",
+      "scripts/load-observer.mjs": "e42f9440e6c09d102071b9dab3fe8d278b4258d375a33f3140e1e2d0d162e22e",
+      "scripts/load-state.py": "e38d8fcd4b9d71f0bb95ba816cdc27a585013dc758c915b07c9f37305bc83a88",
+      "scripts/summarize-load.py": "4667c5ed27b2fc937c2852ce83dc2acf235ce9b09a80aabe03696c81673cd348"
+    },
+    "packaged_asset_sha256": {
+      "dist/favicon.svg": "75f5aeb4a8d65b6c3b58d89e2bce7f6e21f83c39a3d7211eb4547f6a9a20814a",
+      "dist/index.html": "acd19ecbb14a3134002540bad1a3c55dbbfcb4335f3cb934c57df2134d06c3d2",
+      "dist/assets/hash-worker-_1eHXO8U.js": "bcf99a6c0d9d419f2d58fdd3cd29d49e75e03292bde082bb2309a00e9649e80c",
+      "dist/assets/index-z3zbsC4R.css": "3469b5c5587c6b768d0ed30a38e1b0e578704370c11c1dcc72584e171eacd369",
+      "dist/assets/index-C-Dbl18o.js": "9eed3fbee5cadc0afc817c5112e4b906c6bc7b7e6548aaff10e62197c93e9eec"
+    },
+    "other_running_containers": 0,
+    "host_free_bytes": 86450655232,
+    "storage_free_bytes": 86450655232,
+    "certificate": {
+      "fingerprint256": "1C:32:E9:07:40:DB:DD:A0:C9:F3:93:62:57:D9:A1:50:C6:3A:5C:24:31:06:B4:74:EA:DE:5A:6D:FD:10:45:72",
+      "subject": {},
+      "issuer": {
+        "CN": "Caddy Local Authority - ECC Intermediate"
+      },
+      "negotiated_protocol": "h2",
+      "scope": "Local test CA; no host trust store changes"
+    },
+    "browser": "156.0.8078.4",
+    "cgroup_checks": [
+      {
+        "id": "3d9b48fc04f559288a6dfbced9e3a305b771416f4061f72e18223cc2c5cb4811",
+        "service": "api",
+        "oom_start": {
+          "rss_sum_bytes": 111104000,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 113897472,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "id": "7c22e98ea2b19d17d1ebc35183245a0817f302d764c0585b1317fa9c1e827f74",
+        "service": "beat",
+        "oom_start": {
+          "rss_sum_bytes": 57163776,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 93192192,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "id": "0f8442357b60b30f739b9546f14adfdd2bc315540abeed686c7526433f04f0a3",
+        "service": "gateway",
+        "oom_start": {
+          "rss_sum_bytes": 51900416,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 55443456,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "id": "9dfb651d710e9521b321548323b72ee84939d8d105afb1aa6401641071644e02",
+        "service": "minio",
+        "oom_start": {
+          "rss_sum_bytes": 121438208,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 218619904,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "id": "8f58855ab2dafc3946bb994f021ae64cf7cfb19b7fa8ee714a05366d879d2d47",
+        "service": "postgres",
+        "oom_start": {
+          "rss_sum_bytes": 90370048,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 255160320,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "id": "5e7b83e63288d5f76bb7522e4208475559bc68a8cc452a99338b80de1fba76f0",
+        "service": "redis",
+        "oom_start": {
+          "rss_sum_bytes": 10170368,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 10436608,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      },
+      {
+        "id": "790ad0bd21722482c10d954e3cd62432701c73774dac67450b726875825dfcbc",
+        "service": "worker",
+        "oom_start": {
+          "rss_sum_bytes": 244252672,
+          "oom": 0,
+          "oom_kill": 0
+        },
+        "oom_end": {
+          "rss_sum_bytes": 319004672,
+          "oom": 0,
+          "oom_kill": 0
+        }
+      }
+    ]
+  },
+  "fixtures": [
+    {
+      "name": "load-01.bin",
+      "seed": "CloudDrive Sprint4 fixture v1/1",
+      "bytes": 16777233,
+      "sha256": "2ffba0de983c4afb351e91ded3652120a640967e1611d6bba7fbd3fe962d0b32"
+    },
+    {
+      "name": "load-02.bin",
+      "seed": "CloudDrive Sprint4 fixture v1/2",
+      "bytes": 16777233,
+      "sha256": "e054caf1777836d71fc236c8c3ade18ff2ab5b83db5b548da0abc30f10bbe6c1"
+    },
+    {
+      "name": "load-03.bin",
+      "seed": "CloudDrive Sprint4 fixture v1/3",
+      "bytes": 16777233,
+      "sha256": "8929b859b1e5911975268f26439284c0ed1c8732379cffbb197f84e16b4bf3d6"
+    },
+    {
+      "name": "load-04.bin",
+      "seed": "CloudDrive Sprint4 fixture v1/4",
+      "bytes": 16777233,
+      "sha256": "bbe6ef104b019e8778bdea3011acfcc8581a768a99957ffd39c92bb899422a3b"
+    },
+    {
+      "name": "load-05.bin",
+      "seed": "CloudDrive Sprint4 fixture v1/5",
+      "bytes": 16777233,
+      "sha256": "669462cda49a29f9d9028324c806dcd6cd76046a7f8a203d065fceaa9ca32f95"
+    },
+    {
+      "name": "load-06.bin",
+      "seed": "CloudDrive Sprint4 fixture v1/6",
+      "bytes": 16777233,
+      "sha256": "48beacabe57f3f08af21b96d0637337990d4ed95f2f13474905f0209d1b123fe"
+    },
+    {
+      "name": "load-07.bin",
+      "seed": "CloudDrive Sprint4 fixture v1/7",
+      "bytes": 16777233,
+      "sha256": "8bea7ea03f4aac105eebbe00ca2e8727258cf10389ba6e6c6936e2e24f76d684"
+    },
+    {
+      "name": "load-08.bin",
+      "seed": "CloudDrive Sprint4 fixture v1/8",
+      "bytes": 16777233,
+      "sha256": "8a67f68f23915cab544717ab3819dae25fe6d45ce53c956d479067a62a8954a9"
+    },
+    {
+      "name": "load-09.bin",
+      "seed": "CloudDrive Sprint4 fixture v1/9",
+      "bytes": 16777233,
+      "sha256": "bcd7f9b32fa796bb02a2352a943d2fe6295f7077f5bb4a77148966e0b0b45833"
+    },
+    {
+      "name": "load-10.bin",
+      "seed": "CloudDrive Sprint4 fixture v1/10",
+      "bytes": 16777233,
+      "sha256": "941b8e3f81acfecbc4d012a9ea4def97c859091158788beb1eeaffa22c876840"
+    }
+  ],
+  "runs": [
+    {
+      "run": 1,
+      "status": "passed",
+      "started_at": "2026-10-30T07:39:14.111Z",
+      "started_at_s": 2.434318,
+      "files": [
+        {
+          "name": "load-01.bin",
+          "seed": "CloudDrive Sprint4 fixture v1/1",
+          "bytes": 16777233,
+          "sha256": "2ffba0de983c4afb351e91ded3652120a640967e1611d6bba7fbd3fe962d0b32",
+          "id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+          "initiated_at_s": 5.725762,
+          "pre_ready_download_status": 409,
+          "cross_workspace_pending_status": 404,
+          "completion_response_s": 11.453887,
+          "completion_api_s": 0.117868,
+          "ready_at_s": 13.766467,
+          "worker": {
+            "bytes": 16777233,
+            "sha256": "2ffba0de983c4afb351e91ded3652120a640967e1611d6bba7fbd3fe962d0b32"
+          },
+          "stream_verification_s": 0.013140886999963186,
+          "selection_to_ready_s": 8.442902,
+          "browser_hash_s": 0.23119999999995344,
+          "part_put_count": 3,
+          "expected_parts": 3,
+          "retried_parts": 0,
+          "transfer_window_s": 2.6359000000000234,
+          "completion_to_ready_s": 2.3125800000000005,
+          "cross_workspace_download_status": 404,
+          "download_s": 0.4590430000000012,
+          "download": {
+            "bytes": 16777233,
+            "sha256": "2ffba0de983c4afb351e91ded3652120a640967e1611d6bba7fbd3fe962d0b32"
+          },
+          "download_hash_s": 0.009987000000000634,
+          "integrity_status": "passed",
+          "committed_result_count": 1,
+          "task_attempts": [
+            {
+              "event": "processing_task",
+              "request_id": "file:a7c82dd4-0868-4acd-8011-3d055470be3c",
+              "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+              "task_id": "c28a2994-6947-4172-9183-d6bb7407b788",
+              "retries": 0,
+              "outcome": "ready",
+              "duration_ms": 16.561
+            }
+          ],
+          "observed_part_put_attempts": 3,
+          "observed_put_status_counts": {
+            "200": 3
+          },
+          "observed_retried_part_attempts": 0
+        },
+        {
+          "name": "load-02.bin",
+          "seed": "CloudDrive Sprint4 fixture v1/2",
+          "bytes": 16777233,
+          "sha256": "e054caf1777836d71fc236c8c3ade18ff2ab5b83db5b548da0abc30f10bbe6c1",
+          "id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+          "initiated_at_s": 5.71577,
+          "pre_ready_download_status": 409,
+          "cross_workspace_pending_status": 404,
+          "completion_response_s": 11.486303,
+          "completion_api_s": 0.125632,
+          "ready_at_s": 13.976305,
+          "worker": {
+            "bytes": 16777233,
+            "sha256": "e054caf1777836d71fc236c8c3ade18ff2ab5b83db5b548da0abc30f10bbe6c1"
+          },
+          "stream_verification_s": 0.01352492799992433,
+          "selection_to_ready_s": 8.65274,
+          "browser_hash_s": 0.22940000000002328,
+          "part_put_count": 3,
+          "expected_parts": 3,
+          "retried_parts": 0,
+          "transfer_window_s": 2.6713000000000466,
+          "completion_to_ready_s": 2.4900020000000005,
+          "cross_workspace_download_status": 404,
+          "download_s": 0.20093400000000017,
+          "download": {
+            "bytes": 16777233,
+            "sha256": "e054caf1777836d71fc236c8c3ade18ff2ab5b83db5b548da0abc30f10bbe6c1"
+          },
+          "download_hash_s": 0.009377000000000635,
+          "integrity_status": "passed",
+          "committed_result_count": 1,
+          "task_attempts": [
+            {
+              "event": "processing_task",
+              "request_id": "file:f2052cda-0ef6-4569-9988-d91854cf3d46",
+              "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+              "task_id": "e187b342-024d-43dc-9768-ce4e1c054f54",
+              "retries": 0,
+              "outcome": "ready",
+              "duration_ms": 16.981
+            }
+          ],
+          "observed_part_put_attempts": 3,
+          "observed_put_status_counts": {
+            "200": 3
+          },
+          "observed_retried_part_attempts": 0
+        },
+        {
+          "name": "load-03.bin",
+          "seed": "CloudDrive Sprint4 fixture v1/3",
+          "bytes": 16777233,
+          "sha256": "8929b859b1e5911975268f26439284c0ed1c8732379cffbb197f84e16b4bf3d6",
+          "id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+          "initiated_at_s": 6.108584,
+          "pre_ready_download_status": 409,
+          "cross_workspace_pending_status": 404,
+          "completion_response_s": 11.497969,
+          "completion_api_s": 0.119664,
+          "ready_at_s": 13.976313,
+          "worker": {
+            "bytes": 16777233,
+            "sha256": "8929b859b1e5911975268f26439284c0ed1c8732379cffbb197f84e16b4bf3d6"
+          },
+          "stream_verification_s": 0.013750945999959185,
+          "selection_to_ready_s": 8.652747999999999,
+          "browser_hash_s": 0.48820000000006986,
+          "part_put_count": 3,
+          "expected_parts": 3,
+          "retried_parts": 0,
+          "transfer_window_s": 2.694600000000093,
+          "completion_to_ready_s": 2.478344,
+          "cross_workspace_download_status": 404,
+          "download_s": 0.18869899999999973,
+          "download": {
+            "bytes": 16777233,
+            "sha256": "8929b859b1e5911975268f26439284c0ed1c8732379cffbb197f84e16b4bf3d6"
+          },
+          "download_hash_s": 0.019462000000000756,
+          "integrity_status": "passed",
+          "committed_result_count": 1,
+          "task_attempts": [
+            {
+              "event": "processing_task",
+              "request_id": "file:bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+              "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+              "task_id": "80d5c18f-c75e-458b-bf03-9d686b9b6970",
+              "retries": 0,
+              "outcome": "ready",
+              "duration_ms": 17.083
+            }
+          ],
+          "observed_part_put_attempts": 3,
+          "observed_put_status_counts": {
+            "200": 3
+          },
+          "observed_retried_part_attempts": 0
+        },
+        {
+          "name": "load-04.bin",
+          "seed": "CloudDrive Sprint4 fixture v1/4",
+          "bytes": 16777233,
+          "sha256": "bbe6ef104b019e8778bdea3011acfcc8581a768a99957ffd39c92bb899422a3b",
+          "id": "3683038f-7200-4864-b340-f284590490a5",
+          "initiated_at_s": 6.099366,
+          "pre_ready_download_status": 409,
+          "cross_workspace_pending_status": 404,
+          "completion_response_s": 11.465034,
+          "completion_api_s": 0.1129,
+          "ready_at_s": 13.976314,
+          "worker": {
+            "bytes": 16777233,
+            "sha256": "bbe6ef104b019e8778bdea3011acfcc8581a768a99957ffd39c92bb899422a3b"
+          },
+          "stream_verification_s": 0.013467513000023246,
+          "selection_to_ready_s": 8.652749,
+          "browser_hash_s": 0.48390000000002326,
+          "part_put_count": 3,
+          "expected_parts": 3,
+          "retried_parts": 0,
+          "transfer_window_s": 2.6597000000000697,
+          "completion_to_ready_s": 2.511280000000001,
+          "cross_workspace_download_status": 404,
+          "download_s": 0.18769400000000225,
+          "download": {
+            "bytes": 16777233,
+            "sha256": "bbe6ef104b019e8778bdea3011acfcc8581a768a99957ffd39c92bb899422a3b"
+          },
+          "download_hash_s": 0.009679999999999467,
+          "integrity_status": "passed",
+          "committed_result_count": 1,
+          "task_attempts": [
+            {
+              "event": "processing_task",
+              "request_id": "file:3683038f-7200-4864-b340-f284590490a5",
+              "file_id": "3683038f-7200-4864-b340-f284590490a5",
+              "task_id": "b24c374f-3bc9-4d8a-94ae-27ff2359652c",
+              "retries": 0,
+              "outcome": "ready",
+              "duration_ms": 17.436
+            }
+          ],
+          "observed_part_put_attempts": 3,
+          "observed_put_status_counts": {
+            "200": 3
+          },
+          "observed_retried_part_attempts": 0
+        },
+        {
+          "name": "load-05.bin",
+          "seed": "CloudDrive Sprint4 fixture v1/5",
+          "bytes": 16777233,
+          "sha256": "669462cda49a29f9d9028324c806dcd6cd76046a7f8a203d065fceaa9ca32f95",
+          "id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+          "initiated_at_s": 6.64571,
+          "pre_ready_download_status": 409,
+          "cross_workspace_pending_status": 404,
+          "completion_response_s": 11.563458,
+          "completion_api_s": 0.16314099999999998,
+          "ready_at_s": 13.976314,
+          "worker": {
+            "bytes": 16777233,
+            "sha256": "669462cda49a29f9d9028324c806dcd6cd76046a7f8a203d065fceaa9ca32f95"
+          },
+          "stream_verification_s": 0.012996071000088705,
+          "selection_to_ready_s": 8.652749,
+          "browser_hash_s": 0.30770000000006986,
+          "part_put_count": 3,
+          "expected_parts": 3,
+          "retried_parts": 0,
+          "transfer_window_s": 2.7095,
+          "completion_to_ready_s": 2.4128559999999997,
+          "cross_workspace_download_status": 404,
+          "download_s": 0.18736099999999922,
+          "download": {
+            "bytes": 16777233,
+            "sha256": "669462cda49a29f9d9028324c806dcd6cd76046a7f8a203d065fceaa9ca32f95"
+          },
+          "download_hash_s": 0.009700999999999738,
+          "integrity_status": "passed",
+          "committed_result_count": 1,
+          "task_attempts": [
+            {
+              "event": "processing_task",
+              "request_id": "file:8eea076a-eb1c-4080-a953-27e7a220ec58",
+              "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+              "task_id": "96579890-8544-4430-8f88-1100ce796787",
+              "retries": 0,
+              "outcome": "ready",
+              "duration_ms": 16.107
+            }
+          ],
+          "observed_part_put_attempts": 3,
+          "observed_put_status_counts": {
+            "200": 3
+          },
+          "observed_retried_part_attempts": 0
+        },
+        {
+          "name": "load-06.bin",
+          "seed": "CloudDrive Sprint4 fixture v1/6",
+          "bytes": 16777233,
+          "sha256": "48beacabe57f3f08af21b96d0637337990d4ed95f2f13474905f0209d1b123fe",
+          "id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+          "initiated_at_s": 6.639641,
+          "pre_ready_download_status": 409,
+          "cross_workspace_pending_status": 404,
+          "completion_response_s": 11.495139,
+          "completion_api_s": 0.129536,
+          "ready_at_s": 13.976315,
+          "worker": {
+            "bytes": 16777233,
+            "sha256": "48beacabe57f3f08af21b96d0637337990d4ed95f2f13474905f0209d1b123fe"
+          },
+          "stream_verification_s": 0.013739047999933973,
+          "selection_to_ready_s": 8.65275,
+          "browser_hash_s": 0.3033000000000466,
+          "part_put_count": 3,
+          "expected_parts": 3,
+          "retried_parts": 0,
+          "transfer_window_s": 2.677400000000023,
+          "completion_to_ready_s": 2.4811759999999996,
+          "cross_workspace_download_status": 404,
+          "download_s": 0.1766260000000024,
+          "download": {
+            "bytes": 16777233,
+            "sha256": "48beacabe57f3f08af21b96d0637337990d4ed95f2f13474905f0209d1b123fe"
+          },
+          "download_hash_s": 0.009558000000001954,
+          "integrity_status": "passed",
+          "committed_result_count": 1,
+          "task_attempts": [
+            {
+              "event": "processing_task",
+              "request_id": "file:c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+              "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+              "task_id": "c5c2b546-5af8-4f19-9316-4f28bb48a032",
+              "retries": 0,
+              "outcome": "ready",
+              "duration_ms": 17.558
+            }
+          ],
+          "observed_part_put_attempts": 3,
+          "observed_put_status_counts": {
+            "200": 3
+          },
+          "observed_retried_part_attempts": 0
+        },
+        {
+          "name": "load-07.bin",
+          "seed": "CloudDrive Sprint4 fixture v1/7",
+          "bytes": 16777233,
+          "sha256": "8bea7ea03f4aac105eebbe00ca2e8727258cf10389ba6e6c6936e2e24f76d684",
+          "id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+          "initiated_at_s": 7.142145,
+          "pre_ready_download_status": 409,
+          "cross_workspace_pending_status": 404,
+          "completion_response_s": 11.557192,
+          "completion_api_s": 0.19520099999999999,
+          "ready_at_s": 13.976316,
+          "worker": {
+            "bytes": 16777233,
+            "sha256": "8bea7ea03f4aac105eebbe00ca2e8727258cf10389ba6e6c6936e2e24f76d684"
+          },
+          "stream_verification_s": 0.014138951999939309,
+          "selection_to_ready_s": 8.652751,
+          "browser_hash_s": 0.5540999999999767,
+          "part_put_count": 3,
+          "expected_parts": 3,
+          "retried_parts": 0,
+          "transfer_window_s": 2.6693000000000464,
+          "completion_to_ready_s": 2.419124,
+          "cross_workspace_download_status": 404,
+          "download_s": 0.18349800000000016,
+          "download": {
+            "bytes": 16777233,
+            "sha256": "8bea7ea03f4aac105eebbe00ca2e8727258cf10389ba6e6c6936e2e24f76d684"
+          },
+          "download_hash_s": 0.17708299999999966,
+          "integrity_status": "passed",
+          "committed_result_count": 1,
+          "task_attempts": [
+            {
+              "event": "processing_task",
+              "request_id": "file:5213528a-0f80-4c65-a7b0-747d7c66adbf",
+              "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+              "task_id": "96b1f7fe-2020-40f3-ac45-8972f1d88489",
+              "retries": 0,
+              "outcome": "ready",
+              "duration_ms": 17.783
+            }
+          ],
+          "observed_part_put_attempts": 3,
+          "observed_put_status_counts": {
+            "200": 3
+          },
+          "observed_retried_part_attempts": 0
+        },
+        {
+          "name": "load-08.bin",
+          "seed": "CloudDrive Sprint4 fixture v1/8",
+          "bytes": 16777233,
+          "sha256": "8a67f68f23915cab544717ab3819dae25fe6d45ce53c956d479067a62a8954a9",
+          "id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+          "initiated_at_s": 7.159005,
+          "pre_ready_download_status": 409,
+          "cross_workspace_pending_status": 404,
+          "completion_response_s": 11.465253,
+          "completion_api_s": 0.126132,
+          "ready_at_s": 13.766573,
+          "worker": {
+            "bytes": 16777233,
+            "sha256": "8a67f68f23915cab544717ab3819dae25fe6d45ce53c956d479067a62a8954a9"
+          },
+          "stream_verification_s": 0.013469805999989148,
+          "selection_to_ready_s": 8.443007999999999,
+          "browser_hash_s": 0.5555999999999767,
+          "part_put_count": 3,
+          "expected_parts": 3,
+          "retried_parts": 0,
+          "transfer_window_s": 2.642100000000093,
+          "completion_to_ready_s": 2.3013199999999987,
+          "cross_workspace_download_status": 404,
+          "download_s": 0.18632099999999951,
+          "download": {
+            "bytes": 16777233,
+            "sha256": "8a67f68f23915cab544717ab3819dae25fe6d45ce53c956d479067a62a8954a9"
+          },
+          "download_hash_s": 0.00944199999999995,
+          "integrity_status": "passed",
+          "committed_result_count": 1,
+          "task_attempts": [
+            {
+              "event": "processing_task",
+              "request_id": "file:587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+              "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+              "task_id": "aeff4dd9-b622-47a1-968e-1814ca1c35b2",
+              "retries": 0,
+              "outcome": "ready",
+              "duration_ms": 17.128
+            }
+          ],
+          "observed_part_put_attempts": 3,
+          "observed_put_status_counts": {
+            "200": 3
+          },
+          "observed_retried_part_attempts": 0
+        },
+        {
+          "name": "load-09.bin",
+          "seed": "CloudDrive Sprint4 fixture v1/9",
+          "bytes": 16777233,
+          "sha256": "bcd7f9b32fa796bb02a2352a943d2fe6295f7077f5bb4a77148966e0b0b45833",
+          "id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+          "initiated_at_s": 8.012277,
+          "pre_ready_download_status": 409,
+          "cross_workspace_pending_status": 404,
+          "completion_response_s": 11.197681,
+          "completion_api_s": 0.068444,
+          "ready_at_s": 13.976317,
+          "worker": {
+            "bytes": 16777233,
+            "sha256": "bcd7f9b32fa796bb02a2352a943d2fe6295f7077f5bb4a77148966e0b0b45833"
+          },
+          "stream_verification_s": 0.10459917599996515,
+          "selection_to_ready_s": 8.652752,
+          "browser_hash_s": 0.5091999999999535,
+          "part_put_count": 3,
+          "expected_parts": 3,
+          "retried_parts": 0,
+          "transfer_window_s": 2.121900000000023,
+          "completion_to_ready_s": 2.7786360000000005,
+          "cross_workspace_download_status": 404,
+          "download_s": 0.18807199999999824,
+          "download": {
+            "bytes": 16777233,
+            "sha256": "bcd7f9b32fa796bb02a2352a943d2fe6295f7077f5bb4a77148966e0b0b45833"
+          },
+          "download_hash_s": 0.009689000000001613,
+          "integrity_status": "passed",
+          "committed_result_count": 1,
+          "task_attempts": [
+            {
+              "event": "processing_task",
+              "request_id": "file:5b65a319-339e-4d36-9b91-a175d7b49486",
+              "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+              "task_id": "68f5c896-edb6-43f7-a616-6cb399be7aac",
+              "retries": 0,
+              "outcome": "ready",
+              "duration_ms": 216.697
+            }
+          ],
+          "observed_part_put_attempts": 3,
+          "observed_put_status_counts": {
+            "200": 3
+          },
+          "observed_retried_part_attempts": 0
+        },
+        {
+          "name": "load-10.bin",
+          "seed": "CloudDrive Sprint4 fixture v1/10",
+          "bytes": 16777233,
+          "sha256": "941b8e3f81acfecbc4d012a9ea4def97c859091158788beb1eeaffa22c876840",
+          "id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+          "initiated_at_s": 8.012234,
+          "pre_ready_download_status": 409,
+          "cross_workspace_pending_status": 404,
+          "completion_response_s": 11.277412,
+          "completion_api_s": 0.061337,
+          "ready_at_s": 13.766581,
+          "worker": {
+            "bytes": 16777233,
+            "sha256": "941b8e3f81acfecbc4d012a9ea4def97c859091158788beb1eeaffa22c876840"
+          },
+          "stream_verification_s": 0.10574009499998738,
+          "selection_to_ready_s": 8.443016,
+          "browser_hash_s": 0.505,
+          "part_put_count": 3,
+          "expected_parts": 3,
+          "retried_parts": 0,
+          "transfer_window_s": 2.128100000000093,
+          "completion_to_ready_s": 2.4891690000000004,
+          "cross_workspace_download_status": 404,
+          "download_s": 0.1853289999999994,
+          "download": {
+            "bytes": 16777233,
+            "sha256": "941b8e3f81acfecbc4d012a9ea4def97c859091158788beb1eeaffa22c876840"
+          },
+          "download_hash_s": 0.01043499999999753,
+          "integrity_status": "passed",
+          "committed_result_count": 1,
+          "task_attempts": [
+            {
+              "event": "processing_task",
+              "request_id": "file:6ce3f383-a094-404e-b4e8-49d140eaba5b",
+              "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+              "task_id": "90b0eda2-8d6a-4e12-976f-ec30c67c0ff8",
+              "retries": 0,
+              "outcome": "ready",
+              "duration_ms": 109.565
+            }
+          ],
+          "observed_part_put_attempts": 3,
+          "observed_put_status_counts": {
+            "200": 3
+          },
+          "observed_retried_part_attempts": 0
+        }
+      ],
+      "api_events": [
+        {
+          "route": "/api/workspaces",
+          "method": "POST",
+          "status": 201,
+          "duration_ms": 8.998,
+          "request_id": "2c7a97d9-b3cb-46a5-95f9-e1dd437a078c",
+          "t_s": 2.612691,
+          "phase": "prepare"
+        },
+        {
+          "route": "/api/workspace",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 7.452,
+          "request_id": "bdd74108-c5a6-4555-a052-ae7dea575bf9",
+          "t_s": 2.633279,
+          "phase": "prepare"
+        },
+        {
+          "route": "/api/files",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 13.217,
+          "request_id": "8b4adf9e-71de-4d55-b7da-0e585e8e5351",
+          "t_s": 2.646876,
+          "phase": "prepare"
+        },
+        {
+          "route": "/api/files",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 20.782,
+          "request_id": "8f897dac-533a-4532-911e-c4415ec9f6b4",
+          "t_s": 5.671261,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "route": "/api/uploads",
+          "method": "POST",
+          "status": 201,
+          "duration_ms": 132.006,
+          "request_id": "1b071e7c-c17b-4251-aa49-79e181c1fc0c",
+          "t_s": 5.709237,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "route": "/api/uploads",
+          "method": "POST",
+          "status": 201,
+          "duration_ms": 145.596,
+          "request_id": "8ae093f5-700f-4e1c-8056-4e7059cf8349",
+          "t_s": 5.722129,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "route": "/api/files",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 13.192,
+          "request_id": "31291434-20b0-441e-9070-7d4f9b37ff77",
+          "t_s": 5.729828,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 37.78,
+          "request_id": "a35032c9-0ee3-4ebd-8b61-7cbbc70b91fe",
+          "t_s": 6.068936,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 17.873,
+          "request_id": "9880c162-2e68-4695-b5a4-e2c43f7e0db4",
+          "t_s": 6.073692,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "route": "/api/uploads",
+          "method": "POST",
+          "status": 201,
+          "duration_ms": 32.241,
+          "request_id": "7a599ee6-9d86-4719-9a35-d4f4851c940c",
+          "t_s": 6.096849,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "route": "/api/uploads",
+          "method": "POST",
+          "status": 201,
+          "duration_ms": 37.899,
+          "request_id": "cd44f71c-0669-48ae-ac36-14d1f39993dc",
+          "t_s": 6.101064,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "route": "/api/files",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 11.868,
+          "request_id": "4d6dc0d8-800e-414f-9ec7-cceac8470a80",
+          "t_s": 6.112094,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 285.101,
+          "request_id": "d2db6296-6c9a-44e4-9243-3a306b550323",
+          "t_s": 6.590367,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "file_id": "3683038f-7200-4864-b340-f284590490a5",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 260.515,
+          "request_id": "74150f83-ce4d-49c8-9028-c0c9398ae6e6",
+          "t_s": 6.62721,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "route": "/api/uploads",
+          "method": "POST",
+          "status": 201,
+          "duration_ms": 264.102,
+          "request_id": "d98539b9-a161-4160-a6b4-5d088926a83d",
+          "t_s": 6.631946,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "route": "/api/uploads",
+          "method": "POST",
+          "status": 201,
+          "duration_ms": 273.232,
+          "request_id": "4da02f3c-1c0c-4916-a2b6-c2624a9e7f30",
+          "t_s": 6.642589,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "route": "/api/files",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 24.426,
+          "request_id": "f51bbbc0-a7bd-490d-95d8-8037852c96ed",
+          "t_s": 6.662203,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 272.4,
+          "request_id": "90943cea-181b-4e41-acd8-051d2638de67",
+          "t_s": 7.102097,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 216.746,
+          "request_id": "b27b7906-815d-4e1b-a025-8e712d2f708a",
+          "t_s": 7.138011,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "route": "/api/uploads",
+          "method": "POST",
+          "status": 201,
+          "duration_ms": 211.453,
+          "request_id": "8c5f0029-5e01-458d-bfb1-ce12af4ce20d",
+          "t_s": 7.138256,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "route": "/api/uploads",
+          "method": "POST",
+          "status": 201,
+          "duration_ms": 223.597,
+          "request_id": "255955ef-44d5-4380-ae8f-8f300fbdd186",
+          "t_s": 7.150948,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "route": "/api/files",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 15.944,
+          "request_id": "8e5a3fd6-2aae-406d-8e40-3b16333507b9",
+          "t_s": 7.161507,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 174.538,
+          "request_id": "1679e6f8-909c-4066-8011-5efc67e9a802",
+          "t_s": 7.633688,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "route": "/api/uploads",
+          "method": "POST",
+          "status": 201,
+          "duration_ms": 173.376,
+          "request_id": "b7bcaf01-7441-43ec-a335-c02e377317b8",
+          "t_s": 7.633717,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 323.753,
+          "request_id": "2c5d931f-7b04-4ee1-9e61-9165255a8fa1",
+          "t_s": 7.633872,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "route": "/api/uploads",
+          "method": "POST",
+          "status": 201,
+          "duration_ms": 181.599,
+          "request_id": "d54b910e-4119-492d-963a-fa1991930cc1",
+          "t_s": 7.637467,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "route": "/api/files",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 53.963,
+          "request_id": "e8738697-0a44-475f-868e-ad49b1a91312",
+          "t_s": 8.013037,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 308.752,
+          "request_id": "9df8dab2-d2f8-467a-9aa8-5adc71b45a7f",
+          "t_s": 8.033441,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 200.911,
+          "request_id": "20bcea5f-7e01-496f-9adf-8bae591023fc",
+          "t_s": 8.034742,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "route": "/api/files",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 14.893,
+          "request_id": "2eae47c0-e7f5-4477-babf-307ae6c59113",
+          "t_s": 8.664566,
+          "phase": "hash-and-transfer"
+        },
+        {
+          "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 138.962,
+          "request_id": "72c57104-6bd3-4c74-817e-b29dc142595b",
+          "t_s": 9.545417,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 139.751,
+          "request_id": "7d7578c8-4db3-4216-bc34-73d4456faced",
+          "t_s": 9.545451,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 21.9,
+          "request_id": "e65ca997-8801-4e5f-b91d-9b74900ed285",
+          "t_s": 9.766305,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "3683038f-7200-4864-b340-f284590490a5",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 31.088,
+          "request_id": "e84147e0-f3d8-4563-b439-42730752c9e3",
+          "t_s": 9.76633,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 34.405,
+          "request_id": "a5c64042-19d3-4445-b3e8-4db889f4905b",
+          "t_s": 9.766339,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 33.707,
+          "request_id": "57d65154-7a93-4efa-8814-16a524bc8e03",
+          "t_s": 9.766345,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 39.351,
+          "request_id": "82dee37b-1605-4ed4-ae6d-36e650eeea86",
+          "t_s": 9.767235,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 49.131,
+          "request_id": "ad3e14df-8023-440a-bba6-9a22bb8f191b",
+          "t_s": 9.767254,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 42.062,
+          "request_id": "c1f99535-f9d3-45b8-8fcd-6ef565a4a658",
+          "t_s": 9.767264,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 48.364,
+          "request_id": "29ba0f92-5325-423c-ba6f-3c0c5f4a60b3",
+          "t_s": 9.767288,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 8.915,
+          "request_id": "07566aa1-f2d9-47df-b2ee-c7bf8cf19890",
+          "t_s": 9.7673,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 18.397,
+          "request_id": "b9bb7630-7454-4522-b5e4-7a78a1c07e78",
+          "t_s": 9.796328,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 10.95,
+          "request_id": "a6e1c2ef-37e9-4696-afa9-255bc778eb9c",
+          "t_s": 10.600389,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "3683038f-7200-4864-b340-f284590490a5",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 8.778,
+          "request_id": "b91a5ee7-6f76-416c-9d4f-1c7c75b78116",
+          "t_s": 10.604015,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 9.731,
+          "request_id": "a564e8c4-6403-44d1-a297-0c846be5c38d",
+          "t_s": 10.604043,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 8.762,
+          "request_id": "24695939-4514-4e6c-93b7-751e891561ba",
+          "t_s": 10.604055,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 8.315,
+          "request_id": "8eebf8f1-d691-4b52-8aac-2dcac0895ed7",
+          "t_s": 10.604065,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 9.426,
+          "request_id": "ea6ad003-b00e-45d9-8ef9-d9f2044a619d",
+          "t_s": 10.604205,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 8.057,
+          "request_id": "3c662e70-b7e3-4487-b20e-0746d59343f8",
+          "t_s": 10.604598,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 14.554,
+          "request_id": "ad6ff0c5-cc47-407a-aa5b-a5f229c5db12",
+          "t_s": 10.613476,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 13.593,
+          "request_id": "3331b452-bab5-4097-9f03-c971488547e3",
+          "t_s": 10.613506,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 15.904,
+          "request_id": "d448fbeb-15e5-4c0f-b8aa-6f3120fd13e6",
+          "t_s": 10.613735,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 33.708,
+          "request_id": "3a3da801-cc1f-4735-bc30-f8d55d0495cd",
+          "t_s": 10.64549,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 39.309,
+          "request_id": "7947b376-b431-41b3-b188-77505cd9ccab",
+          "t_s": 10.652921,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 50.019,
+          "request_id": "98d42bce-04ec-402b-8f62-0634e9c52cce",
+          "t_s": 11.127621,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+          "route": "/api/uploads/:id/complete",
+          "method": "POST",
+          "status": 202,
+          "duration_ms": 68.444,
+          "request_id": "b01434df-abcd-4ecf-8e3b-db9a54903f00",
+          "t_s": 11.197574,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 28.33,
+          "request_id": "66a0c0e0-8c52-4bfa-b3dc-598402d983c8",
+          "t_s": 11.212603,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 34.063,
+          "request_id": "5dc918fd-0e2e-49d1-b711-41163142b532",
+          "t_s": 11.213057,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 40.395,
+          "request_id": "b97f36bd-1d43-45e6-a907-3b7b66181a03",
+          "t_s": 11.216276,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 35.888,
+          "request_id": "3461e474-5429-4dd5-a8fa-974d79241e10",
+          "t_s": 11.216532,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 43.769,
+          "request_id": "a85ef006-d803-4666-9af0-76c3795d3ec9",
+          "t_s": 11.22176,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "3683038f-7200-4864-b340-f284590490a5",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 43.15,
+          "request_id": "b315f004-0e43-4212-b3f4-1987e5bbb454",
+          "t_s": 11.226465,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 51.918,
+          "request_id": "cf8b67e7-1973-4c19-826c-8436cb8f5169",
+          "t_s": 11.238367,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 56.656,
+          "request_id": "ac5cf0bd-7685-4fc2-9140-59a2d0dee80d",
+          "t_s": 11.245727,
+          "phase": "transfer"
+        },
+        {
+          "route": "/api/files",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 45.335,
+          "request_id": "e1238571-15ba-4d69-83f1-09b55d358210",
+          "t_s": 11.245754,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 56.502,
+          "request_id": "fdebb5f9-2168-45ba-b8e6-10d30496bec2",
+          "t_s": 11.245766,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 40.177,
+          "request_id": "af8014fd-f24a-46e7-bf16-26cac3b6b16f",
+          "t_s": 11.265642,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 49.937,
+          "request_id": "efa09cd7-da73-402b-bfc6-d485bcf4aa15",
+          "t_s": 11.267834,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+          "route": "/api/uploads/:id/complete",
+          "method": "POST",
+          "status": 202,
+          "duration_ms": 61.337,
+          "request_id": "dfd867d2-a8fa-4113-af36-45cda31f74f8",
+          "t_s": 11.277376,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "3683038f-7200-4864-b340-f284590490a5",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 52.727,
+          "request_id": "8304eaa5-9a1b-4da2-8f64-1158a1c440d9",
+          "t_s": 11.280629,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 64.966,
+          "request_id": "5c8e5d55-4b9e-4fbe-9bb5-90cbc5b68431",
+          "t_s": 11.291905,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 45.908,
+          "request_id": "d1fbe754-d376-4b56-8262-6d133a16b91f",
+          "t_s": 11.291932,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 65.52,
+          "request_id": "875e3028-345e-41c6-af34-67ee9fda5671",
+          "t_s": 11.299863,
+          "phase": "transfer"
+        },
+        {
+          "route": "/api/files",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 32.55,
+          "request_id": "1de636c0-9812-41bc-a4ca-0475bd08ecc9",
+          "t_s": 11.312994,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 61.676,
+          "request_id": "de6f8057-7511-42a7-a49d-cae974a3c7a0",
+          "t_s": 11.314637,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+          "route": "/api/uploads/:id/parts/:number/sign",
+          "method": "POST",
+          "status": 200,
+          "duration_ms": 72.95,
+          "request_id": "b636fbdd-ffc2-45d1-b132-f025eb9487e8",
+          "t_s": 11.339188,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 56.99,
+          "request_id": "57680ad4-45a5-46c4-a8ad-521e29296c8c",
+          "t_s": 11.339209,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 52.551,
+          "request_id": "322fd2d9-c69e-4709-a34e-d34c52309e73",
+          "t_s": 11.339237,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "3683038f-7200-4864-b340-f284590490a5",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 52.408,
+          "request_id": "c7e6dad3-a816-4761-bd0c-7f890613234a",
+          "t_s": 11.349127,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 44.372,
+          "request_id": "5f97b6f0-fb62-490b-9e0d-5ccbcf311313",
+          "t_s": 11.359268,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 40.116,
+          "request_id": "cd2b3efd-d92b-4407-a483-009892413ce4",
+          "t_s": 11.360478,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 51.119,
+          "request_id": "cafa7951-c5dd-4ac7-9512-6cfeb0f3e113",
+          "t_s": 11.360496,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 42.93,
+          "request_id": "04b36e65-64dc-49e1-9207-ab61c42107bd",
+          "t_s": 11.379055,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+          "route": "/api/uploads/:id/parts/:number",
+          "method": "PUT",
+          "status": 200,
+          "duration_ms": 48.104,
+          "request_id": "c006774d-253a-48f7-b0ce-94932f6cb979",
+          "t_s": 11.39509,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+          "route": "/api/uploads/:id/complete",
+          "method": "POST",
+          "status": 202,
+          "duration_ms": 117.868,
+          "request_id": "19237177-e169-418e-901e-0452f460af15",
+          "t_s": 11.453868,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "3683038f-7200-4864-b340-f284590490a5",
+          "route": "/api/uploads/:id/complete",
+          "method": "POST",
+          "status": 202,
+          "duration_ms": 112.9,
+          "request_id": "b18d671d-00cc-48be-881c-798df59c8bd3",
+          "t_s": 11.465014,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+          "route": "/api/uploads/:id/complete",
+          "method": "POST",
+          "status": 202,
+          "duration_ms": 126.132,
+          "request_id": "ddf4ef11-591b-48dc-9287-b2e78cd4b4c7",
+          "t_s": 11.46521,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+          "route": "/api/uploads/:id/complete",
+          "method": "POST",
+          "status": 202,
+          "duration_ms": 125.632,
+          "request_id": "401b04c2-e405-47e6-a393-c59c8e13f1bc",
+          "t_s": 11.486282,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+          "route": "/api/uploads/:id/complete",
+          "method": "POST",
+          "status": 202,
+          "duration_ms": 129.536,
+          "request_id": "553b70b4-3774-42b4-a04f-8e72390b3b36",
+          "t_s": 11.495114,
+          "phase": "transfer"
+        },
+        {
+          "route": "/api/files",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 38.754,
+          "request_id": "f21dc397-7db9-4f12-b693-0ea41dd98c7a",
+          "t_s": 11.495873,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+          "route": "/api/uploads/:id/complete",
+          "method": "POST",
+          "status": 202,
+          "duration_ms": 119.664,
+          "request_id": "0fb2c28e-09f1-47f1-923c-1793669b24ce",
+          "t_s": 11.49796,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+          "route": "/api/uploads/:id/complete",
+          "method": "POST",
+          "status": 202,
+          "duration_ms": 195.201,
+          "request_id": "3b75ceb7-0db4-4387-92cc-bce3f7cd3977",
+          "t_s": 11.557171,
+          "phase": "transfer"
+        },
+        {
+          "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+          "route": "/api/uploads/:id/complete",
+          "method": "POST",
+          "status": 202,
+          "duration_ms": 163.141,
+          "request_id": "4934440e-12b2-4907-8dee-afc5bb8958a5",
+          "t_s": 11.563437,
+          "phase": "transfer"
+        },
+        {
+          "route": "/api/files",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 59.501,
+          "request_id": "f96a7060-1568-4991-ad69-4cb7dc627048",
+          "t_s": 11.563487,
+          "phase": "transfer"
+        },
+        {
+          "route": "/api/files",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 5.775,
+          "request_id": "460097d4-9203-4553-b2fc-888b087449ec",
+          "t_s": 11.654235,
+          "phase": "transfer"
+        },
+        {
+          "route": "/api/files",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 6.491,
+          "request_id": "7da6be1e-e838-43c1-9970-d9669275c4e8",
+          "t_s": 14.652994,
+          "phase": "verify-and-download"
+        },
+        {
+          "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+          "route": "/api/uploads/:id",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 7.037,
+          "request_id": "a371c6e4-c2a1-4889-a505-1a90decaf6dd",
+          "t_s": 14.763265,
+          "phase": "verify-and-download"
+        },
+        {
+          "route": "/api/files/:id/download",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 8.358,
+          "request_id": "20f6a375-178e-4616-8478-51051faf9c5c",
+          "t_s": 15.070968,
+          "phase": "verify-and-download"
+        },
+        {
+          "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+          "route": "/api/uploads/:id",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 6.41,
+          "request_id": "61abc159-dc7a-4fca-82f3-96d289e5a99a",
+          "t_s": 15.284393,
+          "phase": "verify-and-download"
+        },
+        {
+          "route": "/api/files/:id/download",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 5.991,
+          "request_id": "13a06418-1164-473b-9376-965b38ab538f",
+          "t_s": 15.3568,
+          "phase": "verify-and-download"
+        },
+        {
+          "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+          "route": "/api/uploads/:id",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 5.804,
+          "request_id": "9baaf39d-a8d0-4d5a-816b-f3dc42f3fc82",
+          "t_s": 15.584236,
+          "phase": "verify-and-download"
+        },
+        {
+          "route": "/api/files/:id/download",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 5.817,
+          "request_id": "09ef58a2-e4b3-47af-93e2-4c60a6c271f7",
+          "t_s": 15.653608,
+          "phase": "verify-and-download"
+        },
+        {
+          "file_id": "3683038f-7200-4864-b340-f284590490a5",
+          "route": "/api/uploads/:id",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 7.98,
+          "request_id": "e767b071-a862-4e64-a56f-4089127b69ff",
+          "t_s": 15.851023,
+          "phase": "verify-and-download"
+        },
+        {
+          "route": "/api/files/:id/download",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 4.92,
+          "request_id": "e009a8f7-bf6e-46b9-b726-36ba6e297292",
+          "t_s": 15.934192,
+          "phase": "verify-and-download"
+        },
+        {
+          "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+          "route": "/api/uploads/:id",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 5.781,
+          "request_id": "26bce9bc-3ec9-4e3a-9744-86fb9a1bd9bb",
+          "t_s": 16.101139,
+          "phase": "verify-and-download"
+        },
+        {
+          "route": "/api/files/:id/download",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 5.91,
+          "request_id": "46b0f467-d0c2-4b8e-9cf5-ac0530e8160a",
+          "t_s": 16.171175,
+          "phase": "verify-and-download"
+        },
+        {
+          "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+          "route": "/api/uploads/:id",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 5.728,
+          "request_id": "dfbef326-0dfd-4d3d-b0f9-49997bb67b47",
+          "t_s": 16.351052,
+          "phase": "verify-and-download"
+        },
+        {
+          "route": "/api/files/:id/download",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 6.225,
+          "request_id": "3139271d-e6f3-4361-a5a7-07f9cc2235d4",
+          "t_s": 16.423713,
+          "phase": "verify-and-download"
+        },
+        {
+          "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+          "route": "/api/uploads/:id",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 5.791,
+          "request_id": "5dd37fb0-d38b-486e-a799-a4fcf22eb64b",
+          "t_s": 16.583132,
+          "phase": "verify-and-download"
+        },
+        {
+          "route": "/api/files/:id/download",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 6.522,
+          "request_id": "1c53a0a4-9ee7-44ae-9a22-02f971030345",
+          "t_s": 16.658714,
+          "phase": "verify-and-download"
+        },
+        {
+          "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+          "route": "/api/uploads/:id",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 5.537,
+          "request_id": "c2b094b2-e15c-4529-afcf-b6ffd97f8b60",
+          "t_s": 17.017022,
+          "phase": "verify-and-download"
+        },
+        {
+          "route": "/api/files/:id/download",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 5.309,
+          "request_id": "32fbd8a9-d5ed-4eaa-aec0-a0773267801b",
+          "t_s": 17.100649,
+          "phase": "verify-and-download"
+        },
+        {
+          "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+          "route": "/api/uploads/:id",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 6.351,
+          "request_id": "280cd69c-b8d3-44d5-a1a4-43e0f58da887",
+          "t_s": 17.267855,
+          "phase": "verify-and-download"
+        },
+        {
+          "route": "/api/files/:id/download",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 5.761,
+          "request_id": "f380dbcd-889b-4d86-bfc8-0644b02fc2d3",
+          "t_s": 17.338551,
+          "phase": "verify-and-download"
+        },
+        {
+          "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+          "route": "/api/uploads/:id",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 5.763,
+          "request_id": "782725cb-95e8-435f-ad09-318d34c8e0ba",
+          "t_s": 17.517426,
+          "phase": "verify-and-download"
+        },
+        {
+          "route": "/api/files/:id/download",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 5.876,
+          "request_id": "dbb80240-a4b4-4d4b-8ef6-53d6cdaed0b4",
+          "t_s": 17.588136,
+          "phase": "verify-and-download"
+        },
+        {
+          "route": "/api/files",
+          "method": "GET",
+          "status": 200,
+          "duration_ms": 6.156,
+          "request_id": "6ad008f8-f6f0-435e-98b2-e375167f9f35",
+          "t_s": 17.654011,
+          "phase": "verify-and-download"
+        }
+      ],
+      "storage_events": [
+        {
+          "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+          "part": 1,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 9.40333
+        },
+        {
+          "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+          "part": 1,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 9.403805
+        },
+        {
+          "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+          "part": 1,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 9.549247
+        },
+        {
+          "file_id": "3683038f-7200-4864-b340-f284590490a5",
+          "part": 1,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 9.554447
+        },
+        {
+          "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+          "part": 1,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 9.554526
+        },
+        {
+          "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+          "part": 1,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 9.554576
+        },
+        {
+          "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+          "part": 1,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 9.560736
+        },
+        {
+          "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+          "part": 1,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 9.560871
+        },
+        {
+          "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+          "part": 1,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 9.560929
+        },
+        {
+          "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+          "part": 1,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 9.561788
+        },
+        {
+          "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+          "part": 2,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 10.586002
+        },
+        {
+          "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+          "part": 2,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 10.589425
+        },
+        {
+          "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+          "part": 3,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 11.07361
+        },
+        {
+          "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+          "part": 2,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 11.174713
+        },
+        {
+          "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+          "part": 2,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 11.175593
+        },
+        {
+          "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+          "part": 2,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 11.177782
+        },
+        {
+          "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+          "part": 2,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 11.178559
+        },
+        {
+          "file_id": "3683038f-7200-4864-b340-f284590490a5",
+          "part": 2,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 11.179004
+        },
+        {
+          "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+          "part": 2,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 11.181038
+        },
+        {
+          "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+          "part": 3,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 11.181976
+        },
+        {
+          "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+          "part": 2,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 11.184552
+        },
+        {
+          "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+          "part": 2,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 11.184965
+        },
+        {
+          "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+          "part": 3,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 11.271008
+        },
+        {
+          "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+          "part": 3,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 11.277021
+        },
+        {
+          "file_id": "3683038f-7200-4864-b340-f284590490a5",
+          "part": 3,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 11.295846
+        },
+        {
+          "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+          "part": 3,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 11.303914
+        },
+        {
+          "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+          "part": 3,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 11.305727
+        },
+        {
+          "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+          "part": 3,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 11.313772
+        },
+        {
+          "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+          "part": 3,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 11.337567
+        },
+        {
+          "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+          "part": 3,
+          "protocol": "h2",
+          "status": 200,
+          "t_s": 11.3449
+        }
+      ],
+      "browser_errors": [],
+      "api_transport_failures": [],
+      "phase_durations": {
+        "selection_to_barrier_s": 3.311078,
+        "probe_shaping_s": 3.6193720000000003,
+        "transfer_window_s": 2.7095,
+        "selection_to_ready_s": 8.654675,
+        "downloads_and_independent_hash_s": 2.417991000000004
+      },
+      "workspace_id": "e9da8db0-5797-4c41-b24d-f01f7c1875a6",
+      "configuration": {
+        "id": "e9da8db0-5797-4c41-b24d-f01f7c1875a6",
+        "created_at": "2026-10-30T07:39:14.255499+00:00",
+        "max_file_bytes": 5000000000,
+        "part_bytes": 8388608,
+        "upload_limits": {
+          "active_files": 10,
+          "hash_workers": 2,
+          "global_parts": 10,
+          "parts_per_file": 3
+        }
+      },
+      "database_before": {
+        "broker": {
+          "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+          "queued_messages": 0,
+          "unacked_messages": 0,
+          "unacked_index": 0
+        },
+        "connections": {
+          "total": 2,
+          "active": 1,
+          "lock_waiting": 0,
+          "idle_in_transaction": 0
+        },
+        "ungranted_locks": 0,
+        "database": {
+          "xact_commit": 7,
+          "xact_rollback": 3,
+          "deadlocks": 0,
+          "temp_bytes": 0,
+          "blks_read": 253,
+          "blks_hit": 6039
+        },
+        "work": {
+          "processing": 0,
+          "active_claims": 0,
+          "expired_claims": 0
+        },
+        "outbox": {
+          "count": 0,
+          "oldest_age_seconds": 0
+        }
+      },
+      "probe": {
+        "cap_bytes_per_second": 8388608,
+        "shaping_started_at_s": 5.323539,
+        "barrier_released_browser_ms": 6099.29999999993,
+        "barrier_released_at_s": 8.634643,
+        "barrier_interceptor_removed_at_s": 8.644191,
+        "shaping_removed_at_s": 8.942911
+      },
+      "selected_at_s": 5.323565,
+      "all_ready_at_s": 13.97824,
+      "browser_trace": {
+        "puts": [
+          {
+            "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+            "part": 1,
+            "partial_samples": 4,
+            "send_ms": 3529.29999999993,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 6205.699999999953,
+            "last_partial_ms": 6521,
+            "upload_end_ms": 6619.5,
+            "response_end_ms": 7021.099999999977,
+            "status": 200
+          },
+          {
+            "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+            "part": 1,
+            "partial_samples": 4,
+            "send_ms": 3538.1999999999534,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 6208.199999999953,
+            "last_partial_ms": 6521.400000000023,
+            "upload_end_ms": 6619.699999999953,
+            "response_end_ms": 7013.79999999993,
+            "status": 200
+          },
+          {
+            "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+            "part": 1,
+            "partial_samples": 4,
+            "send_ms": 3993.29999999993,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 6208.5,
+            "last_partial_ms": 6524.199999999953,
+            "upload_end_ms": 6621.599999999977,
+            "response_end_ms": 7018.599999999977,
+            "status": 200
+          },
+          {
+            "file_id": "3683038f-7200-4864-b340-f284590490a5",
+            "part": 1,
+            "partial_samples": 4,
+            "send_ms": 4091.29999999993,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 6208.599999999977,
+            "last_partial_ms": 6524.5,
+            "upload_end_ms": 6621.699999999953,
+            "response_end_ms": 7014.699999999953,
+            "status": 200
+          },
+          {
+            "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+            "part": 1,
+            "partial_samples": 4,
+            "send_ms": 4522.5,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 6208.699999999953,
+            "last_partial_ms": 6524.699999999953,
+            "upload_end_ms": 6621.900000000023,
+            "response_end_ms": 7018.199999999953,
+            "status": 200
+          },
+          {
+            "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+            "part": 1,
+            "partial_samples": 4,
+            "send_ms": 4597.29999999993,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 6208.900000000023,
+            "last_partial_ms": 6524.79999999993,
+            "upload_end_ms": 6622,
+            "response_end_ms": 7020.79999999993,
+            "status": 200
+          },
+          {
+            "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+            "part": 1,
+            "partial_samples": 4,
+            "send_ms": 5064.900000000023,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 6209.099999999977,
+            "last_partial_ms": 6524.900000000023,
+            "upload_end_ms": 6622,
+            "response_end_ms": 7026.599999999977,
+            "status": 200
+          },
+          {
+            "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+            "part": 1,
+            "partial_samples": 4,
+            "send_ms": 5075.199999999953,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 6209.199999999953,
+            "last_partial_ms": 6525,
+            "upload_end_ms": 6622.199999999953,
+            "response_end_ms": 7022.199999999953,
+            "status": 200
+          },
+          {
+            "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+            "part": 1,
+            "partial_samples": 4,
+            "send_ms": 5497.79999999993,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 6209.5,
+            "last_partial_ms": 6526.900000000023,
+            "upload_end_ms": 6622.400000000023,
+            "response_end_ms": 6868.400000000023,
+            "status": 200
+          },
+          {
+            "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+            "part": 1,
+            "partial_samples": 4,
+            "send_ms": 5498.699999999953,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 6209.29999999993,
+            "last_partial_ms": 6525,
+            "upload_end_ms": 6622.29999999993,
+            "response_end_ms": 6867.900000000023,
+            "status": 200
+          },
+          {
+            "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+            "part": 2,
+            "partial_samples": 0,
+            "send_ms": 7235.79999999993,
+            "loaded": 8388608,
+            "total": 8388608,
+            "upload_end_ms": 8050.099999999977,
+            "response_end_ms": 8050.699999999953,
+            "status": 200
+          },
+          {
+            "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+            "part": 2,
+            "partial_samples": 0,
+            "send_ms": 7269.29999999993,
+            "loaded": 8388608,
+            "total": 8388608,
+            "upload_end_ms": 8053.199999999953,
+            "response_end_ms": 8053.79999999993,
+            "status": 200
+          },
+          {
+            "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+            "part": 2,
+            "partial_samples": 2,
+            "send_ms": 8065.900000000023,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 8168.900000000023,
+            "last_partial_ms": 8270.199999999953,
+            "upload_end_ms": 8370.900000000023,
+            "response_end_ms": 8642.199999999953,
+            "status": 200
+          },
+          {
+            "file_id": "3683038f-7200-4864-b340-f284590490a5",
+            "part": 2,
+            "partial_samples": 2,
+            "send_ms": 8068.29999999993,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 8173.699999999953,
+            "last_partial_ms": 8274.099999999977,
+            "upload_end_ms": 8376.5,
+            "response_end_ms": 8648.099999999977,
+            "status": 200
+          },
+          {
+            "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+            "part": 2,
+            "partial_samples": 2,
+            "send_ms": 8068.699999999953,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 8174.199999999953,
+            "last_partial_ms": 8274.400000000023,
+            "upload_end_ms": 8376.699999999953,
+            "response_end_ms": 8638.400000000023,
+            "status": 200
+          },
+          {
+            "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+            "part": 2,
+            "partial_samples": 2,
+            "send_ms": 8070.199999999953,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 8174.29999999993,
+            "last_partial_ms": 8274.5,
+            "upload_end_ms": 8376.79999999993,
+            "response_end_ms": 8639.099999999977,
+            "status": 200
+          },
+          {
+            "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+            "part": 2,
+            "partial_samples": 2,
+            "send_ms": 8070.79999999993,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 8179.099999999977,
+            "last_partial_ms": 8279.699999999953,
+            "upload_end_ms": 8381.099999999977,
+            "response_end_ms": 8649.900000000023,
+            "status": 200
+          },
+          {
+            "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+            "part": 2,
+            "partial_samples": 2,
+            "send_ms": 8071.400000000023,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 8179,
+            "last_partial_ms": 8279.599999999977,
+            "upload_end_ms": 8381.099999999977,
+            "response_end_ms": 8648.79999999993,
+            "status": 200
+          },
+          {
+            "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+            "part": 2,
+            "partial_samples": 2,
+            "send_ms": 8071.699999999953,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 8178.699999999953,
+            "last_partial_ms": 8279.400000000023,
+            "upload_end_ms": 8380.900000000023,
+            "response_end_ms": 8649.400000000023,
+            "status": 200
+          },
+          {
+            "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+            "part": 2,
+            "partial_samples": 2,
+            "send_ms": 8072.400000000023,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 8189.599999999977,
+            "last_partial_ms": 8289.599999999977,
+            "upload_end_ms": 8392.5,
+            "response_end_ms": 8644.099999999977,
+            "status": 200
+          },
+          {
+            "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+            "part": 3,
+            "partial_samples": 0,
+            "send_ms": 8110.599999999977,
+            "loaded": 17,
+            "total": 17,
+            "upload_end_ms": 8221.199999999953,
+            "response_end_ms": 8539.699999999953,
+            "status": 200
+          },
+          {
+            "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+            "part": 3,
+            "partial_samples": 0,
+            "send_ms": 8116.79999999993,
+            "loaded": 17,
+            "total": 17,
+            "upload_end_ms": 8227.400000000023,
+            "response_end_ms": 8647.199999999953,
+            "status": 200
+          },
+          {
+            "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+            "part": 3,
+            "partial_samples": 0,
+            "send_ms": 8723.400000000023,
+            "loaded": 17,
+            "total": 17,
+            "upload_end_ms": 8735.199999999953,
+            "response_end_ms": 8736,
+            "status": 200
+          },
+          {
+            "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+            "part": 3,
+            "partial_samples": 0,
+            "send_ms": 8731.900000000023,
+            "loaded": 17,
+            "total": 17,
+            "upload_end_ms": 8741.400000000023,
+            "response_end_ms": 8742.099999999977,
+            "status": 200
+          },
+          {
+            "file_id": "3683038f-7200-4864-b340-f284590490a5",
+            "part": 3,
+            "partial_samples": 0,
+            "send_ms": 8745.900000000023,
+            "loaded": 17,
+            "total": 17,
+            "upload_end_ms": 8759,
+            "response_end_ms": 8759.79999999993,
+            "status": 200
+          },
+          {
+            "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+            "part": 3,
+            "partial_samples": 0,
+            "send_ms": 8755,
+            "loaded": 17,
+            "total": 17,
+            "upload_end_ms": 8768.599999999977,
+            "response_end_ms": 8769.900000000023,
+            "status": 200
+          },
+          {
+            "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+            "part": 3,
+            "partial_samples": 0,
+            "send_ms": 8758.400000000023,
+            "loaded": 17,
+            "total": 17,
+            "upload_end_ms": 8770.599999999977,
+            "response_end_ms": 8772.599999999977,
+            "status": 200
+          },
+          {
+            "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+            "part": 3,
+            "partial_samples": 0,
+            "send_ms": 8760.29999999993,
+            "loaded": 17,
+            "total": 17,
+            "upload_end_ms": 8776.699999999953,
+            "response_end_ms": 8777.599999999977,
+            "status": 200
+          },
+          {
+            "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+            "part": 3,
+            "partial_samples": 0,
+            "send_ms": 8781.699999999953,
+            "loaded": 17,
+            "total": 17,
+            "upload_end_ms": 8793.900000000023,
+            "response_end_ms": 8796.5,
+            "status": 200
+          },
+          {
+            "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+            "part": 3,
+            "partial_samples": 0,
+            "send_ms": 8797.199999999953,
+            "loaded": 17,
+            "total": 17,
+            "upload_end_ms": 8808.79999999993,
+            "response_end_ms": 8809.599999999977,
+            "status": 200
+          }
+        ],
+        "hashes": [
+          {
+            "name": "load-01.bin",
+            "start_ms": 2805.0999999999767,
+            "end_ms": 3036.29999999993,
+            "error": false
+          },
+          {
+            "name": "load-02.bin",
+            "start_ms": 2805.1999999999534,
+            "end_ms": 3034.5999999999767,
+            "error": false
+          },
+          {
+            "name": "load-03.bin",
+            "start_ms": 3036.1999999999534,
+            "end_ms": 3524.4000000000233,
+            "error": false
+          },
+          {
+            "name": "load-04.bin",
+            "start_ms": 3037.79999999993,
+            "end_ms": 3521.6999999999534,
+            "error": false
+          },
+          {
+            "name": "load-05.bin",
+            "start_ms": 3522.6999999999534,
+            "end_ms": 3830.4000000000233,
+            "error": false
+          },
+          {
+            "name": "load-06.bin",
+            "start_ms": 3526.0999999999767,
+            "end_ms": 3829.4000000000233,
+            "error": false
+          },
+          {
+            "name": "load-07.bin",
+            "start_ms": 3830.0999999999767,
+            "end_ms": 4384.199999999953,
+            "error": false
+          },
+          {
+            "name": "load-08.bin",
+            "start_ms": 3830.9000000000233,
+            "end_ms": 4386.5,
+            "error": false
+          },
+          {
+            "name": "load-09.bin",
+            "start_ms": 4385.5,
+            "end_ms": 4894.699999999953,
+            "error": false
+          },
+          {
+            "name": "load-10.bin",
+            "start_ms": 4387.699999999953,
+            "end_ms": 4892.699999999953,
+            "error": false
+          }
+        ]
+      },
+      "observed_peak_hash_workers": 2,
+      "observed_peak_xhr_requests": 10,
+      "overlap": {
+        "kind": "Ten first PUTs with positive partial upload progress, ending at XHR upload.loadend rather than response completion",
+        "common_start_browser_ms": 6209.5,
+        "common_end_browser_ms": 6619.5,
+        "common_seconds": 0.41,
+        "files": [
+          {
+            "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+            "first_partial_ms": 6205.699999999953,
+            "upload_end_ms": 6619.5,
+            "partial_samples": 4
+          },
+          {
+            "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+            "first_partial_ms": 6208.199999999953,
+            "upload_end_ms": 6619.699999999953,
+            "partial_samples": 4
+          },
+          {
+            "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+            "first_partial_ms": 6208.5,
+            "upload_end_ms": 6621.599999999977,
+            "partial_samples": 4
+          },
+          {
+            "file_id": "3683038f-7200-4864-b340-f284590490a5",
+            "first_partial_ms": 6208.599999999977,
+            "upload_end_ms": 6621.699999999953,
+            "partial_samples": 4
+          },
+          {
+            "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+            "first_partial_ms": 6208.699999999953,
+            "upload_end_ms": 6621.900000000023,
+            "partial_samples": 4
+          },
+          {
+            "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+            "first_partial_ms": 6208.900000000023,
+            "upload_end_ms": 6622,
+            "partial_samples": 4
+          },
+          {
+            "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+            "first_partial_ms": 6209.099999999977,
+            "upload_end_ms": 6622,
+            "partial_samples": 4
+          },
+          {
+            "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+            "first_partial_ms": 6209.199999999953,
+            "upload_end_ms": 6622.199999999953,
+            "partial_samples": 4
+          },
+          {
+            "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+            "first_partial_ms": 6209.5,
+            "upload_end_ms": 6622.400000000023,
+            "partial_samples": 4
+          },
+          {
+            "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+            "first_partial_ms": 6209.29999999993,
+            "upload_end_ms": 6622.29999999993,
+            "partial_samples": 4
+          }
+        ]
+      },
+      "transfer_window_s": 2.7095,
+      "transfer_MB_per_s": 61.92003321646061,
+      "selection_to_ready_s": 8.654675,
+      "selection_to_ready_MB_per_s": 19.385168131674504,
+      "final_inventory": {
+        "broker": {
+          "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+          "queued_messages": 0,
+          "unacked_messages": 0,
+          "unacked_index": 0
+        },
+        "connections": {
+          "total": 10,
+          "active": 1,
+          "lock_waiting": 0,
+          "idle_in_transaction": 0
+        },
+        "ungranted_locks": 0,
+        "database": {
+          "xact_commit": 400,
+          "xact_rollback": 193,
+          "deadlocks": 0,
+          "temp_bytes": 0,
+          "blks_read": 311,
+          "blks_hit": 17146
+        },
+        "work": {
+          "processing": 0,
+          "active_claims": 0,
+          "expired_claims": 0
+        },
+        "outbox": {
+          "count": 0,
+          "oldest_age_seconds": 0
+        },
+        "files": [
+          {
+            "id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+            "name": "load-01.bin",
+            "size": 16777233,
+            "status": "READY",
+            "sha256": "2ffba0de983c4afb351e91ded3652120a640967e1611d6bba7fbd3fe962d0b32",
+            "bytes_verified": 16777233,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+            "name": "load-02.bin",
+            "size": 16777233,
+            "status": "READY",
+            "sha256": "e054caf1777836d71fc236c8c3ade18ff2ab5b83db5b548da0abc30f10bbe6c1",
+            "bytes_verified": 16777233,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+            "name": "load-03.bin",
+            "size": 16777233,
+            "status": "READY",
+            "sha256": "8929b859b1e5911975268f26439284c0ed1c8732379cffbb197f84e16b4bf3d6",
+            "bytes_verified": 16777233,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "3683038f-7200-4864-b340-f284590490a5",
+            "name": "load-04.bin",
+            "size": 16777233,
+            "status": "READY",
+            "sha256": "bbe6ef104b019e8778bdea3011acfcc8581a768a99957ffd39c92bb899422a3b",
+            "bytes_verified": 16777233,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+            "name": "load-05.bin",
+            "size": 16777233,
+            "status": "READY",
+            "sha256": "669462cda49a29f9d9028324c806dcd6cd76046a7f8a203d065fceaa9ca32f95",
+            "bytes_verified": 16777233,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+            "name": "load-06.bin",
+            "size": 16777233,
+            "status": "READY",
+            "sha256": "48beacabe57f3f08af21b96d0637337990d4ed95f2f13474905f0209d1b123fe",
+            "bytes_verified": 16777233,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+            "name": "load-07.bin",
+            "size": 16777233,
+            "status": "READY",
+            "sha256": "8bea7ea03f4aac105eebbe00ca2e8727258cf10389ba6e6c6936e2e24f76d684",
+            "bytes_verified": 16777233,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+            "name": "load-08.bin",
+            "size": 16777233,
+            "status": "READY",
+            "sha256": "8a67f68f23915cab544717ab3819dae25fe6d45ce53c956d479067a62a8954a9",
+            "bytes_verified": 16777233,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+            "name": "load-09.bin",
+            "size": 16777233,
+            "status": "READY",
+            "sha256": "bcd7f9b32fa796bb02a2352a943d2fe6295f7077f5bb4a77148966e0b0b45833",
+            "bytes_verified": 16777233,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+            "name": "load-10.bin",
+            "size": 16777233,
+            "status": "READY",
+            "sha256": "941b8e3f81acfecbc4d012a9ea4def97c859091158788beb1eeaffa22c876840",
+            "bytes_verified": 16777233,
+            "result_count": 1,
+            "claim_active": false
+          }
+        ],
+        "object_count": 10,
+        "object_bytes": 167772330,
+        "multipart_count": 0
+      },
+      "workspace_metrics": {
+        "scope": "This authenticated workspace only",
+        "workspace_id": "e9da8db0-5797-4c41-b24d-f01f7c1875a6",
+        "files_by_status": {
+          "READY": 10
+        },
+        "outbox": {
+          "count": 0,
+          "oldest_age_seconds": 0
+        },
+        "claims": {
+          "active": 0,
+          "expired": 0
+        },
+        "verification": {
+          "count": 10,
+          "mean_seconds": 0.03185674219997736,
+          "max_seconds": 0.10574009499998738
+        },
+        "api": {
+          "scope": "Authenticated requests for this workspace in this API process; resets on restart or bounded LRU eviction",
+          "request_count": 125,
+          "status_classes": {
+            "2": 115,
+            "3": 0,
+            "4": 10,
+            "5": 0
+          },
+          "latency_histogram_ms": {
+            "1": 0,
+            "5": 21,
+            "10": 25,
+            "25": 26,
+            "50": 39,
+            "100": 4,
+            "250": 10,
+            "500": 0,
+            "1000": 0,
+            "2500": 0,
+            "5000": 0,
+            "10000": 0,
+            "30000": 0,
+            "+Inf": 0
+          },
+          "histogram_semantics": "Non-cumulative bucket counts; API handler through response headers, excluding response-body transmission",
+          "latency_sum_ms": 3554.421,
+          "recent_sample_count": 125,
+          "recent_sample_limit": 512,
+          "recent_p50_ms": 19.842,
+          "recent_p95_ms": 112
+        }
+      },
+      "api_latency": {
+        "count": 117,
+        "p50_ms": 39.309,
+        "p95_ms": 264.102,
+        "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+      },
+      "api_latency_by_route": {
+        "/api/workspaces": {
+          "count": 1,
+          "p50_ms": 8.998,
+          "p95_ms": 8.998,
+          "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+        },
+        "/api/workspace": {
+          "count": 1,
+          "p50_ms": 7.452,
+          "p95_ms": 7.452,
+          "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+        },
+        "/api/files": {
+          "count": 15,
+          "p50_ms": 15.944,
+          "p95_ms": 59.501,
+          "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+        },
+        "/api/uploads": {
+          "count": 10,
+          "p50_ms": 173.376,
+          "p95_ms": 273.232,
+          "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+        },
+        "/api/uploads/:id/parts/:number/sign": {
+          "count": 30,
+          "p50_ms": 40.177,
+          "p95_ms": 308.752,
+          "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+        },
+        "/api/uploads/:id/parts/:number": {
+          "count": 30,
+          "p50_ms": 43.15,
+          "p95_ms": 138.962,
+          "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+        },
+        "/api/uploads/:id/complete": {
+          "count": 10,
+          "p50_ms": 119.664,
+          "p95_ms": 195.201,
+          "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+        },
+        "/api/uploads/:id": {
+          "count": 10,
+          "p50_ms": 5.791,
+          "p95_ms": 7.98,
+          "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+        },
+        "/api/files/:id/download": {
+          "count": 10,
+          "p50_ms": 5.876,
+          "p95_ms": 8.358,
+          "definition": "Nearest-rank browser request.timing.responseEnd milliseconds for native application API requests; excludes observer requests; includes failed statuses in the recorded population"
+        }
+      },
+      "worker_events": [
+        {
+          "event": "outbox_dispatched",
+          "request_id": null,
+          "published": 0,
+          "duration_ms": 1.51
+        },
+        {
+          "event": "outbox_dispatched",
+          "request_id": null,
+          "published": 10,
+          "duration_ms": 13.223
+        },
+        {
+          "event": "verification_finished",
+          "request_id": "file:6ce3f383-a094-404e-b4e8-49d140eaba5b",
+          "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+          "status": "ready",
+          "bytes_verified": 16777233,
+          "duration_ms": 107.449
+        },
+        {
+          "event": "processing_task",
+          "request_id": "file:6ce3f383-a094-404e-b4e8-49d140eaba5b",
+          "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+          "task_id": "90b0eda2-8d6a-4e12-976f-ec30c67c0ff8",
+          "retries": 0,
+          "outcome": "ready",
+          "duration_ms": 109.565
+        },
+        {
+          "event": "verification_finished",
+          "request_id": "file:a7c82dd4-0868-4acd-8011-3d055470be3c",
+          "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+          "status": "ready",
+          "bytes_verified": 16777233,
+          "duration_ms": 14.903
+        },
+        {
+          "event": "processing_task",
+          "request_id": "file:a7c82dd4-0868-4acd-8011-3d055470be3c",
+          "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+          "task_id": "c28a2994-6947-4172-9183-d6bb7407b788",
+          "retries": 0,
+          "outcome": "ready",
+          "duration_ms": 16.561
+        },
+        {
+          "event": "verification_finished",
+          "request_id": "file:587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+          "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+          "status": "ready",
+          "bytes_verified": 16777233,
+          "duration_ms": 15.229
+        },
+        {
+          "event": "processing_task",
+          "request_id": "file:587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+          "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+          "task_id": "aeff4dd9-b622-47a1-968e-1814ca1c35b2",
+          "retries": 0,
+          "outcome": "ready",
+          "duration_ms": 17.128
+        },
+        {
+          "event": "verification_finished",
+          "request_id": "file:3683038f-7200-4864-b340-f284590490a5",
+          "file_id": "3683038f-7200-4864-b340-f284590490a5",
+          "status": "ready",
+          "bytes_verified": 16777233,
+          "duration_ms": 15.032
+        },
+        {
+          "event": "processing_task",
+          "request_id": "file:3683038f-7200-4864-b340-f284590490a5",
+          "file_id": "3683038f-7200-4864-b340-f284590490a5",
+          "task_id": "b24c374f-3bc9-4d8a-94ae-27ff2359652c",
+          "retries": 0,
+          "outcome": "ready",
+          "duration_ms": 17.436
+        },
+        {
+          "event": "verification_finished",
+          "request_id": "file:f2052cda-0ef6-4569-9988-d91854cf3d46",
+          "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+          "status": "ready",
+          "bytes_verified": 16777233,
+          "duration_ms": 15.268
+        },
+        {
+          "event": "processing_task",
+          "request_id": "file:f2052cda-0ef6-4569-9988-d91854cf3d46",
+          "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+          "task_id": "e187b342-024d-43dc-9768-ce4e1c054f54",
+          "retries": 0,
+          "outcome": "ready",
+          "duration_ms": 16.981
+        },
+        {
+          "event": "verification_finished",
+          "request_id": "file:c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+          "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+          "status": "ready",
+          "bytes_verified": 16777233,
+          "duration_ms": 15.355
+        },
+        {
+          "event": "processing_task",
+          "request_id": "file:c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+          "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+          "task_id": "c5c2b546-5af8-4f19-9316-4f28bb48a032",
+          "retries": 0,
+          "outcome": "ready",
+          "duration_ms": 17.558
+        },
+        {
+          "event": "verification_finished",
+          "request_id": "file:5b65a319-339e-4d36-9b91-a175d7b49486",
+          "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+          "status": "ready",
+          "bytes_verified": 16777233,
+          "duration_ms": 106.838
+        },
+        {
+          "event": "processing_task",
+          "request_id": "file:5b65a319-339e-4d36-9b91-a175d7b49486",
+          "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+          "task_id": "68f5c896-edb6-43f7-a616-6cb399be7aac",
+          "retries": 0,
+          "outcome": "ready",
+          "duration_ms": 216.697
+        },
+        {
+          "event": "verification_finished",
+          "request_id": "file:bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+          "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+          "status": "ready",
+          "bytes_verified": 16777233,
+          "duration_ms": 15.495
+        },
+        {
+          "event": "processing_task",
+          "request_id": "file:bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+          "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+          "task_id": "80d5c18f-c75e-458b-bf03-9d686b9b6970",
+          "retries": 0,
+          "outcome": "ready",
+          "duration_ms": 17.083
+        },
+        {
+          "event": "verification_finished",
+          "request_id": "file:5213528a-0f80-4c65-a7b0-747d7c66adbf",
+          "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+          "status": "ready",
+          "bytes_verified": 16777233,
+          "duration_ms": 15.458
+        },
+        {
+          "event": "processing_task",
+          "request_id": "file:5213528a-0f80-4c65-a7b0-747d7c66adbf",
+          "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+          "task_id": "96b1f7fe-2020-40f3-ac45-8972f1d88489",
+          "retries": 0,
+          "outcome": "ready",
+          "duration_ms": 17.783
+        },
+        {
+          "event": "verification_finished",
+          "request_id": "file:8eea076a-eb1c-4080-a953-27e7a220ec58",
+          "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+          "status": "ready",
+          "bytes_verified": 16777233,
+          "duration_ms": 14.439
+        },
+        {
+          "event": "processing_task",
+          "request_id": "file:8eea076a-eb1c-4080-a953-27e7a220ec58",
+          "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+          "task_id": "96579890-8544-4430-8f88-1100ce796787",
+          "retries": 0,
+          "outcome": "ready",
+          "duration_ms": 16.107
+        }
+      ],
+      "outbox_publications": 10,
+      "final_browser_trace": {
+        "puts": [
+          {
+            "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+            "part": 1,
+            "partial_samples": 4,
+            "send_ms": 3529.29999999993,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 6205.699999999953,
+            "last_partial_ms": 6521,
+            "upload_end_ms": 6619.5,
+            "response_end_ms": 7021.099999999977,
+            "status": 200
+          },
+          {
+            "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+            "part": 1,
+            "partial_samples": 4,
+            "send_ms": 3538.1999999999534,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 6208.199999999953,
+            "last_partial_ms": 6521.400000000023,
+            "upload_end_ms": 6619.699999999953,
+            "response_end_ms": 7013.79999999993,
+            "status": 200
+          },
+          {
+            "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+            "part": 1,
+            "partial_samples": 4,
+            "send_ms": 3993.29999999993,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 6208.5,
+            "last_partial_ms": 6524.199999999953,
+            "upload_end_ms": 6621.599999999977,
+            "response_end_ms": 7018.599999999977,
+            "status": 200
+          },
+          {
+            "file_id": "3683038f-7200-4864-b340-f284590490a5",
+            "part": 1,
+            "partial_samples": 4,
+            "send_ms": 4091.29999999993,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 6208.599999999977,
+            "last_partial_ms": 6524.5,
+            "upload_end_ms": 6621.699999999953,
+            "response_end_ms": 7014.699999999953,
+            "status": 200
+          },
+          {
+            "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+            "part": 1,
+            "partial_samples": 4,
+            "send_ms": 4522.5,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 6208.699999999953,
+            "last_partial_ms": 6524.699999999953,
+            "upload_end_ms": 6621.900000000023,
+            "response_end_ms": 7018.199999999953,
+            "status": 200
+          },
+          {
+            "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+            "part": 1,
+            "partial_samples": 4,
+            "send_ms": 4597.29999999993,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 6208.900000000023,
+            "last_partial_ms": 6524.79999999993,
+            "upload_end_ms": 6622,
+            "response_end_ms": 7020.79999999993,
+            "status": 200
+          },
+          {
+            "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+            "part": 1,
+            "partial_samples": 4,
+            "send_ms": 5064.900000000023,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 6209.099999999977,
+            "last_partial_ms": 6524.900000000023,
+            "upload_end_ms": 6622,
+            "response_end_ms": 7026.599999999977,
+            "status": 200
+          },
+          {
+            "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+            "part": 1,
+            "partial_samples": 4,
+            "send_ms": 5075.199999999953,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 6209.199999999953,
+            "last_partial_ms": 6525,
+            "upload_end_ms": 6622.199999999953,
+            "response_end_ms": 7022.199999999953,
+            "status": 200
+          },
+          {
+            "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+            "part": 1,
+            "partial_samples": 4,
+            "send_ms": 5497.79999999993,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 6209.5,
+            "last_partial_ms": 6526.900000000023,
+            "upload_end_ms": 6622.400000000023,
+            "response_end_ms": 6868.400000000023,
+            "status": 200
+          },
+          {
+            "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+            "part": 1,
+            "partial_samples": 4,
+            "send_ms": 5498.699999999953,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 6209.29999999993,
+            "last_partial_ms": 6525,
+            "upload_end_ms": 6622.29999999993,
+            "response_end_ms": 6867.900000000023,
+            "status": 200
+          },
+          {
+            "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+            "part": 2,
+            "partial_samples": 0,
+            "send_ms": 7235.79999999993,
+            "loaded": 8388608,
+            "total": 8388608,
+            "upload_end_ms": 8050.099999999977,
+            "response_end_ms": 8050.699999999953,
+            "status": 200
+          },
+          {
+            "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+            "part": 2,
+            "partial_samples": 0,
+            "send_ms": 7269.29999999993,
+            "loaded": 8388608,
+            "total": 8388608,
+            "upload_end_ms": 8053.199999999953,
+            "response_end_ms": 8053.79999999993,
+            "status": 200
+          },
+          {
+            "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+            "part": 2,
+            "partial_samples": 2,
+            "send_ms": 8065.900000000023,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 8168.900000000023,
+            "last_partial_ms": 8270.199999999953,
+            "upload_end_ms": 8370.900000000023,
+            "response_end_ms": 8642.199999999953,
+            "status": 200
+          },
+          {
+            "file_id": "3683038f-7200-4864-b340-f284590490a5",
+            "part": 2,
+            "partial_samples": 2,
+            "send_ms": 8068.29999999993,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 8173.699999999953,
+            "last_partial_ms": 8274.099999999977,
+            "upload_end_ms": 8376.5,
+            "response_end_ms": 8648.099999999977,
+            "status": 200
+          },
+          {
+            "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+            "part": 2,
+            "partial_samples": 2,
+            "send_ms": 8068.699999999953,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 8174.199999999953,
+            "last_partial_ms": 8274.400000000023,
+            "upload_end_ms": 8376.699999999953,
+            "response_end_ms": 8638.400000000023,
+            "status": 200
+          },
+          {
+            "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+            "part": 2,
+            "partial_samples": 2,
+            "send_ms": 8070.199999999953,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 8174.29999999993,
+            "last_partial_ms": 8274.5,
+            "upload_end_ms": 8376.79999999993,
+            "response_end_ms": 8639.099999999977,
+            "status": 200
+          },
+          {
+            "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+            "part": 2,
+            "partial_samples": 2,
+            "send_ms": 8070.79999999993,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 8179.099999999977,
+            "last_partial_ms": 8279.699999999953,
+            "upload_end_ms": 8381.099999999977,
+            "response_end_ms": 8649.900000000023,
+            "status": 200
+          },
+          {
+            "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+            "part": 2,
+            "partial_samples": 2,
+            "send_ms": 8071.400000000023,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 8179,
+            "last_partial_ms": 8279.599999999977,
+            "upload_end_ms": 8381.099999999977,
+            "response_end_ms": 8648.79999999993,
+            "status": 200
+          },
+          {
+            "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+            "part": 2,
+            "partial_samples": 2,
+            "send_ms": 8071.699999999953,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 8178.699999999953,
+            "last_partial_ms": 8279.400000000023,
+            "upload_end_ms": 8380.900000000023,
+            "response_end_ms": 8649.400000000023,
+            "status": 200
+          },
+          {
+            "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+            "part": 2,
+            "partial_samples": 2,
+            "send_ms": 8072.400000000023,
+            "loaded": 8388608,
+            "total": 8388608,
+            "first_partial_ms": 8189.599999999977,
+            "last_partial_ms": 8289.599999999977,
+            "upload_end_ms": 8392.5,
+            "response_end_ms": 8644.099999999977,
+            "status": 200
+          },
+          {
+            "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+            "part": 3,
+            "partial_samples": 0,
+            "send_ms": 8110.599999999977,
+            "loaded": 17,
+            "total": 17,
+            "upload_end_ms": 8221.199999999953,
+            "response_end_ms": 8539.699999999953,
+            "status": 200
+          },
+          {
+            "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+            "part": 3,
+            "partial_samples": 0,
+            "send_ms": 8116.79999999993,
+            "loaded": 17,
+            "total": 17,
+            "upload_end_ms": 8227.400000000023,
+            "response_end_ms": 8647.199999999953,
+            "status": 200
+          },
+          {
+            "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+            "part": 3,
+            "partial_samples": 0,
+            "send_ms": 8723.400000000023,
+            "loaded": 17,
+            "total": 17,
+            "upload_end_ms": 8735.199999999953,
+            "response_end_ms": 8736,
+            "status": 200
+          },
+          {
+            "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+            "part": 3,
+            "partial_samples": 0,
+            "send_ms": 8731.900000000023,
+            "loaded": 17,
+            "total": 17,
+            "upload_end_ms": 8741.400000000023,
+            "response_end_ms": 8742.099999999977,
+            "status": 200
+          },
+          {
+            "file_id": "3683038f-7200-4864-b340-f284590490a5",
+            "part": 3,
+            "partial_samples": 0,
+            "send_ms": 8745.900000000023,
+            "loaded": 17,
+            "total": 17,
+            "upload_end_ms": 8759,
+            "response_end_ms": 8759.79999999993,
+            "status": 200
+          },
+          {
+            "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+            "part": 3,
+            "partial_samples": 0,
+            "send_ms": 8755,
+            "loaded": 17,
+            "total": 17,
+            "upload_end_ms": 8768.599999999977,
+            "response_end_ms": 8769.900000000023,
+            "status": 200
+          },
+          {
+            "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+            "part": 3,
+            "partial_samples": 0,
+            "send_ms": 8758.400000000023,
+            "loaded": 17,
+            "total": 17,
+            "upload_end_ms": 8770.599999999977,
+            "response_end_ms": 8772.599999999977,
+            "status": 200
+          },
+          {
+            "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+            "part": 3,
+            "partial_samples": 0,
+            "send_ms": 8760.29999999993,
+            "loaded": 17,
+            "total": 17,
+            "upload_end_ms": 8776.699999999953,
+            "response_end_ms": 8777.599999999977,
+            "status": 200
+          },
+          {
+            "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+            "part": 3,
+            "partial_samples": 0,
+            "send_ms": 8781.699999999953,
+            "loaded": 17,
+            "total": 17,
+            "upload_end_ms": 8793.900000000023,
+            "response_end_ms": 8796.5,
+            "status": 200
+          },
+          {
+            "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+            "part": 3,
+            "partial_samples": 0,
+            "send_ms": 8797.199999999953,
+            "loaded": 17,
+            "total": 17,
+            "upload_end_ms": 8808.79999999993,
+            "response_end_ms": 8809.599999999977,
+            "status": 200
+          }
+        ],
+        "hashes": [
+          {
+            "name": "load-01.bin",
+            "start_ms": 2805.0999999999767,
+            "end_ms": 3036.29999999993,
+            "error": false
+          },
+          {
+            "name": "load-02.bin",
+            "start_ms": 2805.1999999999534,
+            "end_ms": 3034.5999999999767,
+            "error": false
+          },
+          {
+            "name": "load-03.bin",
+            "start_ms": 3036.1999999999534,
+            "end_ms": 3524.4000000000233,
+            "error": false
+          },
+          {
+            "name": "load-04.bin",
+            "start_ms": 3037.79999999993,
+            "end_ms": 3521.6999999999534,
+            "error": false
+          },
+          {
+            "name": "load-05.bin",
+            "start_ms": 3522.6999999999534,
+            "end_ms": 3830.4000000000233,
+            "error": false
+          },
+          {
+            "name": "load-06.bin",
+            "start_ms": 3526.0999999999767,
+            "end_ms": 3829.4000000000233,
+            "error": false
+          },
+          {
+            "name": "load-07.bin",
+            "start_ms": 3830.0999999999767,
+            "end_ms": 4384.199999999953,
+            "error": false
+          },
+          {
+            "name": "load-08.bin",
+            "start_ms": 3830.9000000000233,
+            "end_ms": 4386.5,
+            "error": false
+          },
+          {
+            "name": "load-09.bin",
+            "start_ms": 4385.5,
+            "end_ms": 4894.699999999953,
+            "error": false
+          },
+          {
+            "name": "load-10.bin",
+            "start_ms": 4387.699999999953,
+            "end_ms": 4892.699999999953,
+            "error": false
+          }
+        ]
+      },
+      "trace_snapshot_at_s": 18.514193,
+      "cleanup_interrupted_puts": [],
+      "closing": true,
+      "native_observation_closed_at_s": 18.51428,
+      "browser_stopped_before_cleanup_at_s": 18.521481,
+      "cleanup_started_at_s": 18.521963,
+      "cleanup": [
+        {
+          "file_id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+          "status": 204
+        },
+        {
+          "file_id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+          "status": 204
+        },
+        {
+          "file_id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+          "status": 204
+        },
+        {
+          "file_id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+          "status": 204
+        },
+        {
+          "file_id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+          "status": 204
+        },
+        {
+          "file_id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+          "status": 204
+        },
+        {
+          "file_id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+          "status": 204
+        },
+        {
+          "file_id": "3683038f-7200-4864-b340-f284590490a5",
+          "status": 204
+        },
+        {
+          "file_id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+          "status": 204
+        },
+        {
+          "file_id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+          "status": 204
+        }
+      ],
+      "after_cleanup": {
+        "broker": {
+          "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+          "queued_messages": 0,
+          "unacked_messages": 0,
+          "unacked_index": 0
+        },
+        "connections": {
+          "total": 10,
+          "active": 1,
+          "lock_waiting": 0,
+          "idle_in_transaction": 0
+        },
+        "ungranted_locks": 0,
+        "database": {
+          "xact_commit": 520,
+          "xact_rollback": 273,
+          "deadlocks": 0,
+          "temp_bytes": 0,
+          "blks_read": 317,
+          "blks_hit": 18171
+        },
+        "work": {
+          "processing": 0,
+          "active_claims": 0,
+          "expired_claims": 0
+        },
+        "outbox": {
+          "count": 0,
+          "oldest_age_seconds": 0
+        },
+        "files": [
+          {
+            "id": "a7c82dd4-0868-4acd-8011-3d055470be3c",
+            "name": "load-01.bin",
+            "size": 16777233,
+            "status": "DELETED",
+            "sha256": "2ffba0de983c4afb351e91ded3652120a640967e1611d6bba7fbd3fe962d0b32",
+            "bytes_verified": 16777233,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "f2052cda-0ef6-4569-9988-d91854cf3d46",
+            "name": "load-02.bin",
+            "size": 16777233,
+            "status": "DELETED",
+            "sha256": "e054caf1777836d71fc236c8c3ade18ff2ab5b83db5b548da0abc30f10bbe6c1",
+            "bytes_verified": 16777233,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+            "name": "load-03.bin",
+            "size": 16777233,
+            "status": "DELETED",
+            "sha256": "8929b859b1e5911975268f26439284c0ed1c8732379cffbb197f84e16b4bf3d6",
+            "bytes_verified": 16777233,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "3683038f-7200-4864-b340-f284590490a5",
+            "name": "load-04.bin",
+            "size": 16777233,
+            "status": "DELETED",
+            "sha256": "bbe6ef104b019e8778bdea3011acfcc8581a768a99957ffd39c92bb899422a3b",
+            "bytes_verified": 16777233,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "8eea076a-eb1c-4080-a953-27e7a220ec58",
+            "name": "load-05.bin",
+            "size": 16777233,
+            "status": "DELETED",
+            "sha256": "669462cda49a29f9d9028324c806dcd6cd76046a7f8a203d065fceaa9ca32f95",
+            "bytes_verified": 16777233,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+            "name": "load-06.bin",
+            "size": 16777233,
+            "status": "DELETED",
+            "sha256": "48beacabe57f3f08af21b96d0637337990d4ed95f2f13474905f0209d1b123fe",
+            "bytes_verified": 16777233,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+            "name": "load-07.bin",
+            "size": 16777233,
+            "status": "DELETED",
+            "sha256": "8bea7ea03f4aac105eebbe00ca2e8727258cf10389ba6e6c6936e2e24f76d684",
+            "bytes_verified": 16777233,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+            "name": "load-08.bin",
+            "size": 16777233,
+            "status": "DELETED",
+            "sha256": "8a67f68f23915cab544717ab3819dae25fe6d45ce53c956d479067a62a8954a9",
+            "bytes_verified": 16777233,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "5b65a319-339e-4d36-9b91-a175d7b49486",
+            "name": "load-09.bin",
+            "size": 16777233,
+            "status": "DELETED",
+            "sha256": "bcd7f9b32fa796bb02a2352a943d2fe6295f7077f5bb4a77148966e0b0b45833",
+            "bytes_verified": 16777233,
+            "result_count": 1,
+            "claim_active": false
+          },
+          {
+            "id": "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+            "name": "load-10.bin",
+            "size": 16777233,
+            "status": "DELETED",
+            "sha256": "941b8e3f81acfecbc4d012a9ea4def97c859091158788beb1eeaffa22c876840",
+            "bytes_verified": 16777233,
+            "result_count": 1,
+            "claim_active": false
+          }
+        ],
+        "object_count": 0,
+        "object_bytes": 0,
+        "multipart_count": 0
+      },
+      "finished_at": "2026-10-30T07:39:30.297Z",
+      "total_elapsed_s": 16.185432,
+      "file_integrity_passed": 10
+    }
+  ],
+  "observer_api": {
+    "transport": "Native Node HTTP client, new socket per request, Connection: close, absolute15s deadline, no retries; excluded from native browser API latency population",
+    "requests": 71,
+    "status_counts": {
+      "200": 30,
+      "201": 1,
+      "204": 10,
+      "404": 20,
+      "409": 10
+    },
+    "transport_failures": []
+  },
+  "resources": {
+    "interval_ms": 1000,
+    "samples": [
+      {
+        "t_s": 5.303571,
+        "collection_started_at_s": 2.743605,
+        "run": 1,
+        "phase": "prepare",
+        "browser_rss_sum_bytes": 405704704,
+        "browser_cpu_percent": null,
+        "node_rss_bytes": 149835776,
+        "node_heap_used_bytes": 52490848,
+        "node_heap_total_bytes": 70144000,
+        "node_external_bytes": 6659855,
+        "node_array_buffers_bytes": 2510299,
+        "node_cpu_percent": 32.92089585044828,
+        "services": [
+          {
+            "service": "api",
+            "cpu_percent": 0.1,
+            "memory_usage_bytes": 84567654,
+            "rss_sum_bytes": 111591424,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "beat",
+            "cpu_percent": 21.23,
+            "memory_usage_bytes": 74291610,
+            "rss_sum_bytes": 78299136,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "gateway",
+            "cpu_percent": 0,
+            "memory_usage_bytes": 12845056,
+            "rss_sum_bytes": 51982336,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "minio",
+            "cpu_percent": 2.22,
+            "memory_usage_bytes": 62673388,
+            "rss_sum_bytes": 121544704,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "postgres",
+            "cpu_percent": 2.46,
+            "memory_usage_bytes": 32652657,
+            "rss_sum_bytes": 108347392,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "redis",
+            "cpu_percent": 2.16,
+            "memory_usage_bytes": 4026532,
+            "rss_sum_bytes": 10145792,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "worker",
+            "cpu_percent": 0.03,
+            "memory_usage_bytes": 127926272,
+            "rss_sum_bytes": 244277248,
+            "oom": 0,
+            "oom_kill": 0
+          }
+        ],
+        "ops": {
+          "scope": "Operational key; this API process and database",
+          "api_inflight": 1,
+          "api_inflight_limit": 64,
+          "db_pool": {
+            "size": 8,
+            "checked_out": 0,
+            "overflow": 0,
+            "capacity": 16
+          },
+          "uploads": {
+            "active_uploads": 0,
+            "active_claims": 0,
+            "expired_claims": 0
+          },
+          "outbox": {
+            "count": 0,
+            "oldest_age_seconds": 0
+          }
+        },
+        "database": {
+          "broker": {
+            "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+            "queued_messages": 0,
+            "unacked_messages": 0,
+            "unacked_index": 0
+          },
+          "connections": {
+            "total": 2,
+            "active": 1,
+            "lock_waiting": 0,
+            "idle_in_transaction": 0
+          },
+          "ungranted_locks": 0,
+          "database": {
+            "xact_commit": 7,
+            "xact_rollback": 3,
+            "deadlocks": 0,
+            "temp_bytes": 0,
+            "blks_read": 253,
+            "blks_hit": 6039
+          },
+          "work": {
+            "processing": 0,
+            "active_claims": 0,
+            "expired_claims": 0
+          },
+          "outbox": {
+            "count": 0,
+            "oldest_age_seconds": 0
+          }
+        },
+        "scheduler": {
+          "active_files": "0",
+          "queued_files": "0",
+          "hash_workers": "0",
+          "queued_hashes": "0",
+          "global_parts": "0",
+          "queued_parts": "0"
+        },
+        "collection_finished_at_s": 5.321505
+      },
+      {
+        "t_s": 8.345926,
+        "collection_started_at_s": 5.746137,
+        "run": 1,
+        "phase": "hash-and-transfer",
+        "browser_rss_sum_bytes": 494047232,
+        "browser_cpu_percent": 31.908612128796314,
+        "node_rss_bytes": 312393728,
+        "node_heap_used_bytes": 65955912,
+        "node_heap_total_bytes": 87846912,
+        "node_external_bytes": 89597843,
+        "node_array_buffers_bytes": 85448287,
+        "node_cpu_percent": 2.731078054986257,
+        "services": [
+          {
+            "service": "api",
+            "cpu_percent": 6.75,
+            "memory_usage_bytes": 87168123,
+            "rss_sum_bytes": 111960064,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "beat",
+            "cpu_percent": 0,
+            "memory_usage_bytes": 73756836,
+            "rss_sum_bytes": 90832896,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "gateway",
+            "cpu_percent": 3.65,
+            "memory_usage_bytes": 13432259,
+            "rss_sum_bytes": 51998720,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "minio",
+            "cpu_percent": 0.85,
+            "memory_usage_bytes": 63606620,
+            "rss_sum_bytes": 121880576,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "postgres",
+            "cpu_percent": 2.38,
+            "memory_usage_bytes": 38535168,
+            "rss_sum_bytes": 142049280,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "redis",
+            "cpu_percent": 0.39,
+            "memory_usage_bytes": 3846177,
+            "rss_sum_bytes": 10252288,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "worker",
+            "cpu_percent": 2.65,
+            "memory_usage_bytes": 127926272,
+            "rss_sum_bytes": 244224000,
+            "oom": 0,
+            "oom_kill": 0
+          }
+        ],
+        "ops": {
+          "scope": "Operational key; this API process and database",
+          "api_inflight": 1,
+          "api_inflight_limit": 64,
+          "db_pool": {
+            "size": 8,
+            "checked_out": 0,
+            "overflow": 0,
+            "capacity": 16
+          },
+          "uploads": {
+            "active_uploads": 2,
+            "active_claims": 0,
+            "expired_claims": 0
+          },
+          "outbox": {
+            "count": 0,
+            "oldest_age_seconds": 0
+          }
+        },
+        "database": {
+          "broker": {
+            "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+            "queued_messages": 0,
+            "unacked_messages": 0,
+            "unacked_index": 0
+          },
+          "connections": {
+            "total": 4,
+            "active": 1,
+            "lock_waiting": 0,
+            "idle_in_transaction": 0
+          },
+          "ungranted_locks": 0,
+          "database": {
+            "xact_commit": 19,
+            "xact_rollback": 9,
+            "deadlocks": 0,
+            "temp_bytes": 0,
+            "blks_read": 305,
+            "blks_hit": 7630
+          },
+          "work": {
+            "processing": 0,
+            "active_claims": 0,
+            "expired_claims": 0
+          },
+          "outbox": {
+            "count": 0,
+            "oldest_age_seconds": 0
+          }
+        },
+        "scheduler": {
+          "active_files": "10",
+          "queued_files": "0",
+          "hash_workers": "0",
+          "queued_hashes": "0",
+          "global_parts": "10",
+          "queued_parts": "20"
+        },
+        "collection_finished_at_s": 8.419626
+      },
+      {
+        "t_s": 10.379897,
+        "collection_started_at_s": 8.746076,
+        "run": 1,
+        "phase": "transfer",
+        "browser_rss_sum_bytes": 587132928,
+        "browser_cpu_percent": 170.31576934930345,
+        "node_rss_bytes": 321191936,
+        "node_heap_used_bytes": 68371624,
+        "node_heap_total_bytes": 88891392,
+        "node_external_bytes": 98245241,
+        "node_array_buffers_bytes": 94095685,
+        "node_cpu_percent": 48.40764124692212,
+        "services": [
+          {
+            "service": "api",
+            "cpu_percent": 9.47,
+            "memory_usage_bytes": 86905979,
+            "rss_sum_bytes": 112889856,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "beat",
+            "cpu_percent": 0,
+            "memory_usage_bytes": 75895931,
+            "rss_sum_bytes": 93192192,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "gateway",
+            "cpu_percent": 21.75,
+            "memory_usage_bytes": 14994637,
+            "rss_sum_bytes": 52719616,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "minio",
+            "cpu_percent": 32.21,
+            "memory_usage_bytes": 113560781,
+            "rss_sum_bytes": 127909888,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "postgres",
+            "cpu_percent": 6.74,
+            "memory_usage_bytes": 45183140,
+            "rss_sum_bytes": 181899264,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "redis",
+            "cpu_percent": 2.54,
+            "memory_usage_bytes": 3895460,
+            "rss_sum_bytes": 10272768,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "worker",
+            "cpu_percent": 2.69,
+            "memory_usage_bytes": 144179200,
+            "rss_sum_bytes": 264802304,
+            "oom": 0,
+            "oom_kill": 0
+          }
+        ],
+        "ops": {
+          "scope": "Operational key; this API process and database",
+          "api_inflight": 1,
+          "api_inflight_limit": 64,
+          "db_pool": {
+            "size": 8,
+            "checked_out": 0,
+            "overflow": 0,
+            "capacity": 16
+          },
+          "uploads": {
+            "active_uploads": 10,
+            "active_claims": 0,
+            "expired_claims": 0
+          },
+          "outbox": {
+            "count": 0,
+            "oldest_age_seconds": 0
+          }
+        },
+        "database": {
+          "broker": {
+            "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+            "queued_messages": 0,
+            "unacked_messages": 0,
+            "unacked_index": 0
+          },
+          "connections": {
+            "total": 6,
+            "active": 1,
+            "lock_waiting": 0,
+            "idle_in_transaction": 0
+          },
+          "ungranted_locks": 0,
+          "database": {
+            "xact_commit": 113,
+            "xact_rollback": 59,
+            "deadlocks": 0,
+            "temp_bytes": 0,
+            "blks_read": 311,
+            "blks_hit": 10996
+          },
+          "work": {
+            "processing": 0,
+            "active_claims": 0,
+            "expired_claims": 0
+          },
+          "outbox": {
+            "count": 0,
+            "oldest_age_seconds": 0
+          }
+        },
+        "scheduler": {
+          "active_files": "10",
+          "queued_files": "0",
+          "hash_workers": "0",
+          "queued_hashes": "0",
+          "global_parts": "10",
+          "queued_parts": "8"
+        },
+        "collection_finished_at_s": 10.628154
+      },
+      {
+        "t_s": 12.399515,
+        "collection_started_at_s": 10.74633,
+        "run": 1,
+        "phase": "transfer",
+        "browser_rss_sum_bytes": 529707008,
+        "browser_cpu_percent": 85.9651367821304,
+        "node_rss_bytes": 321847296,
+        "node_heap_used_bytes": 75101176,
+        "node_heap_total_bytes": 89415680,
+        "node_external_bytes": 99059619,
+        "node_array_buffers_bytes": 94910063,
+        "node_cpu_percent": 7.361795921702999,
+        "services": [
+          {
+            "service": "api",
+            "cpu_percent": 56.14,
+            "memory_usage_bytes": 87702897,
+            "rss_sum_bytes": 113315840,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "beat",
+            "cpu_percent": 2.39,
+            "memory_usage_bytes": 75895931,
+            "rss_sum_bytes": 93188096,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "gateway",
+            "cpu_percent": 6.64,
+            "memory_usage_bytes": 15571354,
+            "rss_sum_bytes": 53714944,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "minio",
+            "cpu_percent": 9.37,
+            "memory_usage_bytes": 121529958,
+            "rss_sum_bytes": 174665728,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "postgres",
+            "cpu_percent": 12.58,
+            "memory_usage_bytes": 48119153,
+            "rss_sum_bytes": 216133632,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "redis",
+            "cpu_percent": 2.54,
+            "memory_usage_bytes": 3895460,
+            "rss_sum_bytes": 10317824,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "worker",
+            "cpu_percent": 2.67,
+            "memory_usage_bytes": 144179200,
+            "rss_sum_bytes": 264826880,
+            "oom": 0,
+            "oom_kill": 0
+          }
+        ],
+        "ops": {
+          "scope": "Operational key; this API process and database",
+          "api_inflight": 2,
+          "api_inflight_limit": 64,
+          "db_pool": {
+            "size": 8,
+            "checked_out": 1,
+            "overflow": 0,
+            "capacity": 16
+          },
+          "uploads": {
+            "active_uploads": 10,
+            "active_claims": 0,
+            "expired_claims": 0
+          },
+          "outbox": {
+            "count": 0,
+            "oldest_age_seconds": 0
+          }
+        },
+        "database": {
+          "broker": {
+            "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+            "queued_messages": 0,
+            "unacked_messages": 0,
+            "unacked_index": 0
+          },
+          "connections": {
+            "total": 8,
+            "active": 3,
+            "lock_waiting": 0,
+            "idle_in_transaction": 0
+          },
+          "ungranted_locks": 0,
+          "database": {
+            "xact_commit": 217,
+            "xact_rollback": 119,
+            "deadlocks": 0,
+            "temp_bytes": 0,
+            "blks_read": 311,
+            "blks_hit": 13582
+          },
+          "work": {
+            "processing": 0,
+            "active_claims": 0,
+            "expired_claims": 0
+          },
+          "outbox": {
+            "count": 0,
+            "oldest_age_seconds": 0
+          }
+        },
+        "scheduler": {
+          "active_files": "0",
+          "queued_files": "0",
+          "hash_workers": "0",
+          "queued_hashes": "0",
+          "global_parts": "0",
+          "queued_parts": "0"
+        },
+        "collection_finished_at_s": 12.403881
+      },
+      {
+        "t_s": 14.426522,
+        "collection_started_at_s": 12.746619,
+        "run": 1,
+        "phase": "verify-and-download",
+        "browser_rss_sum_bytes": 472109056,
+        "browser_cpu_percent": 25.663392326102056,
+        "node_rss_bytes": 323420160,
+        "node_heap_used_bytes": 71734912,
+        "node_heap_total_bytes": 90202112,
+        "node_external_bytes": 98809726,
+        "node_array_buffers_bytes": 94660170,
+        "node_cpu_percent": 9.570180920666107,
+        "services": [
+          {
+            "service": "api",
+            "cpu_percent": 2.48,
+            "memory_usage_bytes": 87975526,
+            "rss_sum_bytes": 113864704,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "beat",
+            "cpu_percent": 1.08,
+            "memory_usage_bytes": 75895931,
+            "rss_sum_bytes": 93188096,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "gateway",
+            "cpu_percent": 3.7,
+            "memory_usage_bytes": 15393096,
+            "rss_sum_bytes": 54337536,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "minio",
+            "cpu_percent": 8.85,
+            "memory_usage_bytes": 142711194,
+            "rss_sum_bytes": 187043840,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "postgres",
+            "cpu_percent": 6.12,
+            "memory_usage_bytes": 50813993,
+            "rss_sum_bytes": 234856448,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "redis",
+            "cpu_percent": 2.57,
+            "memory_usage_bytes": 4239393,
+            "rss_sum_bytes": 10276864,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "worker",
+            "cpu_percent": 46.77,
+            "memory_usage_bytes": 201746022,
+            "rss_sum_bytes": 264818688,
+            "oom": 0,
+            "oom_kill": 0
+          }
+        ],
+        "ops": {
+          "scope": "Operational key; this API process and database",
+          "api_inflight": 2,
+          "api_inflight_limit": 64,
+          "db_pool": {
+            "size": 8,
+            "checked_out": 1,
+            "overflow": 0,
+            "capacity": 16
+          },
+          "uploads": {
+            "active_uploads": 10,
+            "active_claims": 0,
+            "expired_claims": 0
+          },
+          "outbox": {
+            "count": 10,
+            "oldest_age_seconds": 1.755273
+          }
+        },
+        "database": {
+          "broker": {
+            "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+            "queued_messages": 0,
+            "unacked_messages": 0,
+            "unacked_index": 0
+          },
+          "connections": {
+            "total": 9,
+            "active": 1,
+            "lock_waiting": 0,
+            "idle_in_transaction": 0
+          },
+          "ungranted_locks": 0,
+          "database": {
+            "xact_commit": 381,
+            "xact_rollback": 178,
+            "deadlocks": 0,
+            "temp_bytes": 0,
+            "blks_read": 311,
+            "blks_hit": 15973
+          },
+          "work": {
+            "processing": 10,
+            "active_claims": 0,
+            "expired_claims": 0
+          },
+          "outbox": {
+            "count": 10,
+            "oldest_age_seconds": 1.763517
+          }
+        },
+        "scheduler": {
+          "active_files": "0",
+          "queued_files": "0",
+          "hash_workers": "0",
+          "queued_hashes": "0",
+          "global_parts": "0",
+          "queued_parts": "0"
+        },
+        "collection_finished_at_s": 14.430445
+      },
+      {
+        "t_s": 16.492343,
+        "collection_started_at_s": 14.748418,
+        "run": 1,
+        "phase": "verify-and-download",
+        "browser_rss_sum_bytes": 474935296,
+        "browser_cpu_percent": 3.4923180231293407,
+        "node_rss_bytes": 306532352,
+        "node_heap_used_bytes": 53034112,
+        "node_heap_total_bytes": 72613888,
+        "node_external_bytes": 91373542,
+        "node_array_buffers_bytes": 87223986,
+        "node_cpu_percent": 6.1915805134635145,
+        "services": [
+          {
+            "service": "api",
+            "cpu_percent": 6.38,
+            "memory_usage_bytes": 87996498,
+            "rss_sum_bytes": 136597504,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "beat",
+            "cpu_percent": 0,
+            "memory_usage_bytes": 75895931,
+            "rss_sum_bytes": 93196288,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "gateway",
+            "cpu_percent": 19.69,
+            "memory_usage_bytes": 16494100,
+            "rss_sum_bytes": 54312960,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "minio",
+            "cpu_percent": 9.75,
+            "memory_usage_bytes": 151309517,
+            "rss_sum_bytes": 208355328,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "postgres",
+            "cpu_percent": 4.49,
+            "memory_usage_bytes": 50897879,
+            "rss_sum_bytes": 254435328,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "redis",
+            "cpu_percent": 2.87,
+            "memory_usage_bytes": 3985637,
+            "rss_sum_bytes": 10309632,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "worker",
+            "cpu_percent": 2.6,
+            "memory_usage_bytes": 201221734,
+            "rss_sum_bytes": 319053824,
+            "oom": 0,
+            "oom_kill": 0
+          }
+        ],
+        "ops": {
+          "scope": "Operational key; this API process and database",
+          "api_inflight": 1,
+          "api_inflight_limit": 64,
+          "db_pool": {
+            "size": 8,
+            "checked_out": 0,
+            "overflow": 0,
+            "capacity": 16
+          },
+          "uploads": {
+            "active_uploads": 0,
+            "active_claims": 0,
+            "expired_claims": 0
+          },
+          "outbox": {
+            "count": 0,
+            "oldest_age_seconds": 0
+          }
+        },
+        "database": {
+          "broker": {
+            "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+            "queued_messages": 0,
+            "unacked_messages": 0,
+            "unacked_index": 0
+          },
+          "connections": {
+            "total": 10,
+            "active": 1,
+            "lock_waiting": 0,
+            "idle_in_transaction": 0
+          },
+          "ungranted_locks": 0,
+          "database": {
+            "xact_commit": 418,
+            "xact_rollback": 209,
+            "deadlocks": 0,
+            "temp_bytes": 0,
+            "blks_read": 311,
+            "blks_hit": 17319
+          },
+          "work": {
+            "processing": 0,
+            "active_claims": 0,
+            "expired_claims": 0
+          },
+          "outbox": {
+            "count": 0,
+            "oldest_age_seconds": 0
+          }
+        },
+        "scheduler": {
+          "active_files": "0",
+          "queued_files": "0",
+          "hash_workers": "0",
+          "queued_hashes": "0",
+          "global_parts": "0",
+          "queued_parts": "0"
+        },
+        "collection_finished_at_s": 16.496754
+      },
+      {
+        "t_s": 18.50773,
+        "collection_started_at_s": 16.749302,
+        "run": 1,
+        "phase": "verify-and-download",
+        "browser_rss_sum_bytes": 514686976,
+        "browser_cpu_percent": 81.74623573263887,
+        "node_rss_bytes": 306663424,
+        "node_heap_used_bytes": 54074184,
+        "node_heap_total_bytes": 72876032,
+        "node_external_bytes": 92411524,
+        "node_array_buffers_bytes": 88261968,
+        "node_cpu_percent": 18.18699224727574,
+        "services": [
+          {
+            "service": "api",
+            "cpu_percent": 2.7,
+            "memory_usage_bytes": 87975526,
+            "rss_sum_bytes": 113868800,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "beat",
+            "cpu_percent": 0,
+            "memory_usage_bytes": 75895931,
+            "rss_sum_bytes": 93196288,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "gateway",
+            "cpu_percent": 12.97,
+            "memory_usage_bytes": 16462643,
+            "rss_sum_bytes": 55373824,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "minio",
+            "cpu_percent": 5.36,
+            "memory_usage_bytes": 163892429,
+            "rss_sum_bytes": 211984384,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "postgres",
+            "cpu_percent": 0.77,
+            "memory_usage_bytes": 50688164,
+            "rss_sum_bytes": 254742528,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "redis",
+            "cpu_percent": 0.32,
+            "memory_usage_bytes": 4243587,
+            "rss_sum_bytes": 10420224,
+            "oom": 0,
+            "oom_kill": 0
+          },
+          {
+            "service": "worker",
+            "cpu_percent": 0.12,
+            "memory_usage_bytes": 201431450,
+            "rss_sum_bytes": 319053824,
+            "oom": 0,
+            "oom_kill": 0
+          }
+        ],
+        "ops": {
+          "scope": "Operational key; this API process and database",
+          "api_inflight": 1,
+          "api_inflight_limit": 64,
+          "db_pool": {
+            "size": 8,
+            "checked_out": 0,
+            "overflow": 0,
+            "capacity": 16
+          },
+          "uploads": {
+            "active_uploads": 0,
+            "active_claims": 0,
+            "expired_claims": 0
+          },
+          "outbox": {
+            "count": 0,
+            "oldest_age_seconds": 0
+          }
+        },
+        "database": {
+          "broker": {
+            "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+            "queued_messages": 0,
+            "unacked_messages": 0,
+            "unacked_index": 0
+          },
+          "connections": {
+            "total": 10,
+            "active": 1,
+            "lock_waiting": 0,
+            "idle_in_transaction": 1
+          },
+          "ungranted_locks": 0,
+          "database": {
+            "xact_commit": 454,
+            "xact_rollback": 243,
+            "deadlocks": 0,
+            "temp_bytes": 0,
+            "blks_read": 317,
+            "blks_hit": 17615
+          },
+          "work": {
+            "processing": 0,
+            "active_claims": 0,
+            "expired_claims": 0
+          },
+          "outbox": {
+            "count": 0,
+            "oldest_age_seconds": 0
+          }
+        },
+        "scheduler": {
+          "active_files": "0",
+          "queued_files": "0",
+          "hash_workers": "0",
+          "queued_hashes": "0",
+          "global_parts": "0",
+          "queued_parts": "0"
+        },
+        "collection_finished_at_s": 18.511493
+      }
+    ],
+    "sample_errors": 0,
+    "skipped_overlapping_collections": 9,
+    "definition": "Actual timestamps are authoritative. Chrome RSS sums may double-count shared pages. Container memory usage is Docker accounting; process RSS sums may also double-count shared pages. Docker CPU percentages use 100% per CPU core. Samples are observations, not instantaneous maxima."
+  },
+  "fixture_generation_and_independent_hash_s": 0.35856200000000005,
+  "final_global_inventory": {
+    "broker": {
+      "scope": "Dedicated Redis database 0; default Celery queue, priority lists and Kombu unacked hash/index",
+      "queued_messages": 0,
+      "unacked_messages": 0,
+      "unacked_index": 0
+    },
+    "connections": {
+      "total": 10,
+      "active": 1,
+      "lock_waiting": 0,
+      "idle_in_transaction": 0
+    },
+    "ungranted_locks": 0,
+    "database": {
+      "xact_commit": 520,
+      "xact_rollback": 273,
+      "deadlocks": 0,
+      "temp_bytes": 0,
+      "blks_read": 317,
+      "blks_hit": 18171
+    },
+    "work": {
+      "processing": 0,
+      "active_claims": 0,
+      "expired_claims": 0
+    },
+    "outbox": {
+      "count": 0,
+      "oldest_age_seconds": 0
+    },
+    "object_count": 0,
+    "object_bytes": 0,
+    "multipart_count": 0
+  },
+  "file_outcomes_passed": 10,
+  "file_integrity_passed": 10,
+  "sources_unchanged_during_run": true,
+  "release_gate_passed": false,
+  "attempted_file_ids": [
+    "3683038f-7200-4864-b340-f284590490a5",
+    "5213528a-0f80-4c65-a7b0-747d7c66adbf",
+    "587f1c9f-6f9a-4188-9bd3-21510bbbd182",
+    "5b65a319-339e-4d36-9b91-a175d7b49486",
+    "6ce3f383-a094-404e-b4e8-49d140eaba5b",
+    "8eea076a-eb1c-4080-a953-27e7a220ec58",
+    "a7c82dd4-0868-4acd-8011-3d055470be3c",
+    "bdbedf25-85cf-4e20-9200-9a5a141c14ab",
+    "c3d19806-3ba6-49e7-b43d-cc3b4f7cd979",
+    "f2052cda-0ef6-4569-9988-d91854cf3d46"
+  ],
+  "attempted_file_outcomes": 10,
+  "completed_cohorts": 1,
+  "accepted_cohorts": 1,
+  "outcome_definitions": {
+    "expected_file_outcomes": "Requested cohorts multiplied by files per cohort, including unstarted work",
+    "attempted_file_outcomes": "Distinct file IDs observed in initiation responses",
+    "file_integrity_passed": "Files with matching source/worker/download bytes and SHA-256, regardless of cohort acceptance",
+    "file_outcomes_passed": "Files in complete accepted cohorts; failed cohorts contribute zero"
+  },
+  "finished_at": "2026-10-30T07:39:30.865Z",
+  "total_runner_s": 19.187562
+}

@@ -1,0 +1,6 @@
+clouddrive:operations Up 18 seconds
+clouddrive:operations Up 18 seconds
+clouddrive:operations Up 22 seconds (healthy)
+postgres:17-alpine Up 29 seconds (healthy)
+redis:7-alpine Up 29 seconds (healthy)
+clouddrive-minio:2025-10-15 Up 29 seconds (healthy)

@@ -1,0 +1,4 @@
+verify	Formatting and frontend build	2026-10-30T07:30:30.8305936Z ℹ pass 9
+verify	Unit and integration tests	2026-10-30T07:32:26.7600823Z 121 passed, 1 warning in 8.53s
+verify	Browser tests with actual Celery worker and scheduler	2026-10-30T07:35:44.6340384Z   29 passed (3.0m)
+verify	Browser regressions against the packaged API and workers	2026-10-30T07:38:55.5462693Z   29 passed (2.8m)

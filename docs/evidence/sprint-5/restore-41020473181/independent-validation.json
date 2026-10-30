@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "source_sha": "d723e4edca9e6767c6c43a41b73a885bc9a2747f",
+  "matched_source_hashes": 24,
+  "restored_committed_objects": 3,
+  "restored_committed_bytes": 16804502,
+  "restarted_unfinished_bytes": 12500000,
+  "source_inventory_unchanged": true,
+  "raw_sha256": "d4b3af2d68217d5771418e9d85bf1bd48ec28d499cd0f0dd36ce2ac832892d26",
+  "csv_sha256": "13fcdedf0c71ad8ac262137c1ae7cc591fd3f60359c9d5b29f5b1e760df495eb"
+}

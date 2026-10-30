@@ -1,0 +1,148 @@
+{
+  "status": "passed",
+  "started_at": "2026-10-30T07:14:47.254812+00:00",
+  "source_sha": "517072d6f9bda859b4e8f09ffc26fd1bbc15ded8",
+  "environment": {
+    "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+    "cpu_count": 4,
+    "provider": "MinIO",
+    "runner": "github-hosted"
+  },
+  "scope": "Small functional offline backup/restore exercise; no RPO/RTO guarantee or live AWS measurement",
+  "source_quiesced_at": "2026-10-30T07:17:05.932348+00:00",
+  "backup": {
+    "started_at": "2026-10-30T07:17:06.917599+00:00",
+    "finished_at": "2026-10-30T07:17:07.129963+00:00",
+    "backup_seconds": 0.21235680399999524,
+    "recovery_point": "2026-10-30T07:17:07.094595+00:00",
+    "object_count": 3
+  },
+  "restore": {
+    "status": "passed",
+    "started_at": "2026-10-30T07:17:12.627273+00:00",
+    "finished_at": "2026-10-30T07:17:12.924185+00:00",
+    "restore_seconds": 0.29692297700000836,
+    "recovery_point": "2026-10-30T07:17:07.094595+00:00",
+    "objects_verified": 3,
+    "files_by_status": {
+      "EXPIRED": 1,
+      "PROCESSING": 1,
+      "READY": 2,
+      "DELETED": 1
+    }
+  },
+  "restore_archive_sha256": "ddb3ce08cb084a59393e5f015263ec9f6e4d163a6e9ba636a1e6a81df24c1d3f",
+  "populated_target_refused": true,
+  "workspace_keys_verified": 2,
+  "verified_downloads": [
+    {
+      "file_id": "cbc1e7e5-01d9-446e-b52b-ec32f05f9ed0",
+      "bytes": 30,
+      "sha256": "dc48f4f89e3bf4dd04ad2972416f9ee38a0b433539d5632241aff6c547b87788",
+      "status": "passed"
+    },
+    {
+      "file_id": "ecbfb58b-9df9-4fe7-80d3-afef1da9a966",
+      "bytes": 16777472,
+      "sha256": "05ed1b1e4ecae7a46341e4d75068661516d5530f8a50375b503fa3bf8070323f",
+      "status": "passed"
+    },
+    {
+      "file_id": "8422b3ef-fadb-42ca-ba60-94ba6acd7893",
+      "bytes": 27000,
+      "sha256": "5459d5075d66ee6dc78a93f96234b18fbc25d51588dfa81454f379eaf777631c",
+      "status": "passed"
+    }
+  ],
+  "unfinished_policy": {
+    "status": "EXPIRED",
+    "receipt_count": 0
+  },
+  "source_inventory": {
+    "workspaces": 2,
+    "READY": 2,
+    "PROCESSING": 1,
+    "UPLOADING": 1,
+    "DELETED": 1
+  },
+  "destination_inventory": {
+    "workspaces": 2,
+    "READY": 3,
+    "EXPIRED": 1,
+    "DELETED": 1
+  },
+  "fresh_projects": [
+    "clouddrive-ci-ops-source",
+    "clouddrive-ci-ops-target"
+  ],
+  "packaged_browser": {
+    "original_key_import": "passed",
+    "restored_download": "passed",
+    "unfinished_restart": "passed"
+  },
+  "restarted_download": {
+    "file_id": "5d719a64-a1a9-4971-91cb-7785ae1e7cb7",
+    "bytes": 12500000,
+    "sha256": "2b99858119c40f3df5165e53adafea0d40ca2c5cdbf94272bb56d93c781f6831",
+    "status": "passed"
+  },
+  "cleanup_dry_run": {
+    "apply": false,
+    "outcomes": [],
+    "truncated": false
+  },
+  "final_inventory": {
+    "scope": "This authenticated workspace only",
+    "workspace_id": "c5f4aa33-ca05-47ee-9296-930547eb2d0c",
+    "files_by_status": {
+      "DELETED": 2,
+      "READY": 4
+    },
+    "outbox": {
+      "count": 0,
+      "oldest_age_seconds": 0
+    },
+    "claims": {
+      "active": 0,
+      "expired": 0
+    },
+    "verification": {
+      "count": 4,
+      "mean_seconds": 0.05402063499999343,
+      "max_seconds": 0.100418239000021
+    },
+    "api": {
+      "scope": "Authenticated requests for this workspace in this API process; resets on restart or bounded LRU eviction",
+      "request_count": 36,
+      "status_classes": {
+        "2": 36,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "latency_histogram_ms": {
+        "1": 0,
+        "5": 28,
+        "10": 5,
+        "25": 2,
+        "50": 1,
+        "100": 0,
+        "250": 0,
+        "500": 0,
+        "1000": 0,
+        "2500": 0,
+        "5000": 0,
+        "10000": 0,
+        "30000": 0,
+        "+Inf": 0
+      },
+      "histogram_semantics": "Non-cumulative bucket counts; API handler through response headers, excluding response-body transmission",
+      "latency_sum_ms": 180.304,
+      "recent_sample_count": 36,
+      "recent_sample_limit": 512,
+      "recent_p50_ms": 3.11,
+      "recent_p95_ms": 15.232
+    }
+  },
+  "finished_at": "2026-10-30T07:17:37.251823+00:00"
+}
