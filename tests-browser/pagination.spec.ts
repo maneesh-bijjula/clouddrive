@@ -26,7 +26,10 @@ test("browses more than 200 files and searches the whole workspace", async ({
   await run(process.env.CLOUDDRIVE_TEST_PYTHON || "python", [
     "-c",
     `
+import os
 from uuid import uuid4
+os.environ.setdefault('CLOUDDRIVE_DATABASE_URL', 'postgresql+psycopg://clouddrive:clouddrive@localhost:5436/clouddrive_test')
+os.environ.setdefault('CLOUDDRIVE_S3_BUCKET', 'clouddrive-test')
 from sqlalchemy.engine import make_url
 from clouddrive.db import engine
 from clouddrive.config import settings
