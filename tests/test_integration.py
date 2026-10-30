@@ -1,3 +1,4 @@
+from pathlib import Path
 import base64
 import hashlib
 from concurrent.futures import ThreadPoolExecutor
@@ -6,7 +7,7 @@ from uuid import UUID, uuid4
 import httpx
 import pytest
 
-from clouddrive import service
+from clouddrive import service, db
 from clouddrive.config import settings
 from clouddrive.db import engine, migrate
 from clouddrive.service import query
@@ -266,7 +267,10 @@ def test_migrations_repeat_safely(client):
     migrate()
     migrate()
     with engine().connect() as conn:
-        assert query(conn, "SELECT count(*) FROM schema_migrations").scalar_one() == 3
+        assert dict(query(conn, "SELECT name,checksum FROM schema_migrations").all()) == {
+            path.name: hashlib.sha256(path.read_bytes()).hexdigest()
+            for path in (Path(db.__file__).parent / "migrations").glob("*.sql")
+        }
 
 
 @pytest.mark.parametrize("action", ["delete", "replace-claim"])

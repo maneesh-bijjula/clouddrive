@@ -461,7 +461,10 @@ def test_upgrade_preserves_populated_baseline_schema_and_object(client, auth, mo
                 for table in before
             }
             assert after == before
-            assert query(conn, "SELECT count(*) FROM schema_migrations").scalar_one() == 3
+            assert dict(query(conn, "SELECT name,checksum FROM schema_migrations").all()) == {
+                path.name: hashlib.sha256(path.read_bytes()).hexdigest()
+                for path in (Path(db.__file__).parent / "migrations").glob("*.sql")
+            }
             query(conn, "UPDATE files SET status='DELETING' WHERE id=:id", id=file_id)
             query(conn, "UPDATE files SET status='EXPIRED' WHERE id=:id", id=file_id)
         response = s3().get_object(Bucket=settings().s3_bucket, Key=key)

@@ -5,6 +5,7 @@ metadata and object bytes; keep them off Git and encrypt them off-host.
 """
 
 import argparse
+import base64
 import hashlib
 import json
 import os
@@ -61,6 +62,40 @@ def locked(conn):
     # but allows readers. Do not hold a pre-lock repeatable-read snapshot.
     query(conn, "SET LOCAL lock_timeout='10s'")
     query(conn, "LOCK TABLE workspaces,files,upload_parts,processing_outbox IN SHARE MODE")
+
+
+def sync_directory(path):
+    descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def publish_archive(directory, manifest, started_clock=None):
+    """Make copied bytes durable before publishing the completion marker."""
+    for path in list(directory.glob("*.jsonl")) + list((directory / "objects").iterdir()):
+        with path.open("rb") as handle:
+            os.fsync(handle.fileno())
+    sync_directory(directory / "objects")
+    sync_directory(directory)
+    if started_clock is not None:
+        manifest["finished_at"] = now()
+        manifest["backup_seconds"] = time.monotonic() - started_clock
+    temporary = directory / "manifest.partial"
+    with temporary.open("x") as handle:
+        handle.write(encoded(manifest))
+        handle.flush()
+        os.fsync(handle.fileno())
+    # Link publishes atomically and refuses to replace an existing marker.
+    os.link(temporary, directory / "manifest.json")
+    temporary.unlink()
+    try:
+        sync_directory(directory)
+        sync_directory(directory.parent)
+    except OSError:
+        (directory / "manifest.json").unlink(missing_ok=True)
+        raise
 
 
 def backup(destination):
@@ -129,9 +164,7 @@ def backup(destination):
         manifest["locked_until"] = now()
     manifest["finished_at"] = now()
     manifest["backup_seconds"] = time.monotonic() - clock
-    # Completion marker is last. A failed or interrupted archive is unrestorable.
-    with (destination / "manifest.json").open("x") as handle:
-        handle.write(encoded(manifest))
+    publish_archive(destination, manifest, clock)
     return manifest
 
 
@@ -207,6 +240,19 @@ def restored_file(file, objects):
     return file
 
 
+def require_empty_bucket(client, bucket):
+    client.head_bucket(Bucket=bucket)
+    # Hidden versions/delete markers also make a bucket a populated destination.
+    versions = client.list_object_versions(Bucket=bucket, MaxKeys=1)
+    if (
+        client.list_objects_v2(Bucket=bucket, MaxKeys=1).get("Contents")
+        or versions.get("Versions")
+        or versions.get("DeleteMarkers")
+        or client.list_multipart_uploads(Bucket=bucket, MaxUploads=1).get("Uploads")
+    ):
+        raise ValueError("Restore requires an empty destination bucket, including versions")
+
+
 def restore(directory, confirm_database, confirm_bucket):
     clock, started = time.monotonic(), now()
     config = settings()
@@ -217,11 +263,7 @@ def restore(directory, confirm_database, confirm_bucket):
     directory = Path(directory)
     client, bucket = s3(), config.s3_bucket
     # The caller creates a NEW empty bucket. Never create, empty or overwrite one.
-    client.head_bucket(Bucket=bucket)
-    if client.list_objects_v2(Bucket=bucket, MaxKeys=1).get(
-        "KeyCount", 0
-    ) or client.list_multipart_uploads(Bucket=bucket, MaxUploads=1).get("Uploads"):
-        raise ValueError("Restore requires an empty destination bucket")
+    require_empty_bucket(client, bucket)
     with engine().begin() as conn:
         query(conn, "SET LOCAL lock_timeout='10s'")
         query(conn, "LOCK TABLE workspaces,files,upload_parts,processing_outbox IN EXCLUSIVE MODE")
@@ -229,6 +271,9 @@ def restore(directory, confirm_database, confirm_bucket):
             raise ValueError("Restore schema does not match archive")
         if any(query(conn, f"SELECT EXISTS(SELECT 1 FROM {table})").scalar() for table in TABLES):
             raise ValueError("Restore requires an empty destination database")
+        # Another restore may have copied objects and rolled back while this
+        # process waited for the database lock. Never overwrite that partial copy.
+        require_empty_bucket(client, bucket)
         for table in ("workspaces", "files"):
             for row in records(directory / f"{table}.jsonl"):
                 if table == "files":
@@ -291,16 +336,51 @@ def managed_key(key):
         return False
 
 
-def cleanup_multipart(*, apply=False, older_than_seconds=86400, limit=100):
+def cleanup_multipart(*, apply=False, older_than_seconds=86400, limit=100, cursor=None):
     if older_than_seconds < 86400 or not 1 <= limit <= 1000:
         raise ValueError("Cleanup requires at least 24 hours grace and limit 1..1000")
     cutoff = datetime.now(timezone.utc) - timedelta(seconds=older_than_seconds)
     client, bucket = s3(), settings().s3_bucket
-    outcomes = []
-    for page in client.get_paginator("list_multipart_uploads").paginate(Bucket=bucket):
+    params = {"Bucket": bucket}
+    if cursor:
+        try:
+            if len(cursor) > 16384:
+                raise ValueError()
+            state = json.loads(base64.urlsafe_b64decode(cursor + "=" * (-len(cursor) % 4)))
+            if state["bucket"] != bucket or state["grace"] != older_than_seconds:
+                raise ValueError()
+            for key in ("KeyMarker", "UploadIdMarker"):
+                if not isinstance(state[key], str) or not state[key] or len(state[key]) > 4096:
+                    raise ValueError()
+                params[key] = state[key]
+        except (ValueError, KeyError, TypeError, UnicodeError):
+            raise ValueError("Invalid cleanup cursor for this bucket and grace period") from None
+    outcomes, scanned, last = [], 0, None
+    for page in client.get_paginator("list_multipart_uploads").paginate(**params):
         for upload in page.get("Uploads", []):
-            if len(outcomes) >= limit:
-                return {"apply": apply, "outcomes": outcomes, "truncated": True}
+            if scanned >= limit:
+                return {
+                    "apply": apply,
+                    "outcomes": outcomes,
+                    "scanned": scanned,
+                    "truncated": True,
+                    "next_cursor": last,
+                }
+            scanned += 1
+            last = (
+                base64.urlsafe_b64encode(
+                    encoded(
+                        {
+                            "bucket": bucket,
+                            "grace": older_than_seconds,
+                            "KeyMarker": upload["Key"],
+                            "UploadIdMarker": upload["UploadId"],
+                        }
+                    ).encode()
+                )
+                .decode()
+                .rstrip("=")
+            )
             if upload["Initiated"] >= cutoff or not managed_key(upload["Key"]):
                 continue
             with engine().begin() as conn:
@@ -336,7 +416,13 @@ def cleanup_multipart(*, apply=False, older_than_seconds=86400, limit=100):
                         "upload_id_sha256": hashlib.sha256(upload["UploadId"].encode()).hexdigest(),
                     }
                 )
-    return {"apply": apply, "outcomes": outcomes, "truncated": False}
+    return {
+        "apply": apply,
+        "outcomes": outcomes,
+        "scanned": scanned,
+        "truncated": False,
+        "next_cursor": None,
+    }
 
 
 def main():
@@ -360,6 +446,7 @@ def main():
     clean.add_argument("--apply", action="store_true")
     clean.add_argument("--older-than-seconds", type=int, default=86400)
     clean.add_argument("--limit", type=int, default=100)
+    clean.add_argument("--cursor", help="Continue the previous page using its next_cursor")
     args = parser.parse_args()
     os.umask(0o077)
     if args.command == "backup":
@@ -376,7 +463,10 @@ def main():
         }
     else:
         result = cleanup_multipart(
-            apply=args.apply, older_than_seconds=args.older_than_seconds, limit=args.limit
+            apply=args.apply,
+            older_than_seconds=args.older_than_seconds,
+            limit=args.limit,
+            cursor=args.cursor,
         )
     # Do not print private metadata or endpoints/credentials.
     print(

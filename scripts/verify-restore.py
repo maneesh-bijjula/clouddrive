@@ -365,9 +365,10 @@ def main():
                 "clouddrive/storage.py",
                 "clouddrive/worker.py",
                 "clouddrive/config.py",
-                "clouddrive/migrations/001_initial.sql",
-                "clouddrive/migrations/002_recovery_states.sql",
-                "clouddrive/migrations/003_listing.sql",
+                *sorted(
+                    str(path.relative_to(ROOT))
+                    for path in (ROOT / "clouddrive/migrations").glob("*.sql")
+                ),
                 "scripts/verify-restore.py",
                 "scripts/verify-restore-browser.mjs",
                 "compose.operations.yaml",

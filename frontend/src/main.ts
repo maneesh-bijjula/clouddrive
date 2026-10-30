@@ -131,7 +131,9 @@ let pollTimer: ReturnType<typeof setInterval> | undefined;
 let view = "all";
 let limit = 0;
 let resumeTarget: string | undefined;
-let refreshInFlight: string | undefined;
+let refreshInFlight: { key: string; revision: number } | undefined;
+let listingRevision = 0;
+let workspaceEpoch = 0;
 let pageCount = 1;
 let nextCursor: string | null = null;
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
@@ -235,21 +237,7 @@ function render() {
   $("#stat-pending").textContent =
     `${stats.pending} ${stats.pending === 1 ? "file" : "files"}`;
   const term = $<HTMLInputElement>("#search").value.toLocaleLowerCase();
-  const selected = files.filter(
-    (file) =>
-      file.name.toLocaleLowerCase().includes(term) &&
-      (view !== "uploads" || file.status !== "READY") &&
-      (view !== "recent" ||
-        Date.now() - new Date(file.created_at).getTime() < 7 * 86400000),
-  );
-  const sort = $<HTMLSelectElement>("#sort").value;
-  selected.sort((a, b) =>
-    sort === "name"
-      ? a.name.localeCompare(b.name)
-      : sort === "size"
-        ? b.size - a.size
-        : new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-  );
+  const selected = files;
   $("#list-count").textContent = String(selected.length);
   $("#file-list").innerHTML = selected
     .map((file) => {
@@ -297,17 +285,26 @@ function renderTransfers() {
     .join("");
 }
 
-async function refresh() {
+async function refresh(force = false) {
+  if (force) listingRevision++;
+  const revision = listingRevision;
   const accessKey = token;
   const filter = new URLSearchParams({
     search: $<HTMLInputElement>("#search").value,
     view,
+    sort: $<HTMLSelectElement>("#sort").value,
     limit: "50",
     compact: "true",
   }).toString();
   const requestKey = `${accessKey}:${filter}`;
-  if (refreshInFlight === requestKey || !accessKey) return;
-  refreshInFlight = requestKey;
+  if (
+    (refreshInFlight?.key === requestKey &&
+      refreshInFlight.revision === revision) ||
+    !accessKey
+  )
+    return;
+  const request = { key: requestKey, revision };
+  refreshInFlight = request;
   $("#load-more").setAttribute("disabled", "");
   const targetPages = pageCount;
   const collected: StoredFile[] = [];
@@ -324,27 +321,20 @@ async function refresh() {
       collected.push(
         ...result.files.map((file: StoredFile) => ({ ...file, parts: [] })),
       );
+      if (revision !== listingRevision || token !== accessKey) return;
       cursor = result.next_cursor;
       if (!cursor) break;
     }
-    if (
-      token !== accessKey ||
-      filter !==
-        new URLSearchParams({
-          search: $<HTMLInputElement>("#search").value,
-          view,
-          limit: "50",
-          compact: "true",
-        }).toString()
-    )
-      return;
+    if (token !== accessKey || revision !== listingRevision) return;
     files = collected;
     nextCursor = cursor;
     stats = result.stats;
     $("#workspace-id").textContent = workspaceLabel;
     render();
+  } catch (error) {
+    if (token === accessKey && revision === listingRevision) throw error;
   } finally {
-    if (refreshInFlight === requestKey) {
+    if (refreshInFlight === request) {
       refreshInFlight = undefined;
       $("#load-more").removeAttribute("disabled");
     }
@@ -354,7 +344,7 @@ async function refresh() {
 function resetListing() {
   pageCount = 1;
   nextCursor = null;
-  refresh().catch((error) => notice(error.message));
+  refresh(true).catch((error) => notice(error.message));
 }
 
 function assertActive(transfer: Transfer) {
@@ -731,7 +721,7 @@ async function upload(file: File, target?: string) {
         renderTransfers();
       };
       update();
-      await refresh();
+      await refresh(true);
       const queue = Array.from(
         { length: session.part_count },
         (_, index) => index + 1,
@@ -857,7 +847,7 @@ async function upload(file: File, target?: string) {
       `${file.name} uploaded. Background verification is ${session.status === "READY" ? "complete" : "in progress"}.`,
       true,
     );
-    await refresh();
+    await refresh(true);
   } catch (error) {
     pauseTransfer(transfer);
     if (uploadWorkspace !== workspaceId) return;
@@ -921,9 +911,9 @@ $("#load-more").addEventListener("click", () => {
   pageCount++;
   refresh().catch((error) => notice(error.message));
 });
-$("#sort").addEventListener("change", render);
+$("#sort").addEventListener("change", resetListing);
 $("#refresh").addEventListener("click", () =>
-  (connected ? refresh() : initialize()).catch((error) =>
+  (connected ? refresh(true) : initialize()).catch((error) =>
     notice(error.message),
   ),
 );
@@ -968,13 +958,15 @@ document.addEventListener("click", async (event) => {
   if (!file) return;
   const action = button.dataset.action;
   const actionKey = token;
+  const actionEpoch = workspaceEpoch;
   const actionWorkspace = workspaceId;
   const fileApi = (path: string, method = "GET") =>
     api(path, method, undefined, actionKey);
   try {
     if (action === "detail") {
       const detail = await fileApi(`/uploads/${file.id}`);
-      if (token === actionKey) openDetail(detail);
+      if (token === actionKey && actionEpoch === workspaceEpoch)
+        openDetail(detail);
       return;
     }
     if (action === "resume" || action === "restart") {
@@ -984,7 +976,7 @@ document.addEventListener("click", async (event) => {
     }
     if (action === "download") {
       const result = await fileApi(`/files/${file.id}/download`);
-      if (token !== actionKey) return;
+      if (token !== actionKey || actionEpoch !== workspaceEpoch) return;
       const anchor = document.createElement("a");
       anchor.href = result.url;
       anchor.rel = "noreferrer";
@@ -1006,22 +998,25 @@ document.addEventListener("click", async (event) => {
         }
       await fileApi(`/files/${file.id}`, "DELETE");
       forgetRequest(file, actionWorkspace);
-      if (token !== actionKey) return;
+      if (token !== actionKey || actionEpoch !== workspaceEpoch) return;
       $<HTMLDialogElement>("#detail-dialog").close();
       notice(`${file.name} deleted.`, true);
     }
     if (action === "retry") await fileApi(`/files/${file.id}/retry`, "POST");
     if (action === "complete")
       await fileApi(`/uploads/${file.id}/complete`, "POST");
-    if (token !== actionKey) return;
-    await refresh();
+    if (token !== actionKey || actionEpoch !== workspaceEpoch) return;
+    await refresh(true);
     if (
       $<HTMLDialogElement>("#detail-dialog").open &&
       selectedDetail === file.id
-    )
-      openDetail(await fileApi(`/uploads/${file.id}`));
+    ) {
+      const detail = await fileApi(`/uploads/${file.id}`);
+      if (token === actionKey && actionEpoch === workspaceEpoch)
+        openDetail(detail);
+    }
   } catch (error) {
-    if (token !== actionKey) return;
+    if (token !== actionKey || actionEpoch !== workspaceEpoch) return;
     await refresh().catch(() => {});
     notice((error as Error).message);
   }
@@ -1089,6 +1084,8 @@ $("#key-input").addEventListener("change", async (event) => {
       undefined,
       data.access_key,
     );
+    workspaceEpoch++;
+    listingRevision++;
     transfers.forEach(pauseTransfer);
     transfers.clear();
     uploadScheduler = new UploadScheduler(workspace.upload_limits);
@@ -1107,7 +1104,7 @@ $("#key-input").addEventListener("change", async (event) => {
     $("#upload-limit").textContent =
       `Resumable uploads · Up to ${bytes(limit)} per file`;
     $<HTMLDialogElement>("#access-dialog").close();
-    await refresh();
+    await refresh(true);
     notice("Workspace opened. Your access key is saved in this browser.", true);
   } catch (error) {
     notice((error as Error).message);
@@ -1129,13 +1126,17 @@ for (const dialog of document.querySelectorAll("dialog"))
   });
 
 async function initialize() {
+  const epoch = workspaceEpoch;
   try {
     if (!token) {
       const created = await api("/workspaces", "POST");
+      if (epoch !== workspaceEpoch) return;
       token = created.access_key;
       localStorage.setItem("clouddrive.access", token);
     }
-    const workspace = await api("/workspace");
+    const accessKey = token;
+    const workspace = await api("/workspace", "GET", undefined, accessKey);
+    if (epoch !== workspaceEpoch || token !== accessKey) return;
     if (workspaceId !== workspace.id)
       uploadScheduler = new UploadScheduler(workspace.upload_limits);
     limit = workspace.max_file_bytes;
@@ -1144,7 +1145,8 @@ async function initialize() {
     $("#workspace-id").textContent = workspaceLabel;
     $("#upload-limit").textContent =
       `Resumable uploads · Up to ${bytes(limit)} per file`;
-    await refresh();
+    await refresh(true);
+    if (epoch !== workspaceEpoch || token !== accessKey) return;
     connected = true;
     if (!pollTimer)
       pollTimer = setInterval(
@@ -1155,6 +1157,7 @@ async function initialize() {
         3000,
       );
   } catch (error) {
+    if (epoch !== workspaceEpoch) return;
     notice((error as Error).message);
     $("#workspace-id").textContent = "Could not connect";
   }

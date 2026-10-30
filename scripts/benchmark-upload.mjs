@@ -9,6 +9,7 @@ import {
   mkdtemp,
   open,
   readFile,
+  readdir,
   rm,
   stat,
   statfs,
@@ -101,6 +102,9 @@ function log(stage) {
 }
 async function docker(...args) {
   return (await run("docker", args, { maxBuffer: 4 * 1024 * 1024 })).stdout;
+}
+async function compose(...args) {
+  return docker("compose", "-p", project, "-f", "compose.large.yaml", ...args);
 }
 async function hashPath(path) {
   const hash = createHash("sha256");
@@ -299,15 +303,34 @@ try {
   report.environment.git_dirty = Boolean(
     (await run("git", ["status", "--porcelain"])).stdout.trim(),
   );
+  if (size === 5_000_000_000 && report.environment.git_dirty)
+    throw new Error("Commit implementation before the scored 5 GB run");
   const tracked = [
-    "clouddrive/config.py",
-    "clouddrive/storage.py",
-    "clouddrive/worker.py",
-    "frontend/src/main.ts",
-    "frontend/src/hash-worker.ts",
+    "Dockerfile",
+    "Dockerfile.minio",
+    "package.json",
+    "package-lock.json",
+    "requirements.txt",
+    "frontend/index.html",
+    "frontend/vite.config.ts",
+    "frontend/src/style.css",
     "scripts/benchmark-upload.mjs",
     "compose.large.yaml",
   ];
+  for (const directory of [
+    "clouddrive",
+    "clouddrive/migrations",
+    "frontend/src",
+  ])
+    for (const name of await readdir(directory))
+      if (/\.(py|sql|ts)$/.test(name)) tracked.push(`${directory}/${name}`);
+  for (const container of containers.filter((c) =>
+    ["api", "worker", "beat"].includes(
+      c.Config.Labels["com.docker.compose.service"],
+    ),
+  ))
+    if (container.Image !== api.Image)
+      throw new Error("API, worker and beat must use the same immutable image");
   report.environment.source_sha256 = Object.fromEntries(
     await Promise.all(
       tracked.map(async (p) => [
@@ -318,6 +341,39 @@ try {
       ]),
     ),
   );
+  const packaged = JSON.parse(
+    await compose(
+      "exec",
+      "-T",
+      "api",
+      "python",
+      "-c",
+      "import hashlib,json,pathlib; print(json.dumps({str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in pathlib.Path('clouddrive').rglob('*') if p.is_file() and p.suffix in ('.py','.sql')}))",
+    ),
+  );
+  for (const [name, digest] of Object.entries(packaged))
+    if (report.environment.source_sha256[name] !== digest)
+      throw new Error(`Packaged source mismatch: ${name}`);
+  const assets = JSON.parse(
+    await compose(
+      "exec",
+      "-T",
+      "api",
+      "python",
+      "-c",
+      "import hashlib,json,pathlib; print(json.dumps({str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in pathlib.Path('dist').rglob('*') if p.is_file()}))",
+    ),
+  );
+  if (!Object.keys(assets).length)
+    throw new Error("Packaged frontend is missing");
+  for (const [name, digest] of Object.entries(assets))
+    if (
+      createHash("sha256")
+        .update(await readFile(name))
+        .digest("hex") !== digest
+    )
+      throw new Error(`Packaged frontend mismatch: ${name}`);
+  report.environment.packaged_asset_sha256 = assets;
   report.environment.other_running_container_count =
     (await docker("ps", "-q")).trim().split("\n").filter(Boolean).length -
     ids.length;
@@ -641,6 +697,19 @@ try {
   await sample();
   if (report.resources.samples.length < (size === 5_000_000_000 ? 5 : 1))
     throw new Error("Insufficient resource samples for measured evidence");
+  for (const [name, digest] of Object.entries(report.environment.source_sha256))
+    if (
+      createHash("sha256")
+        .update(await readFile(name))
+        .digest("hex") !== digest
+    )
+      throw new Error(`Source changed during measurement: ${name}`);
+  if (
+    (await run("git", ["rev-parse", "HEAD"])).stdout.trim() !==
+    report.environment.git_sha
+  )
+    throw new Error("HEAD changed during measurement");
+  report.checks.sources_unchanged_during_run = true;
   report.status = "passed";
   log("passed");
 } catch (error) {

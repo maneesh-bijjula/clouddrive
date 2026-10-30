@@ -1,7 +1,6 @@
 import codecs
 import hashlib
 import json
-import logging
 import time
 from uuid import UUID, uuid4
 
@@ -16,7 +15,6 @@ from .recovery_faults import checkpoint
 from .service import finalize, finish_delete, query
 from .storage import s3
 
-logger = logging.getLogger(__name__)
 celery = Celery("clouddrive", broker=settings().redis_url)
 celery.conf.update(
     task_acks_late=True,
@@ -159,6 +157,7 @@ def process(self, id):
         outcome = process_file(UUID(id))
         return outcome
     except (ClientError, BotoCoreError, SQLAlchemyError, OSError) as exc:
+        event("processing_dependency_error", file_id=str(id), error_type=type(exc).__name__)
         if self.request.retries >= self.max_retries:
             with engine().begin() as conn:
                 query(
@@ -169,7 +168,18 @@ def process(self, id):
                 )
             outcome = "failed"
             return outcome
-        raise self.retry(exc=exc, countdown=min(2**self.request.retries, 30))
+        # Celery renders retry exceptions in its own logs. Do not pass provider
+        # messages, SQL parameters or signed URLs through that logging path.
+        try:
+            raise self.retry(
+                exc=RuntimeError("Processing dependency temporarily unavailable"),
+                countdown=min(2**self.request.retries, 30),
+            )
+        except Exception as retry:
+            raise retry from None
+    except Exception as exc:
+        event("processing_unexpected_error", file_id=str(id), error_type=type(exc).__name__)
+        raise RuntimeError("Processing failed; inspect correlated error events") from None
     finally:
         event(
             "processing_task",
@@ -233,16 +243,24 @@ def reconcile_files():
         for row in rows:
             try:
                 recover(row["workspace_id"], row["id"])
-            except Exception:
-                logger.exception("%s recovery failed for %s", status, row["id"])
+            except Exception as exc:
+                event(
+                    "reconciliation_failed",
+                    file_id=str(row["id"]),
+                    status=status,
+                    error_type=type(exc).__name__,
+                )
 
 
 @celery.task(name="clouddrive.dispatch")
 def dispatch():
     # Storage reconciliation does not depend on successful outbox publication.
-    reconcile_files()
-    count = dispatch_pending()
-    return count
+    try:
+        reconcile_files()
+        return dispatch_pending()
+    except Exception as exc:
+        event("dispatch_dependency_error", error_type=type(exc).__name__)
+        raise RuntimeError("Dispatch temporarily unavailable; durable work retained") from None
 
 
 if __name__ == "__main__":

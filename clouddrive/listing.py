@@ -12,22 +12,38 @@ from .db import engine
 from .service import describe, query
 
 
-def decode_cursor(value, workspace_id, filters):
+def decode_cursor(value, workspace_id, filters, sort="newest"):
     try:
         data = json.loads(base64.urlsafe_b64decode(value + "=" * (-len(value) % 4)))
         if data["workspace"] != str(workspace_id) or data["filters"] != filters:
             raise ValueError()
-        stamp = datetime.fromisoformat(data["created_at"])
-        if stamp.tzinfo is None:
+        marker = data["value"]
+        if sort == "newest":
+            marker = datetime.fromisoformat(marker)
+            if marker.tzinfo is None:
+                raise ValueError()
+        elif sort == "size":
+            if type(marker) is not int or not 0 < marker < 2**63:
+                raise ValueError()
+        elif not isinstance(marker, str) or not 0 < len(marker) <= 4096:
             raise ValueError()
-        return stamp, UUID(data["id"])
+        return marker, UUID(data["id"])
     except (ValueError, KeyError, TypeError, UnicodeError):
         raise HTTPException(400, "Invalid cursor for this workspace and filter") from None
 
 
-def list_files(workspace_id, limit=50, cursor=None, search="", view="all", compact=True):
+def list_files(
+    workspace_id, limit=50, cursor=None, search="", view="all", compact=True, sort="newest"
+):
     # Keep cursors bounded even for 240-character non-ASCII search strings.
-    filters = hashlib.sha256(json.dumps({"search": search, "view": view}).encode()).hexdigest()
+    filters = hashlib.sha256(
+        json.dumps({"search": search, "view": view, "sort": sort}).encode()
+    ).hexdigest()
+    expression, direction, comparison = {
+        "newest": ("created_at", "DESC", "<"),
+        "name": ("lower(name)", "ASC", ">"),
+        "size": ("size", "DESC", "<"),
+    }[sort]
     params = {"workspace": workspace_id, "limit": limit + 1}
     conditions = ["workspace_id=:workspace", "status NOT IN ('DELETING','DELETED')"]
     if search:
@@ -38,15 +54,15 @@ def list_files(workspace_id, limit=50, cursor=None, search="", view="all", compa
     elif view == "recent":
         conditions.append("created_at >= now()-interval '7 days'")
     if cursor:
-        params["stamp"], params["id"] = decode_cursor(cursor, workspace_id, filters)
-        conditions.append("(created_at,id) < (:stamp,:id)")
+        params["marker"], params["id"] = decode_cursor(cursor, workspace_id, filters, sort)
+        conditions.append(f"({expression},id) {comparison} (:marker,:id)")
     with engine().connect() as conn:
         rows = (
             query(
                 conn,
-                "SELECT * FROM files WHERE "
+                f"SELECT *,{expression} AS sort_value FROM files WHERE "
                 + " AND ".join(conditions)
-                + " ORDER BY created_at DESC,id DESC LIMIT :limit",
+                + f" ORDER BY {expression} {direction},id {direction} LIMIT :limit",
                 **params,
             )
             .mappings()
@@ -103,9 +119,14 @@ def list_files(workspace_id, limit=50, cursor=None, search="", view="all", compa
                         {
                             "workspace": str(workspace_id),
                             "filters": filters,
-                            "created_at": row["created_at"].isoformat(),
+                            "value": (
+                                row["sort_value"].isoformat()
+                                if sort == "newest"
+                                else row["sort_value"]
+                            ),
                             "id": str(row["id"]),
-                        }
+                        },
+                        ensure_ascii=False,
                     ).encode()
                 )
                 .decode()
@@ -117,4 +138,5 @@ def list_files(workspace_id, limit=50, cursor=None, search="", view="all", compa
             "limit": limit,
             "next_cursor": next_cursor,
             "compact": compact,
+            "sort": sort,
         }

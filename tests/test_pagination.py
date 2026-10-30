@@ -92,3 +92,47 @@ def test_long_unicode_search_roundtrips_a_bounded_cursor(client, auth):
     )
     assert second.status_code == 200 and len(second.json()["files"]) == 1
     assert second.json()["files"][0]["id"] != result["files"][0]["id"]
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize("sort", ["newest", "name", "size"])
+def test_whole_workspace_sorting_keeps_stable_cursors_and_ties(client, auth, sort):
+    files = [
+        begin(client, auth, b"x" * size, name=name)[0]
+        for name, size in [
+            ("z-last", 3),
+            ("a-first", 5),
+            ("A-first", 5),
+            ("m-middle", 1),
+            ("🗂" * 220, 2),
+            ("🗃" * 220, 1),
+        ]
+    ]
+    with engine().begin() as conn:
+        query(conn, "UPDATE files SET created_at='2026-01-01T00:00:00Z'")
+    key = (
+        (lambda f: (f["name"].lower(), f["id"]))
+        if sort == "name"
+        else ((lambda f: (f["size"], f["id"])) if sort == "size" else (lambda f: f["id"]))
+    )
+    expected = [f["id"] for f in sorted(files, key=key, reverse=sort != "name")]
+    cursor, seen = None, []
+    for page in range(6):
+        result = client.get(
+            "/api/files",
+            headers=auth,
+            params={"limit": 1, "sort": sort, **({"cursor": cursor} if cursor else {})},
+        )
+        assert result.status_code == 200, result.text
+        seen.extend(f["id"] for f in result.json()["files"])
+        cursor = result.json()["next_cursor"]
+        if page == 0:
+            assert len(cursor) <= 2048
+            changed = "name" if sort != "name" else "size"
+            assert (
+                client.get(
+                    "/api/files", headers=auth, params={"cursor": cursor, "sort": changed}
+                ).status_code
+                == 400
+            )
+    assert cursor is None and seen == expected

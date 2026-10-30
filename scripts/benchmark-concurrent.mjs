@@ -724,6 +724,8 @@ try {
       )
         sources.push(`${d}/${n}`);
   }
+  for (const name of await readdir("clouddrive/migrations"))
+    if (name.endsWith(".sql")) sources.push(`clouddrive/migrations/${name}`);
   report.environment.source_sha256 = Object.fromEntries(
     await Promise.all(sources.map(async (p) => [p, sha(await readFile(p))])),
   );
@@ -734,7 +736,7 @@ try {
       "api",
       "python",
       "-c",
-      "import hashlib,json,pathlib;print(json.dumps({str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in pathlib.Path('clouddrive').glob('*.py')}))",
+      "import hashlib,json,pathlib;print(json.dumps({str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in pathlib.Path('clouddrive').rglob('*') if p.is_file() and p.suffix in ('.py','.sql')}))",
     ),
   );
   for (const [p, h] of Object.entries(packed))

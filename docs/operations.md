@@ -10,7 +10,7 @@ stacks or large benchmarks on the shared laptop without a separate idle window.
 `python -m clouddrive.operations backup DIRECTORY --offline-confirmed` creates a
 new private directory, JSONL copies of all four application tables, streamed
 copies of committed objects, and a completion manifest with SHA-256 checksums,
-migration checksums, row counts, backup window and recovery-point timestamp.
+migration checksums, row counts, backup window and recovery-point timestamp. Copied data and directories are fsynced before an atomic, non-replacing completion marker is published. Use a filesystem that supports these durability operations; failures are reported rather than silently weakening publication.
 Directories must not already exist. A missing manifest means an incomplete,
 unrestorable backup. The original database, objects and multipart sessions are
 not changed. The tool does not back up Redis: PostgreSQL's durable processing
@@ -61,13 +61,13 @@ automatically configured guarantees.
 ## Restore contract and in-progress policy
 
 Restore only into a **new, empty, offline database and bucket**, using the same
-application migration version as the archive. The database must first be migrated
+application migration version as the archive. For an older archive, first restore with its matching application image, then start the newer application to apply additive migrations. The database must first be migrated
 and the empty bucket created. The tool checks the exact database and bucket
 confirmation strings, checks archive integrity before writing, rejects populated
-destinations, verifies copied object bytes by streaming them back, and commits
+destinations (including hidden object versions and delete markers), rechecks storage after taking the metadata lock, verifies copied object bytes by streaming them back, and commits
 metadata only after all copies pass. It never truncates tables or clears a bucket.
 Keep destination API/worker/beat replicas stopped until it exits successfully.
-Do not point it at a shared bucket. Check endpoint/region/database configuration
+Do not point it at a shared bucket. The restore credential needs `ListBucketVersions` as well as ordinary object/list/multipart permissions so hidden data can be detected; denied inspection fails closed. Check endpoint/region/database configuration
 independently: confirmation names do not uniquely identify a server/account.
 
 | State at recovery point                          | Restored behavior                                                                                           |
@@ -129,9 +129,11 @@ CloudDrive UUID/UUID object key has no live metadata reference. Every reference
 except DELETED/EXPIRED is protected regardless of age or upload-ID mismatch.
 This deliberately protects a long-paused/slow upload. Newer sessions and foreign
 key formats are untouched. Every abort rechecks metadata under a table SHARE
-lock, waiting for an in-flight initializer to commit. `--limit` bounds eligible
+lock, waiting for an in-flight initializer to commit. `--limit` bounds all
 sessions examined per invocation (default 100, maximum 1000); provider pagination
 is followed. It does not delete completed objects or expire live sessions by age.
+
+Follow `next_cursor` using `cleanup --cursor TOKEN` until it is null. `--limit` now bounds **all scanned sessions**, including young/protected/foreign ones; carrying the cursor forward prevents protected sessions at the front from starving old orphans later in the bucket. Cursors are tied to the bucket and grace period.
 
 Review dry-run outcomes before applying to an exclusively owned CloudDrive
 bucket. Delete unwanted referenced uploads through the authenticated UI/API;
@@ -173,16 +175,14 @@ RPO, RTO, live AWS, or public-availability claim follows from these tests.
 ## Pagination
 
 `GET /api/files?limit=50&compact=true` returns compact summaries and `next_cursor`.
-Pass that cursor with the same workspace/search/view to retrieve the next page;
-the maximum page is 200. Ordering is stable `(created_at DESC,id DESC)` even when
-timestamps tie. Search is literal case-insensitive substring matching over the
+Pass that cursor with the same workspace/search/view/sort to retrieve the next page;
+the maximum page is 200. Ordering is stable with an ID tie-breaker: `sort=newest` uses descending creation time, `sort=name` uses ascending case-insensitive name, and `sort=size` uses descending byte size. All three sorts operate on the entire matching workspace. Search is literal case-insensitive substring matching over the
 whole workspace, and `view=uploads|recent|all` is server-side. Concurrent inserts
 appear on refresh; deletion can shorten later pages. This is keyset traversal,
 not a transactionally frozen inventory snapshot. Cursors are not credentials.
 
 The browser loads 50 at a time, supports Load more and whole-workspace search,
 and requests full receipts/previews only for authenticated file details/resume.
-The name/size sort selector sorts loaded rows; load additional pages to sort a
-larger loaded set. Polling refreshes the currently requested page depth. The
+The sort selector applies to the entire workspace before pagination. Late responses from an older query/workspace cannot overwrite a newer refresh. Polling refreshes the currently requested page depth. The
 legacy API default retains full receipts for compatibility; opt into compact
 responses for browsing. Backup inventory uses the locked snapshot, not browsing.

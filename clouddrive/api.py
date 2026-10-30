@@ -271,10 +271,11 @@ def files(
     search: Annotated[str, Query(max_length=240)] = "",
     view: Literal["all", "uploads", "recent"] = "all",
     compact: bool = False,
+    sort: Literal["newest", "name", "size"] = "newest",
 ):
     from .listing import list_files
 
-    return list_files(ws["id"], limit, cursor, search, view, compact)
+    return list_files(ws["id"], limit, cursor, search, view, compact, sort)
 
 
 @app.post("/api/uploads", status_code=201)
