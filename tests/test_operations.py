@@ -189,3 +189,62 @@ def test_cleanup_aborts_only_old_orphans_and_protects_all_live_references(
     assert orphan not in {x["Key"] for x in remaining}
     assert {recent, "foreign-unmanaged-key"} <= {x["Key"] for x in remaining}
     assert client.get(f"/api/uploads/{active['id']}", headers=auth).status_code == 200
+
+
+@pytest.mark.integration
+def test_backup_fences_a_concurrent_delete_until_committed_bytes_are_copied(
+    client, auth, tmp_path, monkeypatch
+):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Event
+    from clouddrive.service import delete_file
+
+    file, _ = uploaded(client, auth, b"retain the recovery-point bytes")
+    process_file(file["id"])
+    workspace = client.get("/api/workspace", headers=auth).json()["id"]
+    entered, release, deleting = Event(), Event(), Event()
+    original = s3().get_object
+
+    def held_copy(**kwargs):
+        response = original(**kwargs)
+        entered.set()
+        assert release.wait(5)
+        return response
+
+    def remove():
+        deleting.set()
+        delete_file(workspace, file["id"])
+
+    monkeypatch.setattr(s3(), "get_object", held_copy)
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        copying = pool.submit(operations.backup, tmp_path / "snapshot")
+        try:
+            assert entered.wait(5)
+            deletion = pool.submit(remove)
+            assert deleting.wait(5)
+            # The backup holds SHARE locks; deletion cannot commit its intent.
+            from concurrent.futures import TimeoutError
+
+            with pytest.raises(TimeoutError):
+                deletion.result(timeout=0.1)
+        finally:
+            release.set()
+        assert copying.result(timeout=10)["object_count"] == 1
+        deletion.result(timeout=10)
+    operations.validate_archive(tmp_path / "snapshot")
+    assert client.get(f"/api/uploads/{file['id']}", headers=auth).status_code == 404
+
+
+@pytest.mark.integration
+def test_restore_policy_for_lost_finalization_reply_keeps_committed_object(client, auth, tmp_path):
+    committed, _ = uploaded(client, auth, b"completed storage with lost commit reply")
+    with engine().begin() as conn:
+        query(conn, "UPDATE files SET status='FINALIZING' WHERE id=:id", id=committed["id"])
+    destination = tmp_path / "snapshot"
+    operations.backup(destination)
+    _, objects = operations.validate_archive(destination)
+    assert committed["id"] in objects
+    source = next(operations.records(destination / "files.jsonl"))
+    restored = operations.restored_file(source, objects)
+    assert restored["status"] == "PROCESSING"
+    assert restored["result"] is restored["claim"] is restored["upload_id"] is None

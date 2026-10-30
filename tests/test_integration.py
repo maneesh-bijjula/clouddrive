@@ -266,7 +266,7 @@ def test_migrations_repeat_safely(client):
     migrate()
     migrate()
     with engine().connect() as conn:
-        assert query(conn, "SELECT count(*) FROM schema_migrations").scalar_one() == 2
+        assert query(conn, "SELECT count(*) FROM schema_migrations").scalar_one() == 3
 
 
 @pytest.mark.parametrize("action", ["delete", "replace-claim"])

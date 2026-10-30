@@ -188,7 +188,7 @@ test("upload can start after workspace configuration while the first listing is 
   const hold = new Promise<void>((r) => (release = r));
   let first = true,
     initiations = 0;
-  await page.route("**/api/files", async (route) => {
+  await page.route(/\/api\/files(?:\?.*)?$/, async (route) => {
     if (first) {
       first = false;
       await hold;

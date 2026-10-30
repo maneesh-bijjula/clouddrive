@@ -17,7 +17,7 @@ from sqlalchemy import text
 from sqlalchemy.engine import make_url
 
 from .config import settings
-from .db import engine, migrate
+from .db import engine
 from .service import query
 from .storage import missing, s3
 from botocore.exceptions import ClientError
@@ -102,7 +102,9 @@ def backup(destination):
                 try:
                     response = client.get_object(Bucket=bucket, Key=file["object_key"])
                 except ClientError as exc:
-                    if missing(exc) and file["status"] in {"FINALIZING", "FAILED"}:
+                    if exc.response["Error"]["Code"] in {"NoSuchKey", "404", "NotFound"} and file[
+                        "status"
+                    ] in {"FINALIZING", "FAILED"}:
                         continue
                     raise
                 path = destination / "objects" / str(UUID(file["id"]))
@@ -323,7 +325,7 @@ def cleanup_multipart(*, apply=False, older_than_seconds=86400, limit=100):
                             Bucket=bucket, Key=upload["Key"], UploadId=upload["UploadId"]
                         )
                     except ClientError as exc:
-                        if not missing(exc):
+                        if exc.response["Error"]["Code"] != "NoSuchUpload":
                             raise
                     action = "aborted"
                 outcomes.append(
@@ -352,6 +354,8 @@ def main():
         if name == "restore":
             command.add_argument("--confirm-database", required=True)
             command.add_argument("--confirm-bucket", required=True)
+    verify = sub.add_parser("verify", help="Check archive checksums without accessing any server")
+    verify.add_argument("directory", type=Path)
     clean = sub.add_parser("cleanup")
     clean.add_argument("--apply", action="store_true")
     clean.add_argument("--older-than-seconds", type=int, default=86400)
@@ -361,8 +365,15 @@ def main():
     if args.command == "backup":
         result = backup(args.directory)
     elif args.command == "restore":
-        migrate()
         result = restore(args.directory, args.confirm_database, args.confirm_bucket)
+    elif args.command == "verify":
+        manifest, objects = validate_archive(args.directory)
+        result = {
+            "status": "passed",
+            "recovery_point": manifest["recovery_point"],
+            "object_count": len(objects),
+            "object_bytes": sum(obj["bytes"] for obj in objects.values()),
+        }
     else:
         result = cleanup_multipart(
             apply=args.apply, older_than_seconds=args.older_than_seconds, limit=args.limit

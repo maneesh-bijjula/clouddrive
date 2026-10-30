@@ -41,7 +41,10 @@ docker compose -p "$CLOUDDRIVE_PROJECT" -f compose.yaml stop api worker beat
 docker compose -p "$CLOUDDRIVE_PROJECT" -f compose.yaml run --rm --no-deps \
   --user "$(id -u):$(id -g)" -v "$CLOUDDRIVE_ARCHIVE_PARENT:/backups" \
   api python -m clouddrive.operations backup /backups/snapshot-001 --offline-confirmed
-# Check the command exit status and completion manifest before restarting.
+docker compose -p "$CLOUDDRIVE_PROJECT" -f compose.yaml run --rm --no-deps \
+  --user "$(id -u):$(id -g)" -v "$CLOUDDRIVE_ARCHIVE_PARENT:/backups" \
+  api python -m clouddrive.operations verify /backups/snapshot-001
+# Check both exit statuses and the completion manifest before restarting.
 docker compose -p "$CLOUDDRIVE_PROJECT" -f compose.yaml up -d api worker beat
 ```
 
@@ -49,7 +52,7 @@ The backup is private: it contains original filenames, object bytes, workspace
 token hashes and previews. Exported bearer keys remain separately owned secrets;
 hashed keys in the database cannot reconstruct a lost bearer key. Do not commit
 archives or attach them to CI artifacts. Store encrypted, access-restricted copies
-off the application host and test decryption/restore. Hashes detect accidental
+off the application host and test decryption/restore. The `verify DIRECTORY` command checks archive integrity without a database or storage connection. Hashes detect accidental
 corruption; they do not authenticate an archive against a malicious modifier.
 Keep separate immutable copies under an operator-defined retention policy.
 Retention/encryption/off-host transport are operator responsibilities, not

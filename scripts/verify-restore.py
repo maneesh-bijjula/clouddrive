@@ -133,6 +133,26 @@ def verify_download(side, key, file, content):
     return {"file_id": file["id"], "bytes": size, "sha256": digest.hexdigest(), "status": "passed"}
 
 
+def inventory(side):
+    return json.loads(side.python("""
+import json
+from clouddrive.db import engine
+from clouddrive.service import query
+from clouddrive.storage import s3
+from clouddrive.config import settings
+with engine().connect() as conn:
+ result = {
+  'workspaces': query(conn, 'SELECT count(*) FROM workspaces').scalar(),
+  'files_by_status': dict(query(conn, 'SELECT status,count(*) FROM files GROUP BY status').all()),
+  'active_claims': query(conn, 'SELECT count(*) FROM files WHERE claim IS NOT NULL').scalar(),
+  'outbox': query(conn, 'SELECT count(*) FROM processing_outbox').scalar(),
+ }
+result['objects'] = sum(len(p.get('Contents', [])) for p in s3().get_paginator('list_objects_v2').paginate(Bucket=settings().s3_bucket))
+result['multipart_sessions'] = sum(len(p.get('Uploads', [])) for p in s3().get_paginator('list_multipart_uploads').paginate(Bucket=settings().s3_bucket))
+print(json.dumps(result))
+""").stdout)
+
+
 def exercise(report, archive):
     source, target = Side("source", 18094, 19015, archive), Side("target", 18095, 19016, archive)
     for side in (source, target):
@@ -172,10 +192,23 @@ def exercise(report, archive):
     source.api("DELETE", f"/files/{deleted['id']}", key)
     # The actual source remains offline and intact after backup. Restore uses a
     # separate DB, bucket, network, Redis and all-new project-scoped volumes.
+    report["last_source_write_acknowledged_at"] = utc()
+    report["source_inventory"] = inventory(source)
+    assert report["source_inventory"] == {
+        "workspaces": 2,
+        "files_by_status": {"READY": 2, "PROCESSING": 1, "UPLOADING": 1, "DELETED": 1},
+        "active_claims": 0,
+        "outbox": 1,
+        "objects": 3,
+        "multipart_sessions": 1,
+    }
     source.compose("stop", "api")
     report["source_quiesced_at"] = utc()
     backup = json.loads(
         source.maintenance("backup", "/backups/snapshot", "--offline-confirmed").stdout
+    )
+    report["archive_validation"] = json.loads(
+        source.maintenance("verify", "/backups/snapshot").stdout
     )
     report["backup"] = {
         k: backup[k]
@@ -236,14 +269,19 @@ def exercise(report, archive):
         "status": resumed["status"],
         "receipt_count": len(resumed["parts"]),
     }
-    report["source_inventory"] = {
+    report["destination_inventory_before_browser_restart"] = inventory(target)
+    assert report["destination_inventory_before_browser_restart"] == {
         "workspaces": 2,
-        "READY": 2,
-        "PROCESSING": 1,
-        "UPLOADING": 1,
-        "DELETED": 1,
+        "files_by_status": {"READY": 3, "EXPIRED": 1, "DELETED": 1},
+        "active_claims": 0,
+        "outbox": 0,
+        "objects": 3,
+        "multipart_sessions": 0,
     }
-    report["destination_inventory"] = {"workspaces": 2, "READY": 3, "EXPIRED": 1, "DELETED": 1}
+    report["committed_object_outcomes"] = {"expected": 3, "verified": len(outcomes), "lost": 0}
+    report["rpo_scope"] = (
+        "All three committed source objects at the offline recovery point recovered. One unfinished MPU requires source reselection. No accepted writes during snapshot. No contractual RPO."
+    )
     report["fresh_projects"] = [source.project, target.project]
     # Real packaged browser imports the original owner key and downloads READY
     # content, then restarts the expired upload with the original file bytes.
@@ -270,7 +308,24 @@ def exercise(report, archive):
     report["restarted_download"] = verify_download(target, key, restarted, unfinished_bytes)
     cleanup = json.loads(target.maintenance("cleanup").stdout)
     report["cleanup_dry_run"] = cleanup
-    report["final_inventory"] = target.api("GET", "/metrics", key)
+    report["final_inventory"] = inventory(target)
+    assert report["final_inventory"]["objects"] == 4
+    assert report["final_inventory"]["multipart_sessions"] == 0
+    assert report["final_inventory"]["files_by_status"] == {"READY": 4, "DELETED": 2}
+    report["source_unchanged_after_restore"] = inventory(source) == report["source_inventory"]
+    assert report["source_unchanged_after_restore"]
+    image_output = target.compose("images", "--format", "json").stdout
+    try:
+        report["image_ids"] = json.loads(image_output)
+    except json.JSONDecodeError:
+        report["image_ids"] = [
+            json.loads(line) for line in image_output.splitlines() if line.strip()
+        ]
+    report["source_hashes_unchanged"] = all(
+        hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == digest
+        for name, digest in report["source_sha256"].items()
+    )
+    assert report["source_hashes_unchanged"]
     # Never publish keys, signed URLs, private archives or raw exception text.
     report["status"] = "passed"
 
@@ -294,6 +349,40 @@ def main():
     report = {
         "status": "running",
         "started_at": utc(),
+        "workflow": {
+            "run_id": os.environ.get("GITHUB_RUN_ID"),
+            "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
+            "repository": os.environ.get("GITHUB_REPOSITORY"),
+        },
+        "source_sha256": {
+            name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
+            for name in (
+                "clouddrive/operations.py",
+                "clouddrive/listing.py",
+                "clouddrive/api.py",
+                "clouddrive/service.py",
+                "clouddrive/db.py",
+                "clouddrive/storage.py",
+                "clouddrive/worker.py",
+                "clouddrive/config.py",
+                "clouddrive/migrations/001_initial.sql",
+                "clouddrive/migrations/002_recovery_states.sql",
+                "clouddrive/migrations/003_listing.sql",
+                "scripts/verify-restore.py",
+                "scripts/verify-restore-browser.mjs",
+                "compose.operations.yaml",
+                "Dockerfile",
+                "Dockerfile.minio",
+                "frontend/src/main.ts",
+                "frontend/src/scheduler.ts",
+                "frontend/src/hash-worker.ts",
+                "frontend/index.html",
+                "package.json",
+                "package-lock.json",
+                "requirements.txt",
+                ".github/workflows/operations.yml",
+            )
+        },
         "source_sha": subprocess.check_output(
             ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
         ).strip(),

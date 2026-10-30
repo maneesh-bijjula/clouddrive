@@ -9,6 +9,11 @@ const browser = await chromium.launch();
 try {
   const page = await browser.newPage({ acceptDownloads: true });
   await page.goto(args.base);
+  await page.waitForFunction(() =>
+    /^Workspace [a-f0-9]{8}$/.test(
+      document.querySelector("#workspace-id").textContent,
+    ),
+  );
   await page
     .getByRole("button", { name: "Manage access", exact: true })
     .click();

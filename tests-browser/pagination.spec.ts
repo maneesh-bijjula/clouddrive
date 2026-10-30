@@ -23,7 +23,7 @@ test("browses more than 200 files and searches the whole workspace", async ({
         ).json()
       ).id,
   );
-  await run(process.env.CLOUDDRIVE_TEST_PYTHON || ".venv/bin/python", [
+  await run(process.env.CLOUDDRIVE_TEST_PYTHON || "python", [
     "-c",
     `
 from uuid import uuid4
