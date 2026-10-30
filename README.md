@@ -11,9 +11,10 @@ A private file workspace with resumable multipart uploads, direct object-storage
 - Upload files directly from the browser to private object storage using signed multipart requests. The default inclusive limit is **5 GB (5,000,000,000 bytes) per file**, with 8 MiB parts, up to ten active files, two hashing workers, ten global part slots, and up to three part loops per file.
 - Pause an upload, reload the page, and resume by selecting the same file. A cancellable browser worker hashes the file in bounded chunks; full-file SHA-256 identifies the original content; confirmed parts are reused. Lost upload acknowledgements are reconciled against storage.
 - Verify each part with SHA-256 at the storage boundary, then independently stream and verify the entire file in a Celery worker. Downloads stay blocked until verification passes.
-- Browse, search, sort, inspect checksums, preview UTF-8 text, download, and delete files. The interface works on desktop and mobile.
+- Browse files in compact pages, search across the whole workspace, sort loaded rows, inspect checksums, preview UTF-8 text, download, and delete files. The interface works on desktop and mobile.
 - Keep processing requests in a PostgreSQL outbox during broker outages. Recover lost messages and expired worker claims, and prevent duplicate or stale workers from overwriting newer state.
 - Export and import a private workspace access key to reopen the same workspace in another browser. Only the key hash is stored in PostgreSQL.
+- Back up metadata and committed objects with checksums, restore into an empty destination, and conservatively clean up stale orphan multipart sessions. See the [operations runbook](docs/operations.md).
 
 ## Measured large-file workflow
 
@@ -162,6 +163,6 @@ This repository runs a complete local storage workflow. Integration and browser 
 
 Workspace keys are bearer credentials stored in browser local storage. There are no user accounts, role permissions, access-key rotation, or recovery if every copy of a key is lost. Upload URLs last 15 minutes; download URLs last 60 seconds and remain usable until expiration. Use HTTPS, restricted storage credentials, authentication controls, rate limits, backups, and operational monitoring before exposing a deployment beyond a trusted environment.
 
-The file browser searches and sorts the latest 200 files; workspace totals cover all active files. Resume requires reselecting the original local file. Text previews are limited to 2,000 characters; unsupported binary content remains downloadable after integrity verification. Integrity verification checks byte consistency and does not scan for malware or establish that a file is safe to open.
+The file browser loads 50 files at a time with Load more and searches the entire workspace. Name/size sorting applies to loaded rows; workspace totals cover all active files. Resume requires reselecting the original local file. Text previews are limited to 2,000 characters; unsupported binary content remains downloadable after integrity verification. Integrity verification checks byte consistency and does not scan for malware or establish that a file is safe to open.
 
 Application code is licensed under [MIT](LICENSE). The separately built MinIO service is licensed under [GNU AGPLv3](https://github.com/minio/minio/blob/RELEASE.2025-10-15T17-29-55Z/LICENSE).

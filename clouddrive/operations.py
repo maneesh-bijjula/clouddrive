@@ -19,7 +19,7 @@ from sqlalchemy.engine import make_url
 from .config import settings
 from .db import engine
 from .service import query
-from .storage import missing, s3
+from .storage import s3
 from botocore.exceptions import ClientError
 from boto3.s3.transfer import TransferConfig
 

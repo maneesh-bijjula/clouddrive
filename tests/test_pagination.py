@@ -1,5 +1,3 @@
-import base64
-import json
 from datetime import datetime, timezone
 from uuid import uuid4
 
@@ -78,3 +76,19 @@ def test_compact_listing_keeps_receipts_in_authenticated_detail(client, auth):
     assert summary["confirmed_parts"] == 1 and "parts" not in summary
     detail = client.get(f"/api/uploads/{file['id']}", headers=auth).json()
     assert len(detail["parts"]) == 1 and detail["parts"][0]["etag"]
+
+
+@pytest.mark.integration
+def test_long_unicode_search_roundtrips_a_bounded_cursor(client, auth):
+    term = "🗂" * 220
+    for _ in range(2):
+        begin(client, auth, b"bytes", name=term)
+    result = client.get("/api/files", headers=auth, params={"limit": 1, "search": term}).json()
+    assert len(result["next_cursor"]) <= 2048
+    second = client.get(
+        "/api/files",
+        headers=auth,
+        params={"limit": 1, "search": term, "cursor": result["next_cursor"]},
+    )
+    assert second.status_code == 200 and len(second.json()["files"]) == 1
+    assert second.json()["files"][0]["id"] != result["files"][0]["id"]

@@ -1,6 +1,7 @@
 """Workspace-bound keyset cursors and compact file summaries."""
 
 import base64
+import hashlib
 import json
 from datetime import datetime
 from uuid import UUID
@@ -25,7 +26,8 @@ def decode_cursor(value, workspace_id, filters):
 
 
 def list_files(workspace_id, limit=50, cursor=None, search="", view="all", compact=True):
-    filters = {"search": search, "view": view}
+    # Keep cursors bounded even for 240-character non-ASCII search strings.
+    filters = hashlib.sha256(json.dumps({"search": search, "view": view}).encode()).hexdigest()
     params = {"workspace": workspace_id, "limit": limit + 1}
     conditions = ["workspace_id=:workspace", "status NOT IN ('DELETING','DELETED')"]
     if search:
