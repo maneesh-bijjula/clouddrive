@@ -371,10 +371,14 @@ def test_cleanup_cursor_advances_past_protected_uploads(client, auth, monkeypatc
 
 
 @pytest.mark.integration
-def test_cleanup_provider_cursor_progresses_after_aborting_its_marker(client, monkeypatch):
+@pytest.mark.parametrize("same_key", [False, True])
+def test_cleanup_provider_cursor_progresses_after_aborting_its_marker(
+    client, monkeypatch, same_key
+):
     bucket = settings().s3_bucket
+    key = f"{uuid4()}/{uuid4()}"
     for _ in range(3):
-        s3().create_multipart_upload(Bucket=bucket, Key=f"{uuid4()}/{uuid4()}")
+        s3().create_multipart_upload(Bucket=bucket, Key=key if same_key else f"{uuid4()}/{uuid4()}")
     original = s3().get_paginator("list_multipart_uploads")
 
     class Pages:

@@ -349,13 +349,33 @@ def cleanup_multipart(*, apply=False, older_than_seconds=86400, limit=100, curso
             state = json.loads(base64.urlsafe_b64decode(cursor + "=" * (-len(cursor) % 4)))
             if state["bucket"] != bucket or state["grace"] != older_than_seconds:
                 raise ValueError()
-            for key in ("KeyMarker", "UploadIdMarker"):
-                if not isinstance(state[key], str) or not state[key] or len(state[key]) > 4096:
-                    raise ValueError()
-                params[key] = state[key]
+            markers = [state["KeyMarker"], state["UploadIdMarker"]]
+            if markers != [None, None]:
+                for key in ("KeyMarker", "UploadIdMarker"):
+                    if not isinstance(state[key], str) or not state[key] or len(state[key]) > 4096:
+                        raise ValueError()
+                    params[key] = state[key]
         except (ValueError, KeyError, TypeError, UnicodeError):
             raise ValueError("Invalid cleanup cursor for this bucket and grace period") from None
-    outcomes, scanned, last = [], 0, None
+
+    def continuation(key, upload_id):
+        return (
+            base64.urlsafe_b64encode(
+                encoded(
+                    {
+                        "bucket": bucket,
+                        "grace": older_than_seconds,
+                        "KeyMarker": key,
+                        "UploadIdMarker": upload_id,
+                    }
+                ).encode()
+            )
+            .decode()
+            .rstrip("=")
+        )
+
+    outcomes, scanned = [], 0
+    last = continuation(params.get("KeyMarker"), params.get("UploadIdMarker"))
     for page in client.get_paginator("list_multipart_uploads").paginate(**params):
         for upload in page.get("Uploads", []):
             if scanned >= limit:
@@ -367,21 +387,9 @@ def cleanup_multipart(*, apply=False, older_than_seconds=86400, limit=100, curso
                     "next_cursor": last,
                 }
             scanned += 1
-            last = (
-                base64.urlsafe_b64encode(
-                    encoded(
-                        {
-                            "bucket": bucket,
-                            "grace": older_than_seconds,
-                            "KeyMarker": upload["Key"],
-                            "UploadIdMarker": upload["UploadId"],
-                        }
-                    ).encode()
-                )
-                .decode()
-                .rstrip("=")
-            )
+            current = continuation(upload["Key"], upload["UploadId"])
             if upload["Initiated"] >= cutoff or not managed_key(upload["Key"]):
+                last = current
                 continue
             with engine().begin() as conn:
                 query(conn, "SET LOCAL lock_timeout='5s'")
@@ -408,6 +416,11 @@ def cleanup_multipart(*, apply=False, older_than_seconds=86400, limit=100, curso
                         if exc.response["Error"]["Code"] != "NoSuchUpload":
                             raise
                     action = "aborted"
+                if action != "aborted":
+                    last = current
+                # Resume after the last surviving marker. An aborted upload is
+                # no longer a reliable provider marker, especially for multiple
+                # MPUs sharing one key; removed entries need not be skipped.
                 outcomes.append(
                     {
                         "action": action,
