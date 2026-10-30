@@ -244,7 +244,7 @@ def initiate(workspace_id, data):
                     "message": "This upload was deleted; use a new request ID",
                 },
             )
-        if not file["upload_id"]:
+        if file["status"] == "UPLOADING" and not file["upload_id"]:
             response = s3().create_multipart_upload(
                 Bucket=settings().s3_bucket,
                 Key=file["object_key"],

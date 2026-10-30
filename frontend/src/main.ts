@@ -132,6 +132,9 @@ let view = "all";
 let limit = 0;
 let resumeTarget: string | undefined;
 let refreshInFlight: string | undefined;
+let pageCount = 1;
+let nextCursor: string | null = null;
+let searchTimer: ReturnType<typeof setTimeout> | undefined;
 let selectedDetail: string | undefined;
 
 class ApiError extends Error {
@@ -275,7 +278,8 @@ function render() {
         : "Upload your first file. We’ll keep every byte in check.";
   $("#first-upload").hidden = files.length > 0;
   $("#file-summary").textContent =
-    `${selected.length} of ${stats.total} files shown${stats.total > 200 ? " · Browsing the latest 200" : ""}`;
+    `${selected.length} of ${stats.total} files shown`;
+  $("#load-more").hidden = !nextCursor;
   renderTransfers();
   drawIcons();
 }
@@ -295,18 +299,62 @@ function renderTransfers() {
 
 async function refresh() {
   const accessKey = token;
-  if (refreshInFlight === accessKey || !accessKey) return;
-  refreshInFlight = accessKey;
+  const filter = new URLSearchParams({
+    search: $<HTMLInputElement>("#search").value,
+    view,
+    limit: "50",
+    compact: "true",
+  }).toString();
+  const requestKey = `${accessKey}:${filter}`;
+  if (refreshInFlight === requestKey || !accessKey) return;
+  refreshInFlight = requestKey;
+  $("#load-more").setAttribute("disabled", "");
+  const targetPages = pageCount;
+  const collected: StoredFile[] = [];
+  let cursor: string | null = null;
+  let result;
   try {
-    const result = await api("/files", "GET", undefined, accessKey);
-    if (token !== accessKey) return;
-    files = result.files;
+    for (let index = 0; index < targetPages; index++) {
+      result = await api(
+        `/files?${filter}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`,
+        "GET",
+        undefined,
+        accessKey,
+      );
+      collected.push(
+        ...result.files.map((file: StoredFile) => ({ ...file, parts: [] })),
+      );
+      cursor = result.next_cursor;
+      if (!cursor) break;
+    }
+    if (
+      token !== accessKey ||
+      filter !==
+        new URLSearchParams({
+          search: $<HTMLInputElement>("#search").value,
+          view,
+          limit: "50",
+          compact: "true",
+        }).toString()
+    )
+      return;
+    files = collected;
+    nextCursor = cursor;
     stats = result.stats;
     $("#workspace-id").textContent = workspaceLabel;
     render();
   } finally {
-    if (refreshInFlight === accessKey) refreshInFlight = undefined;
+    if (refreshInFlight === requestKey) {
+      refreshInFlight = undefined;
+      $("#load-more").removeAttribute("disabled");
+    }
   }
+}
+
+function resetListing() {
+  pageCount = 1;
+  nextCursor = null;
+  refresh().catch((error) => notice(error.message));
 }
 
 function assertActive(transfer: Transfer) {
@@ -863,7 +911,16 @@ $("#file-input").addEventListener("change", (event) => {
   input.value = "";
   for (const file of chosen) void upload(file, target);
 });
-$("#search").addEventListener("input", render);
+$("#search").addEventListener("input", () => {
+  render();
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(resetListing, 200);
+});
+$("#load-more").addEventListener("click", () => {
+  if (!nextCursor || refreshInFlight) return;
+  pageCount++;
+  refresh().catch((error) => notice(error.message));
+});
 $("#sort").addEventListener("change", render);
 $("#refresh").addEventListener("click", () =>
   (connected ? refresh() : initialize()).catch((error) =>
@@ -885,7 +942,7 @@ document.querySelectorAll<HTMLElement>("[data-view]").forEach((button) =>
       recent: "Added this week",
       uploads: "Uploads & processing",
     }[view]!;
-    render();
+    resetListing();
   }),
 );
 $("#transfer-panel").addEventListener("click", (event) => {
@@ -915,7 +972,11 @@ document.addEventListener("click", async (event) => {
   const fileApi = (path: string, method = "GET") =>
     api(path, method, undefined, actionKey);
   try {
-    if (action === "detail") return openDetail(file);
+    if (action === "detail") {
+      const detail = await fileApi(`/uploads/${file.id}`);
+      if (token === actionKey) openDetail(detail);
+      return;
+    }
     if (action === "resume" || action === "restart") {
       $<HTMLDialogElement>("#detail-dialog").close();
       chooseFiles(file.id);
@@ -958,7 +1019,7 @@ document.addEventListener("click", async (event) => {
       $<HTMLDialogElement>("#detail-dialog").open &&
       selectedDetail === file.id
     )
-      openDetail(files.find((item) => item.id === file.id)!);
+      openDetail(await fileApi(`/uploads/${file.id}`));
   } catch (error) {
     if (token !== actionKey) return;
     await refresh().catch(() => {});
@@ -1031,6 +1092,8 @@ $("#key-input").addEventListener("change", async (event) => {
     transfers.forEach(pauseTransfer);
     transfers.clear();
     uploadScheduler = new UploadScheduler(workspace.upload_limits);
+    pageCount = 1;
+    nextCursor = null;
     files = [];
     resumeTarget = undefined;
     selectedDetail = undefined;

@@ -3,12 +3,12 @@ import secrets
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Literal
 from urllib.parse import urlsplit
 from uuid import UUID
 
 from botocore.exceptions import BotoCoreError, ClientError
-from fastapi import Depends, FastAPI, HTTPException, Request, Response
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -264,47 +264,17 @@ def operations(request: Request):
 
 
 @app.get("/api/files")
-def files(ws: Workspace):
-    with engine().connect() as conn:
-        rows = (
-            service.query(
-                conn,
-                "SELECT * FROM files WHERE workspace_id=:workspace AND status NOT IN ('DELETING','DELETED') ORDER BY created_at DESC LIMIT 200",
-                workspace=ws["id"],
-            )
-            .mappings()
-            .all()
-        )
-        stats = (
-            service.query(
-                conn,
-                """SELECT count(*) AS total,
-            count(*) FILTER (WHERE status='READY') AS ready,
-            coalesce(sum(size) FILTER (WHERE status='READY'),0) AS bytes,
-            count(*) FILTER (WHERE status IN ('UPLOADING','FINALIZING','PROCESSING')) AS pending
-            FROM files WHERE workspace_id=:workspace AND status NOT IN ('DELETING','DELETED')""",
-                workspace=ws["id"],
-            )
-            .mappings()
-            .one()
-        )
-        parts_by_file = {}
-        if rows:
-            for part in service.query(
-                conn,
-                "SELECT file_id,number,checksum,etag FROM upload_parts WHERE file_id=ANY(:ids) ORDER BY file_id,number",
-                ids=[row["id"] for row in rows],
-            ).mappings():
-                parts_by_file.setdefault(part["file_id"], []).append(
-                    {key: part[key] for key in ("number", "checksum", "etag")}
-                )
-        return {
-            "files": [
-                service.describe(conn, row, parts_by_file.get(row["id"], [])) for row in rows
-            ],
-            "limit": 200,
-            "stats": dict(stats),
-        }
+def files(
+    ws: Workspace,
+    limit: Annotated[int, Query(ge=1, le=200)] = 200,
+    cursor: Annotated[str | None, Query(max_length=2048)] = None,
+    search: Annotated[str, Query(max_length=240)] = "",
+    view: Literal["all", "uploads", "recent"] = "all",
+    compact: bool = False,
+):
+    from .listing import list_files
+
+    return list_files(ws["id"], limit, cursor, search, view, compact)
 
 
 @app.post("/api/uploads", status_code=201)

@@ -12,3 +12,6 @@ test-results/
 coverage/
 .DS_Store
 *.log
+
+# Private disaster-recovery archives; never publish object data or workspace hashes.
+backups/

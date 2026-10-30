@@ -1,0 +1,116 @@
+# Disposable hosted disaster-recovery exercise. Project, ports, DB and bucket
+# are explicit per side; no reference to the normal CloudDrive volumes.
+x-environment: &environment
+  CLOUDDRIVE_DATABASE_URL: postgresql+psycopg://clouddrive:clouddrive@postgres:5432/${OPS_DATABASE:-clouddrive_ops_test}
+  CLOUDDRIVE_REDIS_URL: redis://redis:6379/0
+  CLOUDDRIVE_S3_ENDPOINT: http://minio:9000
+  CLOUDDRIVE_S3_PUBLIC_ENDPOINT: http://localhost:${OPS_STORAGE_PORT:-19015}
+  CLOUDDRIVE_S3_ACCESS_KEY: clouddrive
+  CLOUDDRIVE_S3_SECRET_KEY: clouddrive-local
+  CLOUDDRIVE_S3_BUCKET: ${OPS_BUCKET:-clouddrive-ops-test}
+services:
+  postgres:
+    image: postgres:17-alpine
+    mem_limit: 384m
+    cpus: 1
+    environment:
+      POSTGRES_USER: clouddrive
+      POSTGRES_PASSWORD: clouddrive
+      POSTGRES_DB: ${OPS_DATABASE:-clouddrive_ops_test}
+    volumes: ["metadata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clouddrive"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  redis:
+    image: redis:7-alpine
+    mem_limit: 96m
+    cpus: 0.5
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  minio:
+    build: { context: ., dockerfile: Dockerfile.minio }
+    image: clouddrive-minio:2025-10-15
+    command: server /data
+    mem_limit: 512m
+    cpus: 1
+    environment:
+      MINIO_ROOT_USER: clouddrive
+      MINIO_ROOT_PASSWORD: clouddrive-local
+      MINIO_API_CORS_ALLOW_ORIGIN: http://localhost:${OPS_API_PORT:-18094}
+    volumes: ["objects:/data"]
+    ports: ["127.0.0.1:${OPS_STORAGE_PORT:-19015}:9000"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  api:
+    image: clouddrive:operations
+    build: .
+    environment: *environment
+    mem_limit: 384m
+    cpus: 1
+    ports: ["127.0.0.1:${OPS_API_PORT:-18094}:8090"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      minio: { condition: service_healthy }
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8090/api/health')",
+        ]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+  worker:
+    image: clouddrive:operations
+    environment: *environment
+    mem_limit: 384m
+    cpus: 1
+    command:
+      [
+        "celery",
+        "-A",
+        "clouddrive.worker:celery",
+        "worker",
+        "--loglevel=INFO",
+        "--concurrency=1",
+      ]
+    depends_on:
+      api: { condition: service_healthy }
+  beat:
+    image: clouddrive:operations
+    environment: *environment
+    mem_limit: 128m
+    cpus: 0.25
+    command:
+      [
+        "celery",
+        "-A",
+        "clouddrive.worker:celery",
+        "beat",
+        "--loglevel=INFO",
+        "--schedule=/tmp/ops-beat",
+      ]
+    depends_on:
+      api: { condition: service_healthy }
+  maintenance:
+    profiles: ["operations"]
+    image: clouddrive:operations
+    environment: *environment
+    mem_limit: 384m
+    cpus: 1
+    volumes: ["${CLOUDDRIVE_BACKUP_DIRECTORY:-./backups}:/backups"]
+    entrypoint: ["python", "-m", "clouddrive.operations"]
+volumes:
+  metadata:
+  objects:
