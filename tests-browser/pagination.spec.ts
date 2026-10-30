@@ -146,18 +146,16 @@ test("workspace import during initial connection keeps the new access and live p
     await page
       .getByRole("button", { name: "Manage access", exact: true })
       .click();
-    await page
-      .locator("#key-input")
-      .setInputFiles({
-        name: "access.json",
-        mimeType: "application/json",
-        buffer: Buffer.from(
-          JSON.stringify({
-            application: "clouddrive",
-            access_key: workspace.access_key,
-          }),
-        ),
-      });
+    await page.locator("#key-input").setInputFiles({
+      name: "access.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(
+        JSON.stringify({
+          application: "clouddrive",
+          access_key: workspace.access_key,
+        }),
+      ),
+    });
     await expect(page.locator("#workspace-id")).toHaveText(
       `Workspace ${workspace.id.slice(0, 8)}`,
     );
@@ -166,13 +164,11 @@ test("workspace import during initial connection keeps the new access and live p
     );
     release();
     await response;
-    await page
-      .locator("#file-input")
-      .setInputFiles({
-        name: "switched-early.txt",
-        mimeType: "text/plain",
-        buffer: Buffer.from("preserve this content"),
-      });
+    await page.locator("#file-input").setInputFiles({
+      name: "switched-early.txt",
+      mimeType: "text/plain",
+      buffer: Buffer.from("preserve this content"),
+    });
     await expect(
       page
         .locator("tbody tr", { hasText: "switched-early.txt" })

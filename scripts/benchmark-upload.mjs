@@ -311,6 +311,8 @@ try {
     "package.json",
     "package-lock.json",
     "requirements.txt",
+    "tsconfig.json",
+    "frontend/public/favicon.svg",
     "frontend/index.html",
     "frontend/vite.config.ts",
     "frontend/src/style.css",
@@ -709,6 +711,11 @@ try {
     report.environment.git_sha
   )
     throw new Error("HEAD changed during measurement");
+  report.environment.git_dirty_at_finish = Boolean(
+    (await run("git", ["status", "--porcelain"])).stdout.trim(),
+  );
+  if (size === 5_000_000_000 && report.environment.git_dirty_at_finish)
+    throw new Error("Tracked source changed during measurement");
   report.checks.sources_unchanged_during_run = true;
   report.status = "passed";
   log("passed");
