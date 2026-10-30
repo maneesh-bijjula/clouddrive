@@ -150,13 +150,15 @@ def admission_lock(conn):
     query(conn, "SELECT pg_advisory_xact_lock(1987052404)")
 
 
-def check_capacity(conn, workspace_id):
+def check_capacity(conn, workspace_id, incoming_bytes=0):
     counts = (
         query(
             conn,
-            """SELECT count(*) AS total,
-        count(*) FILTER (WHERE workspace_id=:workspace) AS workspace
-        FROM files WHERE status IN ('UPLOADING','FINALIZING','PROCESSING')""",
+            """SELECT count(*) FILTER (WHERE status IN ('UPLOADING','FINALIZING','PROCESSING')) AS total,
+        count(*) FILTER (WHERE workspace_id=:workspace AND status IN ('UPLOADING','FINALIZING','PROCESSING')) AS workspace,
+        coalesce(sum(size) FILTER (WHERE status NOT IN ('DELETED','EXPIRED')),0) AS storage_total,
+        coalesce(sum(size) FILTER (WHERE workspace_id=:workspace AND status NOT IN ('DELETED','EXPIRED')),0) AS storage_workspace
+        FROM files""",
             workspace=workspace_id,
         )
         .mappings()
@@ -172,6 +174,21 @@ def check_capacity(conn, workspace_id):
             {
                 "code": "upload_capacity",
                 "message": "Upload capacity is full. Resume an existing upload or wait for a transfer to finish.",
+            },
+            headers={"Retry-After": "1"},
+        )
+
+    # Full declared sizes reserve capacity before any storage allocation. Existing
+    # request replays and processing retries do not allocate additional bytes.
+    if incoming_bytes and (
+        counts["storage_total"] + incoming_bytes > config.max_storage_bytes_global
+        or counts["storage_workspace"] + incoming_bytes > config.max_storage_bytes_per_workspace
+    ):
+        raise HTTPException(
+            429,
+            {
+                "code": "upload_storage_capacity",
+                "message": "Storage capacity is full. Delete files you no longer need or try again later.",
             },
             headers={"Retry-After": "1"},
         )
@@ -199,7 +216,7 @@ def initiate(workspace_id, data):
                 request=data.request_id,
             ).first()
             if not existing:
-                check_capacity(conn, workspace_id)
+                check_capacity(conn, workspace_id, data.size)
         if not existing:
             query(
                 conn,

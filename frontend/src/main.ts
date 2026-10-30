@@ -1103,6 +1103,8 @@ $("#key-input").addEventListener("change", async (event) => {
     workspaceId = workspace.id;
     workspaceLabel = `Workspace ${workspace.id.slice(0, 8)}`;
     $("#workspace-id").textContent = workspaceLabel;
+    $("#storage-capacity").textContent =
+      `${bytes(workspace.storage_quota_bytes)} capacity`;
     limit = workspace.max_file_bytes;
     $("#upload-limit").textContent =
       `Resumable uploads · Up to ${bytes(limit)} per file`;
@@ -1157,6 +1159,8 @@ async function initialize() {
     if (epoch !== workspaceEpoch || token !== accessKey) return;
     if (workspaceId !== workspace.id)
       uploadScheduler = new UploadScheduler(workspace.upload_limits);
+    $("#storage-capacity").textContent =
+      `${bytes(workspace.storage_quota_bytes)} capacity`;
     limit = workspace.max_file_bytes;
     workspaceId = workspace.id;
     workspaceLabel = `Workspace ${workspace.id.slice(0, 8)}`;

@@ -145,6 +145,25 @@ uploads. Provider rules that cannot check database references are not equivalent
 to this policy. Scheduling the reviewed cleanup command is optional and is not
 silently enabled on existing deployments.
 
+## Admission and storage capacity
+
+The default metadata byte budgets are **10,000,000,000 bytes per workspace** and
+**50,000,000,000 bytes globally**, configurable with
+`CLOUDDRIVE_MAX_STORAGE_BYTES_PER_WORKSPACE` and `CLOUDDRIVE_MAX_STORAGE_BYTES_GLOBAL`.
+The standard Compose file now forwards the documented resource, pool, scheduler,
+file-limit and metrics settings from `.env`/the shell into app containers.
+Choose budgets to fit provisioned storage before deploying; reservations do not
+measure provider disk usage, historical object versions or orphan overhead.
+
+A new file reserves its full declared size under the same transaction lock used
+for session admission, before S3 allocation. READY, FAILED and DELETING records
+retain their reservation; only DELETED/EXPIRED release it. Processing retries and
+idempotent replays allocate no additional bytes and remain available at quota.
+The quota never removes or hides old data, including data already over a newly
+lowered cap. New allocations receive 429/Retry-After with a bounded browser retry.
+Workspace metrics expose only the owner's reservation/quota; the private ops
+endpoint exposes aggregate reservations. The UI displays workspace capacity.
+
 ## Monitoring and incident response
 
 Use `/api/health` for DB/storage reachability, not worker progress. Authenticate

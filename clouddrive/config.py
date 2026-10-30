@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     signed_url_seconds: int = Field(default=900, ge=60, le=3600)
     max_active_uploads_per_workspace: int = Field(default=10, ge=1, le=100)
     max_active_uploads_global: int = Field(default=100, ge=1, le=10000)
+    max_storage_bytes_per_workspace: int = Field(default=10_000_000_000, ge=1, le=2**63 - 1)
+    max_storage_bytes_global: int = Field(default=50_000_000_000, ge=1, le=2**63 - 1)
     max_api_inflight: int = Field(default=64, ge=1, le=1024)
     db_pool_size: int = Field(default=8, ge=1, le=64)
     db_max_overflow: int = Field(default=8, ge=0, le=64)

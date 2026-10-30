@@ -127,7 +127,7 @@ def test_cleanup_continues_after_one_file_fails_and_before_publish(client, auth,
     with monkeypatch.context() as scoped:
         scoped.setattr(s3(), "delete_object", delete)
         scoped.setattr(worker, "dispatch_pending", publish_failure)
-        with pytest.raises(ConnectionError):
+        with pytest.raises(RuntimeError, match="durable work retained"):
             worker.dispatch.run()
     assert stored(bad["id"])["status"] == "DELETING"
     assert stored(good["id"])["status"] == "DELETED"

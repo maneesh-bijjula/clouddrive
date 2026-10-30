@@ -150,6 +150,7 @@ def current_workspace(ws: Workspace):
         "created_at": ws["created_at"],
         "max_file_bytes": settings().max_file_bytes,
         "part_bytes": settings().part_bytes,
+        "storage_quota_bytes": config.max_storage_bytes_per_workspace,
         "upload_limits": {
             "active_files": min(
                 config.browser_active_files,
@@ -169,7 +170,7 @@ def metrics(ws: Workspace):
         states = (
             service.query(
                 conn,
-                "SELECT status,count(*) AS count FROM files WHERE workspace_id=:workspace GROUP BY status",
+                "SELECT status,count(*) AS count,coalesce(sum(size),0) AS bytes FROM files WHERE workspace_id=:workspace GROUP BY status",
                 workspace=ws["id"],
             )
             .mappings()
@@ -214,6 +215,12 @@ def metrics(ws: Workspace):
         "scope": "This authenticated workspace only",
         "workspace_id": ws["id"],
         "files_by_status": {row["status"]: row["count"] for row in states},
+        "storage": {
+            "reserved_bytes": int(
+                sum(row["bytes"] for row in states if row["status"] not in {"DELETED", "EXPIRED"})
+            ),
+            "quota_bytes": settings().max_storage_bytes_per_workspace,
+        },
         "outbox": dict(pending),
         "claims": dict(claims),
         "verification": dict(verification),
@@ -235,6 +242,7 @@ def operations(request: Request):
                 """SELECT count(*) FILTER (WHERE status IN ('UPLOADING','FINALIZING','PROCESSING')) AS active_uploads,
             count(*) FILTER (WHERE status='PROCESSING' AND claim IS NOT NULL AND lease_until>now()) AS active_claims,
             count(*) FILTER (WHERE status='PROCESSING' AND claim IS NOT NULL AND lease_until<=now()) AS expired_claims
+            ,coalesce(sum(size) FILTER (WHERE status NOT IN ('DELETED','EXPIRED')),0) AS storage_reserved_bytes
             FROM files""",
             )
             .mappings()
@@ -259,6 +267,7 @@ def operations(request: Request):
             "capacity": settings().db_pool_size + settings().db_max_overflow,
         },
         "uploads": dict(state),
+        "storage_quota_bytes": settings().max_storage_bytes_global,
         "outbox": dict(outbox),
     }
 

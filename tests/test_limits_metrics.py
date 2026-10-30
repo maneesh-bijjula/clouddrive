@@ -20,6 +20,71 @@ def payload():
     }
 
 
+@pytest.mark.integration
+@pytest.mark.parametrize("scope", ["workspace", "global"])
+def test_declared_storage_reservations_are_atomic_across_admissions(
+    client, auth, monkeypatch, scope
+):
+    from clouddrive.config import settings
+
+    monkeypatch.setattr(
+        settings(), f"max_storage_bytes_{'per_workspace' if scope == 'workspace' else 'global'}", 40
+    )
+    other = (
+        {"Authorization": "Bearer " + client.post("/api/workspaces").json()["access_key"]}
+        if scope == "global"
+        else auth
+    )
+    barrier = threading.Barrier(2)
+
+    def submit(headers):
+        barrier.wait(timeout=5)
+        return client.post("/api/uploads", headers=headers, json=payload())
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(pool.map(submit, [auth, other]))
+    assert sorted(r.status_code for r in results) == [201, 429]
+    rejected = next(r for r in results if r.status_code == 429)
+    assert rejected.json()["detail"]["code"] == "upload_storage_capacity"
+    assert rejected.headers["Retry-After"] == "1"
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize("failed", [False, True])
+def test_stored_and_deleting_objects_keep_quota_until_physical_cleanup(
+    client, auth, monkeypatch, failed
+):
+    from clouddrive import service
+    from clouddrive.config import settings
+    from clouddrive.worker import process_file
+    from helpers import uploaded
+    from botocore.exceptions import EndpointConnectionError
+
+    monkeypatch.setattr(settings(), "max_storage_bytes_per_workspace", 8)
+    file, original = uploaded(client, auth, b"12345678", **({"sha256": "0" * 64} if failed else {}))
+    assert process_file(file["id"]) == ("failed" if failed else "ready")
+    if failed:
+        monkeypatch.setattr(settings(), "max_storage_bytes_per_workspace", 7)
+        assert client.post(f"/api/files/{file['id']}/retry", headers=auth).status_code == 202
+        assert process_file(file["id"]) == "failed"
+        monkeypatch.setattr(settings(), "max_storage_bytes_per_workspace", 8)
+    replay = client.post("/api/uploads", headers=auth, json=original)
+    assert replay.status_code == 201 and replay.json()["id"] == file["id"]
+    candidate = payload()
+    candidate["size"] = 1
+    assert client.post("/api/uploads", headers=auth, json=candidate).status_code == 429
+    with monkeypatch.context() as scoped:
+
+        def unavailable(*args):
+            raise EndpointConnectionError(endpoint_url="http://isolated-test-storage")
+
+        scoped.setattr(service, "finish_delete", unavailable)
+        assert client.delete(f"/api/files/{file['id']}", headers=auth).status_code == 503
+    assert client.post("/api/uploads", headers=auth, json=candidate).status_code == 429
+    assert client.delete(f"/api/files/{file['id']}", headers=auth).status_code == 204
+    assert client.post("/api/uploads", headers=auth, json=candidate).status_code == 201
+
+
 def test_request_identifiers_are_bounded_and_do_not_accept_log_injection():
     from clouddrive.observability import request_id
 

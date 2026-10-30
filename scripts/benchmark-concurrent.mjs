@@ -622,6 +622,8 @@ try {
   const configKeys = [
     "max_active_uploads_per_workspace",
     "max_active_uploads_global",
+    "max_storage_bytes_per_workspace",
+    "max_storage_bytes_global",
     "max_api_inflight",
     "db_pool_size",
     "db_max_overflow",
@@ -645,6 +647,8 @@ try {
   const expectedConfig = {
     max_active_uploads_per_workspace: 10,
     max_active_uploads_global: 100,
+    max_storage_bytes_per_workspace: 10000000000,
+    max_storage_bytes_global: 50000000000,
     max_api_inflight: 64,
     db_pool_size: 8,
     db_max_overflow: 8,

@@ -11,6 +11,10 @@ the resume remain unchanged. Heavy work runs only on GitHub-hosted runners.
 
 ## Gaps corrected
 
+- Session counts alone did not bound total declared storage. Workspace/global
+  byte reservations now enforce configurable budgets before allocation, retaining
+  READY/FAILED/DELETING reservations until cleanup completes. The standard Compose
+  file forwards documented settings, so `.env` changes actually reach containers.
 - Backup completion was written last but without durable file/directory flushes.
   Copied data is now fsynced, and the completion marker is atomically published
   without replacing an existing marker; flush failures prevent completion.

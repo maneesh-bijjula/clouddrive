@@ -27,6 +27,7 @@ jobs:
           python -m black --check clouddrive tests scripts
           npx prettier --check frontend tests-browser *.json *.ts .github docs/*.md docs/*.json README.md compose*.yaml scripts/*.mjs
           npm run build
+          docker compose -f compose.yaml config --quiet
           node --test scripts/load-observer.test.mjs scripts/load-file-hash.test.mjs
       - name: Start isolated infrastructure
         run: docker compose -f compose.test.yaml up -d --build --wait
