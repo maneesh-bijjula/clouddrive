@@ -2,7 +2,7 @@
 
 Audit date: October 24, 2026 (America/Los_Angeles). Baseline: `6f439d97b62d25b16ef22d9ab91208955bc97983` on `main`.
 
-**Progress: all five planned sprints are complete.** The three scoped resume targets have published evidence. [Sprint 5](sprint-5.md) adds measured isolated backup/restore, safe cleanup, compact pagination/search and operational runbooks. Provider/environment/denominator limits remain explicit; public hosting and live AWS verification are outside the completed scope.
+**Progress: all five planned sprints and the [post-sprint completeness audit](final-audit.md) are complete.** The three scoped resume targets have published evidence. [Sprint 5](sprint-5.md) adds measured isolated backup/restore, safe cleanup, compact pagination/search and operational runbooks. Provider/environment/denominator limits remain explicit; public hosting and live AWS verification are outside the completed scope.
 
 This document preserves the baseline audit and proposed sprint sequence. Sprints 1-5 were subsequently authorized for direct delivery to `main`; see [the Sprint 1 report](sprint-1.md) for implementation and current verification. See [Sprint 2](sprint-2.md) for the large-file implementation and measurement procedure, and [Sprint 3](sprint-3.md) for the completed recovery matrix, and [Sprint 4](sprint-4.md) for three complete hosted concurrency cohorts (30/30). Baseline fault probes assert the original defects and apply only to baseline `6f439d9`, not to the corrected implementation. The resume and other projects remain outside the implementation scope.
 

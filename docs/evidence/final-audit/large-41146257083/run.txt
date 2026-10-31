@@ -1,0 +1,26 @@
+
+> clouddrive@0.1.0 bench:upload
+> node scripts/benchmark-upload.mjs --bytes 5000000000 --project clouddrive-ci-large --output test-results/large-file/run.json
+
+{"stage":"generate-source","elapsed_s":0.944886,"bytes":5000000000}
+{"stage":"initial-browser-hash-and-partial-upload","elapsed_s":13.645686,"bytes":5000000000}
+{"stage":"progress","phase":"first","elapsed_s":35.256093,"state":["Checking file · 24%Pause"]}
+{"stage":"progress","phase":"first","elapsed_s":55.463996,"state":["Checking file · 47%Pause"]}
+{"stage":"progress","phase":"first","elapsed_s":77.204569,"state":["Checking file · 72%Pause"]}
+{"stage":"progress","phase":"first","elapsed_s":97.411336,"state":["Checking file · 95%Pause"]}
+{"stage":"resume-browser-hash-and-transfer","elapsed_s":104.151876,"bytes":5000000000}
+{"stage":"progress","phase":"resume","elapsed_s":119.478986,"state":["Checking file · 17%Pause"]}
+{"stage":"progress","phase":"resume","elapsed_s":141.246128,"state":["Checking file · 42%Pause"]}
+{"stage":"progress","phase":"resume","elapsed_s":161.457127,"state":["Checking file · 66%Pause"]}
+{"stage":"progress","phase":"resume","elapsed_s":184.246851,"state":["Checking file · 92%Pause"]}
+{"stage":"progress","phase":"resume","elapsed_s":207.167055,"state":["Uploading · 15%Pause"]}
+{"stage":"progress","phase":"resume","elapsed_s":229.195869,"state":["Uploading · 34%Pause"]}
+{"stage":"progress","phase":"resume","elapsed_s":249.628458,"state":["Uploading · 50%Pause"]}
+{"stage":"progress","phase":"resume","elapsed_s":271.412733,"state":["Uploading · 68%Pause"]}
+{"stage":"progress","phase":"resume","elapsed_s":293.266436,"state":["Uploading · 84%Pause"]}
+{"stage":"progress","phase":"resume","elapsed_s":315.264545,"state":["Uploading · 99%Pause"]}
+{"stage":"browser-download-and-independent-hash","elapsed_s":327.948955,"bytes":5000000000}
+{"stage":"progress","phase":"download","elapsed_s":335.504339,"state":[]}
+{"stage":"progress","phase":"download","elapsed_s":357.280304,"state":[]}
+{"stage":"passed","elapsed_s":360.74485,"bytes":5000000000}
+{"status":"passed","report":"/home/runner/work/clouddrive/clouddrive/test-results/large-file/run.json"}

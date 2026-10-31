@@ -1,5 +1,13 @@
 # Verification
 
+## Completeness audit verification
+
+Source `4513d03` passed **140/140 Python cases (52 unit + 88 integration)**, **31/31 host and packaged Playwright cases per mode (29 browser workflows + 2 scheduler checks)**, **9 Node helpers**, a fresh **20/20 named recovery regression**, and a fresh **3/3-object restore**. Browser runner retries were disabled; Python had no skips/failures/errors and the existing TestClient deprecation warning.
+
+Fresh target-size hosted workflows also passed **one actual 5,000,000,000-byte resume/download** with no confirmed-part resends, and **three complete ten-file 500,000,000-byte cohorts (30/30)** with byte-transfer overlap and exact source/worker/download hashes. Active 5 GB transfer windows totaled 125.4654 s; the complete runner took 361.6497 s. Concurrent aggregate window rates were 68.20–73.22 MB/s, all ten READY in 117.20–123.22 s. These use MinIO and retain the exact protocol/shaping/environment scope described in the [final audit](final-audit.md), which includes raw JSON/CSV, hashes, attempts, clocks, resource limits and CI identities. The fresh concurrency run retained the original declared CPU/memory/disk/time budgets; it is not an isolated performance comparison with earlier hardware.
+
+The audit closes quota/configuration, backup durability, hidden-version restore, cleanup continuation, whole-workspace sorting, stale-response and diagnostic-redaction gaps. All heavy work ran on GitHub-hosted runners; existing local data/containers, other projects and the resume were untouched. Final documentation/evidence publication changes no measured runtime source and its exact-SHA workflows are verified after pushing.
+
 ## Sprint 5 verification
 
 Implementation `d723e4e` passed **121 Python cases (45 unit + 76 integration)**, **29 host and 29 packaged Playwright cases (27 browser workflows + 2 scheduler checks per mode)** with zero runner retries, **9 Node helper tests**, and one complete additional **20/20 named recovery regression**. Python had zero skips/failures/errors and the existing TestClient deprecation warning. The bounded small concurrency smoke passed ten 16,777,233-byte files; it is not a target-size benchmark.

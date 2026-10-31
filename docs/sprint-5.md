@@ -1,5 +1,7 @@
 # Sprint 5: backup/restore and release evidence
 
+Subsequent hardening adds durable archive publication, version-aware restore, cleanup continuation and whole-workspace sorting; see the [current completeness audit](final-audit.md). Measurements below retain their original source/scope.
+
 Sprint 5 is complete. The implementation passed ordinary CI, the named recovery
 regression, and the isolated restore exercise.
 Implementation: `d723e4edca9e6767c6c43a41b73a885bc9a2747f`, delivered directly to

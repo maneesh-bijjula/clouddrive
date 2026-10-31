@@ -1,0 +1,47 @@
+{
+  "baseline": "96ed7dc26be687189cd627622129006a76dc3119",
+  "attempts": [
+    {
+      "source": "da7cec3bc504f87f14ab94d44cae51344be5a20b",
+      "ci_run": 41143714349,
+      "result": "failed",
+      "stage": "formatting",
+      "reason": "New browser test needed a second formatting normalization pass; functional CI was not reached."
+    },
+    {
+      "source": "f6bb488308153ecaeae68357ba9394b91207a0b0",
+      "ci_run": 41143954194,
+      "result": "superseded",
+      "reason": "Cleanup continuation was hardened for multiple uploads sharing one key; the newer run replaced in-progress checks."
+    },
+    {
+      "source": "bde8eb3ba4902b388ffc86955fc6e8141fbd2202",
+      "ci_run": 41144409273,
+      "result": "failed",
+      "python_passed": 135,
+      "python_total": 136,
+      "reason": "Legacy dispatcher test expected the original raw ConnectionError. Updated the expected sanitized error while retaining and rerunning durable-work/state assertions."
+    },
+    {
+      "source": "4513d0337ed53bdc0a374e10cd196035b2f34b9d",
+      "ci_run": 41145781625,
+      "result": "passed",
+      "python_passed": 140,
+      "python_total": 140,
+      "host_browser_cases": 31,
+      "packaged_browser_cases": 31,
+      "browser_runner_retries": 0,
+      "recovery_run": 41145781631,
+      "recovery_cases_passed": 20,
+      "restore_run": 41145781609,
+      "restored_committed_objects": 3,
+      "concurrent_run": 41146254418,
+      "concurrent_cohorts": 3,
+      "concurrent_file_outcomes": 30,
+      "large_run": 41146257083,
+      "large_file_bytes": 5000000000,
+      "target_workflow_attempts": 1
+    }
+  ],
+  "scope": "Only the final complete workflows establish the new audit measurements. Earlier CI failures/superseded runs are separate. Original sprint results retain their own source/environment/denominators."
+}

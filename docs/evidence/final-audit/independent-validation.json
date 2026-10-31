@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "source_sha": "4513d0337ed53bdc0a374e10cd196035b2f34b9d",
+  "concurrent_file_outcomes": 30,
+  "complete_concurrent_cohorts": 3,
+  "large_file_bytes": 5000000000,
+  "large_no_confirmed_resends": true,
+  "restored_committed_objects": 3,
+  "source_hash_counts": {
+    "concurrent": 38,
+    "large": 32,
+    "restore": 25
+  },
+  "raw_sha256": {
+    "concurrent": "e5b9c4812ba297f5fbf281d1b9753d560725685f8ae16d902a64c41185d36352",
+    "large": "c5d3e2193e249dcc4c1c14c2e1c85f870d4665fcb57d460ee7b4d38f0cf57670",
+    "restore": "99ec8151606798ab6d31f76c4477df8c4901c13e8043df5bfafde7bab57f604b"
+  }
+}

@@ -1,0 +1,3 @@
+redis:7-alpine Up About a minute (healthy)
+postgres:17-alpine Up About a minute (healthy)
+clouddrive-minio:2025-10-15 Up About a minute (healthy)
